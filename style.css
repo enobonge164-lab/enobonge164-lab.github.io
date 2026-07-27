@@ -18,7 +18,7 @@ scroll-behavior:smooth;
 
 body{
 font-family:Arial,Helvetica,sans-serif;
-background:#16072f;
+background:#120524;
 color:white;
 line-height:1.7;
 }
@@ -57,7 +57,7 @@ margin-bottom:10px;
 }color:white;
 
 .hero h3{
-color:#cbd5e1;
+color:#e9d5ff;
 margin-bottom:20px;
 }
 
@@ -120,7 +120,7 @@ gap:20px;
 }
 
 .grid a{
-background:#2563eb;
+background:#8b5cf6;
 color:white;
 padding:18px;
 text-align:center;
@@ -131,7 +131,7 @@ transition:.3s;
 }
 
 .grid a:hover{
-background:#38bdf8;
+background:#a855f7;
 }
 
 footer{
