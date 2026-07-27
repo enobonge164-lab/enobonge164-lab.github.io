@@ -98,11 +98,13 @@ section h2{
 text-align:center;
 margin-bottom:40px;
 font-size:36px;
-color:#c084fc;
+color:#ffffff;
 }
 
+
 .card{
-background:#2b145f;
+background:#3b1d78;
+}
 padding:25px;
 border-radius:15px;
 margin-bottom:20px;
