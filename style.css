@@ -145,10 +145,11 @@ background:#a855f7;
 }
 
 footer{
-background:#6d28d9;
-text-align:center;
-padding:40px 20px;
-margin-top:50px;
+    background:transparent;
+    color:white;
+    text-align:center;
+    padding:40px 20px;
+    margin-top:50px;
 }
 
 footer h3{
