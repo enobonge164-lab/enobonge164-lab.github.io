@@ -145,11 +145,20 @@ background:#a855f7;
 }
 
 footer{
-    background:transparent;
+    background:#6d28d9;
     color:white;
     text-align:center;
     padding:40px 20px;
     margin-top:50px;
+}
+
+footer h3{
+    color:white;
+    margin-bottom:10px;
+}
+
+footer p{
+    color:white;
 }
 
 footer h3{
