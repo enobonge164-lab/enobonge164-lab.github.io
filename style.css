@@ -109,7 +109,7 @@ padding:25px;
 border-radius:15px;
 margin-bottom:20px;
 transition:.3s;
-}
+}color:white;
 
 .card:hover{
 transform:translateY(-8px);
@@ -175,5 +175,9 @@ align-items:center;
 .buttons a{
 width:220px;
 }
-
+.card h3{
+    color:white;
+}.card p{
+    color:#e9d5ff;
+}
 }
