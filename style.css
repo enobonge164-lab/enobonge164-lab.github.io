@@ -48,14 +48,18 @@ line-height:1.7;
 }
 
 .profile{
-width:150px;
-height:150px;
-border-radius:50%;
-border:5px solid white;
-object-fit:cover;
-margin-bottom:20px;
+    width:180px;
+    height:180px;
+    border-radius:50%;
+    border:5px solid #8b5cf6;
+    box-shadow:0 0 30px rgba(139,92,246,.6);
+    transition:all .4s ease;
+    object-fit:cover;
 }
-
+.profile:hover{
+    transform:scale(1.08);
+    box-shadow:0 0 50px rgba(139,92,246,.9);
+}
 .hero h1{
     font-size:56px;
     font-weight:bold;
