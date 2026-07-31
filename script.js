@@ -127,3 +127,54 @@ backToTop.addEventListener("click", () => {
     });
 
 });
+// ================= ANIMATED COUNTERS =================
+
+const counters = document.querySelectorAll(".counter");
+
+const counterObserver = new IntersectionObserver((entries) => {
+
+    entries.forEach(entry => {
+
+        if (entry.isIntersecting) {
+
+            const counter = entry.target;
+
+            const target = +counter.getAttribute("data-target");
+
+            let count = 0;
+
+            const speed = target / 60;
+
+            const updateCounter = () => {
+
+                if (count < target) {
+
+                    count += speed;
+
+                    counter.innerText = Math.ceil(count);
+
+                    requestAnimationFrame(updateCounter);
+
+                } else {
+
+                    counter.innerText = target;
+
+                }
+
+            };
+
+            updateCounter();
+
+            counterObserver.unobserve(counter);
+
+        }
+
+    });
+
+});
+
+counters.forEach(counter => {
+
+    counterObserver.observe(counter);
+
+});
