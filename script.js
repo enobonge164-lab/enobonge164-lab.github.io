@@ -1,25 +1,5 @@
 // Welcome Message
 console.log("Welcome to Sirwhite The Polymath");
-
-// Fade-in Animation
-const cards = document.querySelectorAll(".card");
-
-const observer = new IntersectionObserver((entries)=>{
-entries.forEach(entry=>{
-if(entry.isIntersecting){
-entry.target.style.opacity="1";
-entry.target.style.transform="translateY(0)";
-}
-});
-});
-
-cards.forEach(card=>{
-card.style.opacity="0";
-card.style.transform="translateY(40px)";
-card.style.transition="0.8s";
-observer.observe(card);
-});
-
 // Smooth Button Hover
 document.querySelectorAll("a").forEach(link=>{
 link.addEventListener("mouseenter",()=>{
@@ -40,7 +20,7 @@ footer.innerHTML += `<p style="margin-top:20px;">© ${year} Sirwhite The Polymat
 // Scroll Animation
 const hiddenElements = document.querySelectorAll("section, .card");
 
-const observer = new IntersectionObserver((entries) => {
+const scrollObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
         if (entry.isIntersecting) {
             entry.target.classList.add("show");
@@ -50,5 +30,5 @@ const observer = new IntersectionObserver((entries) => {
 
 hiddenElements.forEach((el) => {
     el.classList.add("hidden");
-    observer.observe(el);
+    scrollObserver.observe(el);
 });
