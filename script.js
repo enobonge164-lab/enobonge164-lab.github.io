@@ -37,3 +37,18 @@ const footer=document.querySelector("footer");
 const year=new Date().getFullYear();
 
 footer.innerHTML += `<p style="margin-top:20px;">© ${year} Sirwhite The Polymath. All Rights Reserved.</p>`;
+// Scroll Animation
+const hiddenElements = document.querySelectorAll("section, .card");
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add("show");
+        }
+    });
+});
+
+hiddenElements.forEach((el) => {
+    el.classList.add("hidden");
+    observer.observe(el);
+});
