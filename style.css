@@ -234,3 +234,42 @@ footer p{
     opacity: 1;
     transform: translateY(0);
 }
+/* ================= DARK/LIGHT TOGGLE ================= */
+
+#theme-toggle{
+    background:#7c3aed;
+    color:white;
+    border:none;
+    padding:10px 15px;
+    border-radius:50px;
+    cursor:pointer;
+    font-size:18px;
+    transition:0.3s;
+    margin-left:20px;
+}
+
+#theme-toggle:hover{
+    background:#5b21b6;
+    transform:scale(1.1);
+}
+
+/* Light Theme */
+
+body.light-mode{
+    background:#ffffff;
+    color:#111111;
+}
+
+body.light-mode .navbar{
+    background:#f4f4f4;
+}
+
+body.light-mode .card{
+    background:#ffffff;
+    color:#111111;
+    border:1px solid #ddd;
+}
+
+body.light-mode a{
+    color:#7c3aed;
+}
