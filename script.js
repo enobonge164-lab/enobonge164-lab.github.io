@@ -127,54 +127,39 @@ backToTop.addEventListener("click", () => {
     });
 
 });
-// ================= ANIMATED COUNTERS =================
+// ================= SIMPLE COUNTER =================
 
-const counters = document.querySelectorAll(".counter");
+function startCounters() {
 
-const counterObserver = new IntersectionObserver((entries) => {
+    const counters = document.querySelectorAll(".counter");
 
-    entries.forEach(entry => {
+    counters.forEach(counter => {
 
-        if (entry.isIntersecting) {
+        const target = parseInt(counter.dataset.target);
 
-            const counter = entry.target;
+        let count = 0;
 
-            const target = +counter.getAttribute("data-target");
+        const increment = Math.ceil(target / 80);
 
-            let count = 0;
+        const timer = setInterval(() => {
 
-            const speed = target / 60;
+            count += increment;
 
-            const updateCounter = () => {
+            if (count >= target) {
 
-                if (count < target) {
+                counter.innerText = target;
+                clearInterval(timer);
 
-                    count += speed;
+            } else {
 
-                    counter.innerText = Math.ceil(count);
+                counter.innerText = count;
 
-                    requestAnimationFrame(updateCounter);
+            }
 
-                } else {
-
-                    counter.innerText = target;
-
-                }
-
-            };
-
-            updateCounter();
-
-            counterObserver.unobserve(counter);
-
-        }
+        }, 30);
 
     });
 
-});
+}
 
-counters.forEach(counter => {
-
-    counterObserver.observe(counter);
-
-});
+window.addEventListener("load", startCounters);
