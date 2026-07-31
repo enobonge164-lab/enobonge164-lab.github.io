@@ -32,3 +32,53 @@ hiddenElements.forEach((el) => {
     el.classList.add("hidden");
     scrollObserver.observe(el);
 });
+
+
+// ================= TYPING ANIMATION =================
+
+const words = [
+  "AI Builder",
+  "Web Developer",
+  "Content Creator",
+  "Prompt Engineer",
+  "Founder of Captivate AI"
+];
+
+let wordIndex = 0;
+let letterIndex = 0;
+let isDeleting = false;
+
+const typingElement = document.getElementById("typing");
+
+function type() {
+
+    const currentWord = words[wordIndex];
+
+    if (!isDeleting) {
+
+        typingElement.textContent =
+        currentWord.substring(0, letterIndex++);
+
+        if (letterIndex > currentWord.length) {
+            isDeleting = true;
+            setTimeout(type, 1500);
+            return;
+        }
+
+    } else {
+
+        typingElement.textContent =
+        currentWord.substring(0, letterIndex--);
+
+        if (letterIndex < 0) {
+            isDeleting = false;
+            wordIndex = (wordIndex + 1) % words.length;
+        }
+
+    }
+
+    setTimeout(type, isDeleting ? 50 : 100);
+
+}
+
+type();
