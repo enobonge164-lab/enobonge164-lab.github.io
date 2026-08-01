@@ -7,68 +7,7 @@
 
 <title>AI Caption Generator | Sirwhite The Polymath</title>
 
-<link rel="stylesheet" href="style.css">
-
-<style>
-
-body{
-font-family:Arial,sans-serif;
-background:#0f172a;
-color:white;
-margin:0;
-padding:40px;
-}
-
-.container{
-max-width:900px;
-margin:auto;
-}
-
-.card{
-background:#1e293b;
-padding:30px;
-border-radius:20px;
-box-shadow:0 15px 40px rgba(0,0,0,.3);
-}
-
-textarea{
-width:100%;
-height:160px;
-padding:15px;
-font-size:16px;
-border-radius:10px;
-border:none;
-margin-top:20px;
-}
-
-button{
-margin-top:20px;
-padding:14px 28px;
-border:none;
-border-radius:10px;
-cursor:pointer;
-font-size:16px;
-background:#38bdf8;
-color:white;
-}
-
-#result{
-margin-top:25px;
-padding:20px;
-background:#334155;
-border-radius:10px;
-min-height:120px;
-white-space:pre-wrap;
-}
-
-.back{
-display:inline-block;
-margin-bottom:20px;
-color:#38bdf8;
-text-decoration:none;
-}
-
-</style>
+<link rel="stylesheet" href="premium.css">
 
 </head>
 
@@ -88,7 +27,13 @@ text-decoration:none;
 id="topic"
 placeholder="Example: AI tools for beginners">
 </textarea>
-
+<select id="platform">
+    <option value="Facebook">Facebook</option>
+    <option value="Instagram">Instagram</option>
+    <option value="LinkedIn">LinkedIn</option>
+    <option value="X (Twitter)">X (Twitter)</option>
+    <option value="TikTok">TikTok</option>
+</select>
 <button onclick="generateCaption()">
 Generate Caption
 </button>
@@ -98,29 +43,6 @@ Generate Caption
 </div>
 
 </div>
-
-<script>
-
-function generateCaption(){
-
-const topic=document.getElementById("topic").value;
-
-if(topic===""){
-alert("Enter a topic first.");
-return;
-}
-
-document.getElementById("result").innerHTML=
-
-"🔥 "+topic+"\n\n"
-
-+"Discover how "+topic+" can help you work smarter, save time and grow faster.\n\n"
-
-+"👇 What do you think? Tell me in the comments.\n\n"
-
-+"#AI #ArtificialIntelligence #Productivity #SirwhiteThePolymath";
-
-}
 
 <script>
 function generateCaption() {
