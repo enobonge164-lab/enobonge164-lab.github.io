@@ -1,1 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>AI Hashtag Generator | Sirwhite The Polymath</title>
+
+<link rel="stylesheet" href="premium.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<a class="back" href="index.html">← Back to Portfolio</a>
+
+<div class="card">
+
+<h1>AI Hashtag Generator</h1>
+
+<p>Generate powerful hashtags for any topic.</p>
+
+<textarea
+id="topic"
+placeholder="Example: AI Tools"></textarea>
+
+<button onclick="generateHashtags()">
+Generate Hashtags
+</button>
+
+<div id="result"></div>
+
+</div>
+
+</div>
+
+<script>
+
+function generateHashtags(){
+
+const topic=document.getElementById("topic").value;
+
+if(topic.trim()==""){
+alert("Enter a topic first.");
+return;
+}
+
+const tags=
+"#AI\n"+
+"#ArtificialIntelligence\n"+
+"#MachineLearning\n"+
+"#Technology\n"+
+"#Innovation\n"+
+"#FutureTech\n"+
+"#Automation\n"+
+"#DigitalMarketing\n"+
+"#ContentCreator\n"+
+"#BusinessGrowth\n"+
+"#Productivity\n"+
+"#Entrepreneur\n"+
+"#Startup\n"+
+"#OnlineBusiness\n"+
+"#ChatGPT\n"+
+"#OpenAI\n"+
+"#Learning\n"+
+"#Success\n"+
+"#Trending\n"+
+"#"+topic.replace(/\s+/g,"");
+
+document.getElementById("result").innerText=tags;
+
+}
+
+</script>
+
+</body>
+
+</html>
