@@ -122,7 +122,27 @@ document.getElementById("result").innerHTML=
 
 }
 
-</script>
+<script>
+function generateCaption() {
+    const topic = document.getElementById("topic").value;
 
+    if (topic.trim() === "") {
+        alert("Please enter a topic.");
+        return;
+    }
+
+    const caption = `🚀 ${topic}
+
+Here are 3 things you should know about ${topic}:
+
+✅ It can save you time
+✅ It helps you work smarter
+✅ It's worth learning today
+
+Follow @Sirwhite The Polymath for more AI tips!`;
+
+    document.getElementById("result").innerText = caption;
+}
+</script>
 </body>
 </html>
