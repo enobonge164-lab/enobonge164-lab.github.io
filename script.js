@@ -163,3 +163,11 @@ function startCounters() {
 }
 
 window.addEventListener("load", startCounters);
+// ================= HAMBURGER MENU =================
+
+const menuToggle = document.getElementById("menu-toggle");
+const navMenu = document.querySelector(".navbar ul");
+
+menuToggle.addEventListener("click", () => {
+    navMenu.classList.toggle("active");
+});
