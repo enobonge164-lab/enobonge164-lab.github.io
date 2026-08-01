@@ -296,3 +296,44 @@ body.light-mode a{
     background:#5b21b6;
     transform:translateY(-4px);
 }
+/* ================= MOBILE MENU ================= */
+
+.menu-toggle{
+    display:none;
+    font-size:30px;
+    cursor:pointer;
+    color:white;
+}
+
+/* Mobile */
+
+@media (max-width:768px){
+
+.navbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+.navbar ul{
+    display:none;
+    width:100%;
+    flex-direction:column;
+    margin-top:15px;
+    text-align:center;
+}
+
+.navbar ul.active{
+    display:flex;
+}
+
+.menu-toggle{
+    display:block;
+}
+
+#theme-toggle{
+    margin-right:10px;
+}
+
+}
