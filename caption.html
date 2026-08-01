@@ -40,12 +40,17 @@ Generate Caption
 
 <div id="result"></div>
 
+<button onclick="copyResult()" class="btn">
+📋 Copy Caption
+</button>
+
 </div>
 
 </div>
 
 <script>
 function generateCaption() {
+
     const topic = document.getElementById("topic").value;
 
     if (topic.trim() === "") {
@@ -64,6 +69,20 @@ Here are 3 things you should know about ${topic}:
 Follow @Sirwhite The Polymath for more AI tips!`;
 
     document.getElementById("result").innerText = caption;
+}
+
+function copyResult() {
+
+    const result = document.getElementById("result").innerText;
+
+    if (result.trim() === "") {
+        alert("Nothing to copy.");
+        return;
+    }
+
+    navigator.clipboard.writeText(result);
+
+    alert("✅ Caption copied successfully!");
 }
 </script>
 </body>
