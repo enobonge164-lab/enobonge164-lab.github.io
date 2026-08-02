@@ -1,1 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI YouTube Script Generator</title>
 
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<a class="back" href="index.html">← Back to Portfolio</a>
+
+<div class="card">
+
+<h1>🎬 AI YouTube Script Generator</h1>
+
+<p>Create engaging YouTube video scripts instantly.</p>
+
+<textarea
+id="topic"
+placeholder="Example: How to Make Money with AI">
+</textarea>
+
+<button onclick="generateScript()">
+Generate Script
+</button>
+
+<div id="result"></div>
+
+<button onclick="copyScript()" class="btn">
+📋 Copy Script
+</button>
+
+</div>
+
+</div>
+
+<div id="toast" class="toast">
+✅ Script copied successfully!
+</div>
+
+<script>
+
+function generateScript(){
+
+const topic=document.getElementById("topic").value;
+
+if(topic.trim()==""){
+alert("Please enter a topic.");
+return;
+}
+
+const script=`🎬 TITLE:
+${topic}
+
+🎯 HOOK:
+Have you ever wondered how ${topic} can completely change the way you work?
+
+📝 SCRIPT:
+
+Today we're talking about ${topic}.
+
+Here are 3 important things you should know:
+
+1️⃣ Why it matters.
+
+2️⃣ How to use it effectively.
+
+3️⃣ Common mistakes to avoid.
+
+Start practicing today and you'll improve much faster.
+
+📢 CALL TO ACTION:
+
+If this helped you, Like, Subscribe and Follow Sirwhite The Polymath for more AI content.`;
+
+document.getElementById("result").innerText=script;
+
+}
+
+function copyScript(){
+
+const result=document.getElementById("result").innerText;
+
+if(result.trim()==""){
+alert("Nothing to copy.");
+return;
+}
+
+navigator.clipboard.writeText(result);
+
+const toast=document.getElementById("toast");
+
+toast.classList.add("show");
+
+setTimeout(()=>{
+toast.classList.remove("show");
+},2500);
+
+}
+
+</script>
+
+</body>
+</html>
