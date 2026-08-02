@@ -1,1 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>AI Prompt Generator | Sirwhite The Polymath</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<a class="back" href="index.html">← Back to Portfolio</a>
+
+<div class="card">
+
+<h1>🧠 AI Prompt Generator</h1>
+
+<p>Create powerful ChatGPT prompts instantly.</p>
+
+<select id="category">
+<option>Business</option>
+<option>Marketing</option>
+<option>YouTube</option>
+<option>Coding</option>
+<option>Social Media</option>
+<option>Education</option>
+<option>Productivity</option>
+</select>
+
+<textarea
+id="topic"
+placeholder="Example: Facebook Ads">
+</textarea>
+
+<button onclick="generatePrompt()">
+Generate Prompt
+</button>
+
+<div id="result"></div>
+
+<button onclick="copyPrompt()" class="btn">
+📋 Copy Prompt
+</button>
+
+</div>
+
+</div>
+
+<div id="toast" class="toast">
+✅ Prompt copied successfully!
+</div>
+
+<script>
+
+function generatePrompt(){
+
+const category=document.getElementById("category").value;
+const topic=document.getElementById("topic").value;
+
+if(topic.trim()==""){
+alert("Enter a topic.");
+return;
+}
+
+const prompt=
+
+`Create a detailed ${category} guide about "${topic}".
+
+Include:
+
+• Step-by-step explanation
+
+• Beginner friendly
+
+• Practical examples
+
+• Common mistakes
+
+• Professional tips
+
+• Clear conclusion.`;
+
+document.getElementById("result").innerText=prompt;
+
+}
+
+function copyPrompt(){
+
+const result=document.getElementById("result").innerText;
+
+if(result.trim()==""){
+alert("Nothing to copy.");
+return;
+}
+
+navigator.clipboard.writeText(result);
+
+const toast=document.getElementById("toast");
+
+toast.classList.add("show");
+
+setTimeout(()=>{
+toast.classList.remove("show");
+},2500);
+
+}
+
+</script>
+
+</body>
+
+</html>
