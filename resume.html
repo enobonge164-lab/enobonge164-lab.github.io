@@ -1,1 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Resume Builder | Sirwhite The Polymath</title>
 
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h1>📄 AI Resume Builder</h1>
+
+<p>Create professional Resume summaries instantly.</p>
+
+<textarea
+id="job"
+placeholder="Example: Security Guard">
+</textarea>
+
+<button onclick="generateResume()">
+Generate Resume
+</button>
+
+<div id="result"></div>
+
+<button onclick="copyResume()" class="btn">
+Copy Resume
+</button>
+
+</div>
+
+</div>
+
+<div id="toast" class="toast">
+✅ Resume copied successfully!
+</div>
+
+<script>
+
+function generateResume(){
+
+const job=document.getElementById("job").value;
+
+if(job.trim()==""){
+alert("Enter a Job Position.");
+return;
+}
+
+const resume=
+
+`Professional Summary
+
+Dedicated and hardworking ${job} with strong communication skills, excellent teamwork, and a commitment to delivering quality service.
+
+Core Skills
+
+• Communication
+• Problem Solving
+• Teamwork
+• Time Management
+• Customer Service
+• Fast Learner
+
+Career Objective
+
+Seeking an opportunity to contribute my skills, gain experience and grow professionally while helping the organization achieve its goals.`;
+
+document.getElementById("result").innerText=resume;
+
+}
+
+function copyResume(){
+
+const result=document.getElementById("result").innerText;
+
+if(result.trim()==""){
+alert("Nothing to copy.");
+return;
+}
+
+navigator.clipboard.writeText(result);
+
+const toast=document.getElementById("toast");
+
+toast.classList.add("show");
+
+setTimeout(()=>{
+toast.classList.remove("show");
+},2500);
+
+}
+
+</script>
+
+</body>
+</html>
