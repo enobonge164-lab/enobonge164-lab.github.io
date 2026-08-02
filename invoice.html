@@ -1,1 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Invoice Generator</title>
 
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<a class="back" href="index.html">← Back to Portfolio</a>
+
+<div class="card">
+
+<h1>🧾 AI Invoice Generator</h1>
+
+<p>Create professional invoices in seconds.</p>
+
+<input id="business" type="text" placeholder="Business Name">
+
+<input id="client" type="text" placeholder="Client Name">
+
+<input id="service" type="text" placeholder="Service Provided">
+
+<input id="amount" type="number" placeholder="Amount">
+
+<input id="date" type="date">
+
+<button onclick="generateInvoice()">
+Generate Invoice
+</button>
+
+<button onclick="copyInvoice()">
+📋 Copy Invoice
+</button>
+
+<div id="result"></div>
+
+</div>
+
+</div>
+
+<div id="toast" class="toast">
+✅ Invoice copied successfully!
+</div>
+
+<script>
+
+function generateInvoice(){
+
+const business=document.getElementById("business").value;
+const client=document.getElementById("client").value;
+const service=document.getElementById("service").value;
+const amount=document.getElementById("amount").value;
+const date=document.getElementById("date").value;
+
+if(
+business==="" ||
+client==="" ||
+service==="" ||
+amount==="" ||
+date===""){
+alert("Please complete all fields.");
+return;
+}
+
+const invoice=
+
+`==============================
+            INVOICE
+==============================
+
+Business:
+${business}
+
+Client:
+${client}
+
+Service:
+${service}
+
+Amount:
+₦${amount}
+
+Due Date:
+${date}
+
+Status:
+Pending Payment
+
+Thank you for your business.`;
+
+document.getElementById("result").innerText=invoice;
+
+}
+
+function copyInvoice(){
+
+const text=document.getElementById("result").innerText;
+
+if(text===""){
+alert("Generate an invoice first.");
+return;
+}
+
+navigator.clipboard.writeText(text);
+
+const toast=document.getElementById("toast");
+
+toast.classList.add("show");
+
+setTimeout(()=>{
+toast.classList.remove("show");
+},2500);
+
+}
+
+</script>
+
+</body>
+</html>
