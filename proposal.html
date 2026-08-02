@@ -1,1 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Business Proposal Generator</title>
 
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f5f7fb;
+max-width:900px;
+margin:auto;
+padding:40px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:15px;
+box-shadow:0 10px 25px rgba(0,0,0,.1);
+}
+
+h1{
+color:#0b57d0;
+}
+
+select,input,textarea{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:1px solid #ddd;
+border-radius:8px;
+font-size:16px;
+}
+
+textarea{
+height:120px;
+}
+
+button{
+padding:12px 20px;
+margin-top:10px;
+background:#0b57d0;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+button:hover{
+background:#0845a6;
+}
+
+#result{
+margin-top:20px;
+padding:20px;
+background:#eef3ff;
+border-radius:10px;
+white-space:pre-wrap;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>💼 AI Business Proposal Generator</h1>
+
+<p>Create professional proposals in seconds.</p>
+
+<select id="type">
+<option>Business Proposal</option>
+<option>Project Proposal</option>
+<option>Partnership Proposal</option>
+<option>Freelance Proposal</option>
+<option>Investment Proposal</option>
+<option>Sponsorship Proposal</option>
+</select>
+
+<input
+id="client"
+type="text"
+placeholder="Client or Company Name">
+
+<textarea
+id="project"
+placeholder="Describe the project or opportunity"></textarea>
+
+<button onclick="generateProposal()">
+Generate Proposal
+</button>
+
+<button onclick="copyProposal()">
+Copy Proposal
+</button>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+
+function generateProposal(){
+
+const type=document.getElementById("type").value;
+const client=document.getElementById("client").value;
+const project=document.getElementById("project").value;
+
+if(client==="" || project===""){
+alert("Please complete all fields.");
+return;
+}
+
+const proposal=
+
+`${type}
+
+Prepared For:
+${client}
+
+Project:
+${project}
+
+Introduction
+
+Thank you for the opportunity to present this proposal.
+
+Objectives
+
+• Deliver quality work
+• Meet agreed timelines
+• Provide professional communication
+
+Scope of Work
+
+${project}
+
+Timeline
+
+The project will begin immediately after approval.
+
+Benefits
+
+• Professional service
+• Reliable delivery
+• Affordable pricing
+• Long-term support
+
+Conclusion
+
+I look forward to working with you.
+
+Best Regards`;
+
+document.getElementById("result").innerText=proposal;
+
+}
+
+function copyProposal(){
+
+const text=document.getElementById("result").innerText;
+
+if(text===""){
+alert("Generate a proposal first.");
+return;
+}
+
+navigator.clipboard.writeText(text);
+
+alert("Proposal copied!");
+
+}
+
+</script>
+
+</body>
+</html>
