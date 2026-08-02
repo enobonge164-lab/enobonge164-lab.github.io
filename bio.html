@@ -1,1 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>AI Bio Generator | Sirwhite The Polymath</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<a class="back" href="index.html">← Back to Portfolio</a>
+
+<div class="card">
+
+<h1>👤 AI Bio Generator</h1>
+
+<p>Create professional bios for any social media platform.</p>
+
+<select id="platform">
+<option>Facebook</option>
+<option>Instagram</option>
+<option>LinkedIn</option>
+<option>TikTok</option>
+<option>YouTube</option>
+<option>X (Twitter)</option>
+</select>
+
+<textarea
+id="topic"
+placeholder="Example: AI Creator">
+</textarea>
+
+<button onclick="generateBio()">
+Generate Bio
+</button>
+
+<div id="result"></div>
+
+<button onclick="copyBio()" class="btn">
+📋 Copy Bio
+</button>
+
+</div>
+
+</div>
+
+<div id="toast" class="toast">
+✅ Bio copied successfully!
+</div>
+
+<script>
+
+function generateBio(){
+
+const platform=document.getElementById("platform").value;
+
+const topic=document.getElementById("topic").value;
+
+if(topic.trim()==""){
+alert("Please enter what you do.");
+return;
+}
+
+const bio=`🚀 ${topic}
+
+Helping people grow with ${topic}.
+
+📚 Sharing practical tips
+💡 Inspiring daily learning
+🌍 Building a global community
+
+📍Platform: ${platform}
+
+👇 Follow for more valuable content.`;
+
+document.getElementById("result").innerText=bio;
+
+}
+
+function copyBio(){
+
+const result=document.getElementById("result").innerText;
+
+if(result.trim()==""){
+alert("Nothing to copy.");
+return;
+}
+
+navigator.clipboard.writeText(result);
+
+const toast=document.getElementById("toast");
+
+toast.classList.add("show");
+
+setTimeout(()=>{
+toast.classList.remove("show");
+},2500);
+
+}
+
+</script>
+
+</body>
+</html>
