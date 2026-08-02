@@ -1,1 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Email Writer</title>
 
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f5f7fb;
+padding:40px;
+max-width:900px;
+margin:auto;
+}
+
+.card{
+background:#fff;
+padding:25px;
+border-radius:15px;
+box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+
+h1{
+color:#0b57d0;
+}
+
+select,textarea,input{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:1px solid #ddd;
+border-radius:8px;
+font-size:16px;
+}
+
+textarea{
+height:120px;
+}
+
+button{
+padding:12px 20px;
+background:#0b57d0;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-top:10px;
+}
+
+button:hover{
+background:#0845a6;
+}
+
+#result{
+margin-top:20px;
+background:#eef3ff;
+padding:20px;
+border-radius:10px;
+white-space:pre-wrap;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>📧 AI Email Writer</h1>
+
+<p>Create professional emails instantly.</p>
+
+<label>Email Type</label>
+
+<select id="type">
+<option>Business</option>
+<option>Job Application</option>
+<option>Customer Support</option>
+<option>Complaint</option>
+<option>Marketing</option>
+<option>Follow Up</option>
+<option>Thank You</option>
+</select>
+
+<label>Recipient</label>
+
+<input
+type="text"
+id="recipient"
+placeholder="Example: Hiring Manager">
+
+<label>Topic</label>
+
+<textarea
+id="topic"
+placeholder="Example: Applying for Security Officer Position"></textarea>
+
+<button onclick="generateEmail()">
+Generate Email
+</button>
+
+<button onclick="copyEmail()">
+Copy Email
+</button>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+
+function generateEmail(){
+
+const type=document.getElementById("type").value;
+
+const recipient=document.getElementById("recipient").value;
+
+const topic=document.getElementById("topic").value;
+
+if(topic===""){
+alert("Please enter a topic.");
+return;
+}
+
+const email=
+
+`Subject: ${topic}
+
+Dear ${recipient},
+
+I hope this email finds you well.
+
+I am writing regarding ${topic}.
+
+Please provide a professional, friendly and well-structured ${type.toLowerCase()} email.
+
+Thank you for your time.
+
+Best Regards`;
+
+document.getElementById("result").innerText=email;
+
+}
+
+function copyEmail(){
+
+const text=document.getElementById("result").innerText;
+
+if(text===""){
+alert("Generate an email first.");
+return;
+}
+
+navigator.clipboard.writeText(text);
+
+alert("Email copied!");
+
+}
+
+</script>
+
+</body>
+</html>
