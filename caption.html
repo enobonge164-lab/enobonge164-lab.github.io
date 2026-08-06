@@ -48,26 +48,36 @@ Generate Caption
 </div>
 
 <script>
-function generateCaption() {
+async function generateCaption() {
+  const topic = document.getElementById("topic").value;
 
-    const topic = document.getElementById("topic").value;
+  if (!topic.trim()) {
+    alert("Please enter a topic.");
+    return;
+  }
 
-    if (topic.trim() === "") {
-        alert("Please enter a topic.");
-        return;
-    }
+  document.getElementById("result").innerText = "Generating caption...";
 
-    const caption = `🚀 ${topic}
+  try {
+    const response = await fetch("https://captivate-ai-api.sirwhitethepolymath.workers.dev/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        topic: topic
+      })
+    });
 
-Here are 3 things you should know about ${topic}:
+    const data = await response.json();
 
-✅ It can save you time
-✅ It helps you work smarter
-✅ It's worth learning today
+    document.getElementById("result").innerText =
+      data.caption || data.message || JSON.stringify(data);
 
-Follow @Sirwhite The Polymath for more AI tips!`;
-
-    document.getElementById("result").innerText = caption;
+  } catch (err) {
+    document.getElementById("result").innerText =
+      "Error connecting to AI.";
+  }
 }
 
 function copyResult() {
