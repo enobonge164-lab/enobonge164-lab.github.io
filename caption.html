@@ -73,7 +73,7 @@ async function generateCaption() {
     const data = await response.json();
 
     document.getElementById("result").innerText =
-    JSON.stringify(data, null, 2);
+  data.caption.replace(/\\n/g, "\n");
 
   } catch (err) {
     document.getElementById("result").innerText =
