@@ -65,8 +65,9 @@ async function generateCaption() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        topic: topic
-      })
+  topic: topic,
+  platform: document.getElementById("platform").value
+})
     });
 
     const data = await response.json();
