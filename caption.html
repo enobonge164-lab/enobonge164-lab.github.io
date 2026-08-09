@@ -72,8 +72,17 @@ async function generateCaption() {
 
     const data = await response.json();
 
-    document.getElementById("result").innerText =
-  data.caption.replace(/\\n/g, "\n");
+    let caption = data.caption.replace(/\\n/g, "\n").trim();
+
+if (caption.startsWith('"')) {
+  caption = caption.substring(1);
+}
+
+if (caption.endsWith('"')) {
+  caption = caption.substring(0, caption.length - 1);
+}
+
+document.getElementById("result").innerText = caption.trim();
 
   } catch (err) {
     document.getElementById("result").innerText =
