@@ -45,43 +45,61 @@ Generate Script
 
 <script>
 
-function generateScript(){
+async function generateScript(){
 
-const topic=document.getElementById("topic").value;
+    const topic = document.getElementById("topic").value.trim();
 
-if(topic.trim()==""){
-alert("Please enter a topic.");
-return;
+    if(topic === ""){
+        alert("Please enter a topic.");
+        return;
+    }
+
+    const resultBox = document.getElementById("result");
+
+    resultBox.innerText = "⏳ Creating your script...";
+
+    try {
+
+        const response = await fetch(
+            "https://captivate-ai-api.sirwhitethepolymath.workers.dev/",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "*/*"
+                },
+                body: JSON.stringify({
+                    type: "script",
+                    topic: topic,
+                    platform: "YouTube"
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if(!response.ok || !data.success){
+            throw new Error(
+                data.message ||
+                data.error ||
+                "AI generation failed."
+            );
+        }
+
+        resultBox.innerText =
+            data.script ||
+            data.result ||
+            "No script was returned.";
+
+    } catch(error) {
+
+        console.error(error);
+
+        resultBox.innerText =
+            "❌ Failed to generate script.\n\n" +
+            (error.message || "Please try again.");
+    }
 }
-
-const script=`🎬 TITLE:
-${topic}
-
-🎯 HOOK:
-Have you ever wondered how ${topic} can completely change the way you work?
-
-📝 SCRIPT:
-
-Today we're talking about ${topic}.
-
-Here are 3 important things you should know:
-
-1️⃣ Why it matters.
-
-2️⃣ How to use it effectively.
-
-3️⃣ Common mistakes to avoid.
-
-Start practicing today and you'll improve much faster.
-
-📢 CALL TO ACTION:
-
-If this helped you, Like, Subscribe and Follow Sirwhite The Polymath for more AI content.`;
-
-document.getElementById("result").innerText=script;
-
-}
-
 function copyScript(){
 
 const result=document.getElementById("result").innerText;
