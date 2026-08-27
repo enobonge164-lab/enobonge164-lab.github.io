@@ -43,56 +43,92 @@ Copy Resume
 
 <script>
 
-function generateResume(){
+async function generateResume(){
 
-const job=document.getElementById("job").value;
+    const job = document.getElementById("job").value.trim();
 
-if(job.trim()==""){
-alert("Enter a Job Position.");
-return;
+    if(job === ""){
+        alert("Enter a Job Position.");
+        return;
+    }
+
+    const result = document.getElementById("result");
+
+    result.innerText = "⏳ Creating your professional resume...";
+
+    try {
+
+        const response = await fetch(
+            "https://captivate-ai-api.sirwhitethepolymath.workers.dev",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+
+                body: JSON.stringify({
+                    type: "resume",
+                    topic: `
+Job Position:
+${job}
+
+Create professional resume content suitable for this position.
+`
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if(!response.ok || !data.success){
+            throw new Error(
+                data.message ||
+                data.error ||
+                "AI generation failed."
+            );
+        }
+
+        result.innerText =
+            data.resume ||
+            data.result ||
+            "No resume was returned.";
+
+    } catch(error){
+
+        console.error(error);
+
+        result.innerText =
+            "❌ Error generating resume.\n\n" +
+            (error.message || "Please try again.");
+    }
 }
 
-const resume=
-
-`Professional Summary
-
-Dedicated and hardworking ${job} with strong communication skills, excellent teamwork, and a commitment to delivering quality service.
-
-Core Skills
-
-• Communication
-• Problem Solving
-• Teamwork
-• Time Management
-• Customer Service
-• Fast Learner
-
-Career Objective
-
-Seeking an opportunity to contribute my skills, gain experience and grow professionally while helping the organization achieve its goals.`;
-
-document.getElementById("result").innerText=resume;
-
-}
 
 function copyResume(){
 
-const result=document.getElementById("result").innerText;
+    const result =
+        document.getElementById("result").innerText;
 
-if(result.trim()==""){
-alert("Nothing to copy.");
-return;
-}
+    if(
+        result.trim() === "" ||
+        result.includes("Creating your professional resume")
+    ){
+        alert("Nothing to copy.");
+        return;
+    }
 
-navigator.clipboard.writeText(result);
+    navigator.clipboard.writeText(result);
 
-const toast=document.getElementById("toast");
+    const toast =
+        document.getElementById("toast");
 
-toast.classList.add("show");
+    toast.classList.add("show");
 
-setTimeout(()=>{
-toast.classList.remove("show");
-},2500);
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2500);
 
 }
 
