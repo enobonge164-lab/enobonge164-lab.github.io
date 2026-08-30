@@ -1,154 +1,362 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Invoice Generator</title>
+
+<title>AI Invoice Generator | Sirwhite The Polymath</title>
 
 <link rel="stylesheet" href="style.css">
+
+<style>
+
+.generate-btn{
+    width:100%;
+    margin-top:12px;
+}
+
+.generate-btn:disabled{
+    opacity:0.7;
+    cursor:not-allowed;
+}
+
+#result{
+    min-height:150px;
+    margin-top:20px;
+    white-space:pre-wrap;
+    line-height:1.6;
+}
+
+</style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-<a class="back" href="index.html">← Back to Portfolio</a>
+<a class="back" href="index.html">
+⬅ Back to Captivate AI
+</a>
 
 <div class="card">
 
 <h1>🧾 AI Invoice Generator</h1>
 
-<p>Create professional invoices in seconds.</p>
+<p>
+Create professional invoices in seconds.
+</p>
 
-<input id="business" type="text" placeholder="Business Name">
 
-<input id="client" type="text" placeholder="Client Name">
+<input
+id="business"
+type="text"
+placeholder="Business Name">
 
-<input id="service" type="text" placeholder="Service Provided">
 
-<input id="amount" type="number" placeholder="Amount">
+<input
+id="client"
+type="text"
+placeholder="Client Name">
 
-<input id="date" type="date">
 
-<button onclick="generateInvoice()">
+<input
+id="service"
+type="text"
+placeholder="Service Provided">
+
+
+<input
+id="amount"
+type="number"
+placeholder="Amount">
+
+
+<input
+id="date"
+type="date">
+
+
+<button
+id="generateBtn"
+class="generate-btn"
+onclick="generateInvoice()">
+
 Generate Invoice
+
 </button>
 
-<button onclick="copyInvoice()">
-📋 Copy Invoice
-</button>
 
 <div id="result"></div>
 
+
+<button
+onclick="copyInvoice"
+class="btn">
+
+📋 Copy Invoice
+
+</button>
+
 </div>
 
 </div>
+
 
 <div id="toast" class="toast">
 ✅ Invoice copied successfully!
 </div>
 
+
 <script>
 
 async function generateInvoice(){
 
-    const business = document.getElementById("business").value.trim();
-    const client = document.getElementById("client").value.trim();
-    const service = document.getElementById("service").value.trim();
-    const amount = document.getElementById("amount").value.trim();
-    const date = document.getElementById("date").value;
+    const business =
+        document.getElementById("business").value.trim();
+
+    const client =
+        document.getElementById("client").value.trim();
+
+    const service =
+        document.getElementById("service").value.trim();
+
+    const amount =
+        document.getElementById("amount").value.trim();
+
+    const date =
+        document.getElementById("date").value;
+
+    const result =
+        document.getElementById("result");
+
+    const button =
+        document.getElementById("generateBtn");
+
+
+    /* Validate fields */
 
     if(
-        business === "" ||
-        client === "" ||
-        service === "" ||
-        amount === "" ||
-        date === ""
+        !business ||
+        !client ||
+        !service ||
+        !amount ||
+        !date
     ){
+
         alert("Please complete all fields.");
+
         return;
+
     }
 
-    const result = document.getElementById("result");
 
-    result.innerText = "⏳ Creating your professional invoice...";
+    /* Loading state */
 
-    try {
+    button.disabled = true;
+
+    button.innerText =
+        "⏳ Generating...";
+
+    result.innerText =
+        "🤖 Captivate AI is creating your professional invoice...";
+
+
+    try{
 
         const response = await fetch(
-            "https://captivate-ai-api.sirwhitethepolymath.workers.dev",
-            {
-                method: "POST",
 
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
+            "https://captivate-ai-api.sirwhitethepolymath.workers.dev/",
+
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    "Content-Type":
+                    "application/json",
+
+                    "Accept":
+                    "application/json"
+
                 },
 
-                body: JSON.stringify({
-                    type: "invoice",
-                    topic: `
+                body:JSON.stringify({
+
+                    type:"invoice",
+
+                    topic:`
+
 Business Name: ${business}
+
 Client Name: ${client}
+
 Service Provided: ${service}
+
 Amount: ₦${amount}
+
 Due Date: ${date}
+
 `
+
                 })
+
             }
+
         );
 
-        const data = await response.json();
 
-        if(!response.ok || !data.success){
+        const data =
+            await response.json();
+
+
+        /* Check server response */
+
+        if(!response.ok){
+
             throw new Error(
+
                 data.message ||
                 data.error ||
                 "AI generation failed."
+
             );
+
         }
 
-        result.innerText =
-            data.invoice ||
-            data.result ||
-            "No invoice was returned.";
 
-    } catch(error){
+        /* Get invoice */
+
+        const invoice =
+
+            data.invoice ||
+
+            data.result ||
+
+            data.output ||
+
+            data.text ||
+
+            "";
+
+
+        if(!invoice){
+
+            throw new Error(
+                "No invoice was returned by the AI."
+            );
+
+        }
+
+
+        /* Clean invoice */
+
+        const cleanInvoice =
+            invoice
+
+            .replace(/\\n/g,"\n")
+
+            .replace(/^"+|"+$/g,"")
+
+            .trim();
+
+
+        result.innerText =
+            cleanInvoice;
+
+
+    }catch(error){
 
         console.error(error);
 
         result.innerText =
+
             "❌ Error generating invoice.\n\n" +
-            (error.message || "Please try again.");
+
+            (error.message ||
+            "Please try again.");
+
+    }finally{
+
+        /* Restore button */
+
+        button.disabled = false;
+
+        button.innerText =
+            "Generate Invoice";
+
     }
+
 }
 
+
+/* Copy invoice */
 
 function copyInvoice(){
 
-    const text =
+    const result =
         document.getElementById("result").innerText;
 
+
     if(
-        text.trim() === "" ||
-        text.includes("Creating your professional invoice")
+
+        !result.trim() ||
+
+        result.includes(
+            "Captivate AI is creating"
+        ) ||
+
+        result.includes(
+            "Error generating invoice"
+        )
+
     ){
+
         alert("Generate an invoice first.");
+
         return;
+
     }
 
-    navigator.clipboard.writeText(text);
 
-    const toast =
-        document.getElementById("toast");
+    navigator.clipboard.writeText(result)
 
-    toast.classList.add("show");
+    .then(()=>{
 
-    setTimeout(() => {
-        toast.classList.remove("show");
-    }, 2500);
+        const toast =
+            document.getElementById("toast");
+
+
+        if(toast){
+
+            toast.classList.add("show");
+
+
+            setTimeout(()=>{
+
+                toast.classList.remove("show");
+
+            },2500);
+
+        }
+
+    })
+
+    .catch(()=>{
+
+        alert(
+            "Unable to copy automatically. Please select and copy the invoice."
+        );
+
+    });
+
 }
 
 </script>
+
 </body>
+
 </html>
