@@ -441,3 +441,59 @@ transform:translateY(0);
     border-radius:20px;
     font-size:14px;
 }
+/* ================= CAPTIVATE AI MOBILE ================= */
+
+@media (max-width: 600px){
+
+    #captivate{
+        padding: 20px 12px;
+    }
+
+    #captivate h2{
+        font-size: 28px;
+    }
+
+    .captivate-hero{
+        padding: 24px 16px;
+        margin: 15px 0 25px;
+        border-radius: 16px;
+    }
+
+    .captivate-hero h3{
+        font-size: 22px;
+    }
+
+    .captivate-hero p{
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .captivate-badges{
+        gap: 8px;
+    }
+
+    .captivate-badges span{
+        font-size: 13px;
+        padding: 7px 11px;
+    }
+
+    #captivate .card{
+        padding: 18px;
+    }
+
+    #captivate .card h3{
+        font-size: 19px;
+    }
+
+    #captivate .card p{
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    #captivate .card .btn{
+        display: block;
+        text-align: center;
+        padding: 12px;
+    }
+
+}
