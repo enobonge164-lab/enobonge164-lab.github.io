@@ -1,12 +1,42 @@
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>AI Caption Generator | Sirwhite The Polymath</title>
+
 <link rel="stylesheet" href="style.css">
+
+<style>
+
+/* Caption Generator */
+
+.generate-btn{
+    width:100%;
+    margin-top:12px;
+}
+
+.generate-btn:disabled{
+    opacity:0.7;
+    cursor:not-allowed;
+}
+
+#result{
+    min-height:80px;
+    margin-top:20px;
+    white-space:pre-wrap;
+}
+
+.loading{
+    text-align:center;
+    padding:20px;
+}
+
+</style>
 
 </head>
 
@@ -14,93 +44,235 @@
 
 <div class="container">
 
-<a class="back" href="index.html">⬅ Back to Portfolio</a>
+<a class="back" href="index.html">
+⬅ Back to Captivate AI
+</a>
 
 <div class="card">
 
-<h1>AI Caption Generator</h1>
+<h1>📝 AI Caption Generator</h1>
 
-<p>Create engaging captions for your social media posts.</p>
+<p>
+Create engaging captions for your social media posts.
+</p>
 
 <textarea
 id="topic"
 placeholder="Example: AI tools for beginners">
 </textarea>
+
 <select id="platform">
-    <option value="Facebook">Facebook</option>
-    <option value="Instagram">Instagram</option>
-    <option value="LinkedIn">LinkedIn</option>
-    <option value="X (Twitter)">X (Twitter)</option>
-    <option value="TikTok">TikTok</option>
+
+<option value="Facebook">Facebook</option>
+
+<option value="Instagram">Instagram</option>
+
+<option value="LinkedIn">LinkedIn</option>
+
+<option value="X (Twitter)">X (Twitter)</option>
+
+<option value="TikTok">TikTok</option>
+
 </select>
-<button onclick="generateCaption()">
+
+<button
+id="generateBtn"
+class="generate-btn"
+onclick="generateCaption()">
+
 Generate Caption
+
 </button>
 
 <div id="result"></div>
 
-<button onclick="copyResult()" class="btn">
+<button
+onclick="copyResult()"
+class="btn">
+
 📋 Copy Caption
+
 </button>
 
 </div>
 
 </div>
 
+<div id="toast" class="toast">
+✅ Caption copied successfully!
+</div>
+
+
 <script>
-async function generateCaption() {
-  const topic = document.getElementById("topic").value;
 
-  if (!topic.trim()) {
-    alert("Please enter a topic.");
-    return;
-  }
+async function generateCaption(){
 
-  document.getElementById("result").innerText = "Generating caption...";
+    const topic =
+        document.getElementById("topic").value.trim();
 
-  try {
-    const response = await fetch("https://captivate-ai-api.sirwhitethepolymath.workers.dev/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-  topic: topic,
-  platform: document.getElementById("platform").value
-})
-    });
+    const platform =
+        document.getElementById("platform").value;
 
-    const data = await response.json();
+    const result =
+        document.getElementById("result");
 
-    let caption = data.caption
-  .replace(/\\n/g, "\n")
-  .replace(/^"+|"+$/g, "")
-  .trim();
+    const button =
+        document.getElementById("generateBtn");
 
-document.getElementById("result").innerText = caption;
 
-  } catch (err) {
-    document.getElementById("result").innerText =
-      "Error connecting to AI.";
-  }
+    /* Check topic */
+
+    if(!topic){
+
+        alert("Please enter a topic.");
+
+        return;
+
+    }
+
+
+    /* Loading state */
+
+    button.disabled = true;
+
+    button.innerText = "⏳ Generating...";
+
+    result.innerText =
+        "🤖 Captivate AI is generating your caption...";
+
+
+    try{
+
+        const response = await fetch(
+
+            "https://captivate-ai-api.sirwhitethepolymath.workers.dev/",
+
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    "Content-Type":
+                    "application/json"
+
+                },
+
+                body:JSON.stringify({
+
+                    topic:topic,
+
+                    platform:platform
+
+                })
+
+            }
+
+        );
+
+
+        /* Check server response */
+
+        if(!response.ok){
+
+            throw new Error(
+                "Server returned an error"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        /* Check AI response */
+
+        if(!data.caption){
+
+            throw new Error(
+                "No caption returned"
+            );
+
+        }
+
+
+        /* Clean AI response */
+
+        const caption =
+            data.caption
+
+            .replace(/\\n/g,"\n")
+
+            .replace(/^"+|"+$/g,"")
+
+            .trim();
+
+
+        /* Display result */
+
+        result.innerText = caption;
+
+
+    }catch(error){
+
+        console.error(error);
+
+        result.innerText =
+            "❌ Something went wrong while generating your caption.\n\nPlease try again.";
+
+
+    }finally{
+
+        /* Restore button */
+
+        button.disabled = false;
+
+        button.innerText =
+            "Generate Caption";
+
+    }
+
 }
 
-function copyResult() {
 
-    const result = document.getElementById("result").innerText;
+/* Copy caption */
 
-    if (result.trim() === "") {
+function copyResult(){
+
+    const result =
+        document.getElementById("result").innerText;
+
+
+    if(!result.trim()){
+
         alert("Nothing to copy.");
+
         return;
+
     }
+
 
     navigator.clipboard.writeText(result);
 
-    alert("✅ Caption copied successfully!");
+
+    const toast =
+        document.getElementById("toast");
+
+
+    toast.classList.add("show");
+
+
+    setTimeout(()=>{
+
+        toast.classList.remove("show");
+
+    },2500);
+
 }
+
 </script>
-   <div id="toast" class="toast">
-✅ Caption copied successfully!
-</div> 
+
 </body>
+
 </html>
