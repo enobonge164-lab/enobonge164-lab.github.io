@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>AI Resume Builder | Sirwhite The Polymath</title>
 
 <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
@@ -14,125 +18,290 @@
 
 <div class="card">
 
+<a class="back" href="index.html">
+⬅ Back to Portfolio
+</a>
+
 <h1>📄 AI Resume Builder</h1>
 
-<p>Create professional Resume summaries instantly.</p>
+<p>
+Create professional resume content tailored to your target job.
+</p>
+
 
 <textarea
 id="job"
-placeholder="Example: Security Guard">
+placeholder="Example: Security Officer">
 </textarea>
 
-<button onclick="generateResume()">
+
+<button
+id="generateBtn"
+onclick="generateResume()">
+
 Generate Resume
+
 </button>
+
 
 <div id="result"></div>
 
-<button onclick="copyResume()" class="btn">
-Copy Resume
+
+<button
+id="copyBtn"
+class="btn"
+onclick="copyResume()">
+
+📋 Copy Resume
+
 </button>
 
 </div>
 
 </div>
+
 
 <div id="toast" class="toast">
 ✅ Resume copied successfully!
 </div>
 
+
 <script>
 
 async function generateResume(){
 
-    const job = document.getElementById("job").value.trim();
+    const job =
+        document.getElementById("job").value.trim();
+
+    const result =
+        document.getElementById("result");
+
+    const button =
+        document.getElementById("generateBtn");
+
+
+    /* Validate input */
 
     if(job === ""){
-        alert("Enter a Job Position.");
+
+        alert("Please enter a job position.");
+
         return;
+
     }
 
-    const result = document.getElementById("result");
 
-    result.innerText = "⏳ Creating your professional resume...";
+    /* Loading state */
 
-    try {
+    button.disabled = true;
+
+    button.innerText =
+        "⏳ Generating...";
+
+    result.innerText =
+        "🤖 Captivate AI is creating your professional resume...";
+
+
+    try{
 
         const response = await fetch(
-            "https://captivate-ai-api.sirwhitethepolymath.workers.dev",
-            {
-                method: "POST",
 
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
+            "https://captivate-ai-api.sirwhitethepolymath.workers.dev/",
+
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    "Content-Type":
+                    "application/json",
+
+                    "Accept":
+                    "application/json"
+
                 },
 
-                body: JSON.stringify({
-                    type: "resume",
-                    topic: `
+                body:JSON.stringify({
+
+                    type:"resume",
+
+                    topic:`
+
 Job Position:
 ${job}
 
 Create professional resume content suitable for this position.
+
+Include:
+
+1. Professional Summary
+2. Career Objective
+3. Key Skills
+4. Relevant Work Experience
+5. Education
+6. Certifications
+7. Professional References
+
+Use professional language.
+
+Do not invent personal information such as names,
+phone numbers, addresses, companies or dates.
+Use placeholders where information is required.
+
 `
+
                 })
+
             }
+
         );
 
-        const data = await response.json();
 
-        if(!response.ok || !data.success){
+        const data =
+            await response.json();
+
+
+        /* Check response */
+
+        if(!response.ok){
+
             throw new Error(
+
                 data.message ||
                 data.error ||
                 "AI generation failed."
+
             );
+
         }
 
-        result.innerText =
-            data.resume ||
-            data.result ||
-            "No resume was returned.";
 
-    } catch(error){
+        /* Get resume */
+
+        const resume =
+
+            data.resume ||
+
+            data.result ||
+
+            data.output ||
+
+            data.text ||
+
+            "";
+
+
+        if(!resume){
+
+            throw new Error(
+                "No resume was returned by the AI."
+            );
+
+        }
+
+
+        /* Clean AI response */
+
+        const cleanResume =
+            resume
+
+            .replace(/\\n/g,"\n")
+
+            .replace(/^"+|"+$/g,"")
+
+            .trim();
+
+
+        /* Display */
+
+        result.innerText =
+            cleanResume;
+
+
+    }catch(error){
 
         console.error(error);
 
         result.innerText =
+
             "❌ Error generating resume.\n\n" +
-            (error.message || "Please try again.");
+
+            (error.message ||
+            "Please try again.");
+
+    }finally{
+
+        /* Restore button */
+
+        button.disabled = false;
+
+        button.innerText =
+            "Generate Resume";
+
     }
+
 }
 
 
+/* Copy Resume */
+
 function copyResume(){
 
-    const result =
+    const text =
         document.getElementById("result").innerText;
 
+
     if(
-        result.trim() === "" ||
-        result.includes("Creating your professional resume")
+
+        !text.trim() ||
+
+        text.includes(
+            "Captivate AI is creating"
+        ) ||
+
+        text.includes(
+            "Error generating resume"
+        )
+
     ){
-        alert("Nothing to copy.");
+
+        alert("Generate a resume first.");
+
         return;
+
     }
 
-    navigator.clipboard.writeText(result);
 
-    const toast =
-        document.getElementById("toast");
+    navigator.clipboard.writeText(text)
 
-    toast.classList.add("show");
+    .then(()=>{
 
-    setTimeout(() => {
-        toast.classList.remove("show");
-    }, 2500);
+        const toast =
+            document.getElementById("toast");
+
+        toast.classList.add("show");
+
+        setTimeout(()=>{
+
+            toast.classList.remove("show");
+
+        },2500);
+
+    })
+
+    .catch(()=>{
+
+        alert(
+            "Unable to copy automatically. Please select and copy the resume."
+        );
+
+    });
 
 }
 
 </script>
 
 </body>
+
 </html>
