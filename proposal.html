@@ -1,64 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Business Proposal Generator</title>
+
+<title>AI Business Proposal Generator | Sirwhite The Polymath</title>
 
 <style>
+
 body{
-font-family:Arial,sans-serif;
-background:#f5f7fb;
-max-width:900px;
-margin:auto;
-padding:40px;
+    font-family:Arial,sans-serif;
+    background:#f5f7fb;
+    max-width:900px;
+    margin:auto;
+    padding:20px;
 }
 
 .card{
-background:white;
-padding:25px;
-border-radius:15px;
-box-shadow:0 10px 25px rgba(0,0,0,.1);
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,.1);
 }
 
 h1{
-color:#0b57d0;
+    color:#0b57d0;
 }
 
-select,input,textarea{
-width:100%;
-padding:12px;
-margin:10px 0;
-border:1px solid #ddd;
-border-radius:8px;
-font-size:16px;
+select,
+input,
+textarea{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border:1px solid #ddd;
+    border-radius:8px;
+    font-size:16px;
+    box-sizing:border-box;
 }
 
 textarea{
-height:120px;
+    height:140px;
+    resize:vertical;
 }
 
 button{
-padding:12px 20px;
-margin-top:10px;
-background:#0b57d0;
-color:white;
-border:none;
-border-radius:8px;
-cursor:pointer;
+    padding:12px 20px;
+    margin-top:10px;
+    background:#0b57d0;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
 }
 
 button:hover{
-background:#0845a6;
+    background:#0845a6;
+}
+
+button:disabled{
+    opacity:.7;
+    cursor:not-allowed;
+}
+
+.generate-btn{
+    width:100%;
 }
 
 #result{
-margin-top:20px;
-padding:20px;
-background:#eef3ff;
-border-radius:10px;
-white-space:pre-wrap;
+    margin-top:20px;
+    padding:20px;
+    background:#eef3ff;
+    border-radius:10px;
+    white-space:pre-wrap;
+    line-height:1.6;
+    min-height:150px;
 }
+
+.back{
+    display:inline-block;
+    margin-bottom:20px;
+    text-decoration:none;
+}
+
 </style>
 
 </head>
@@ -67,129 +94,301 @@ white-space:pre-wrap;
 
 <div class="card">
 
+<a class="back" href="index.html">
+⬅ Back to Captivate AI
+</a>
+
 <h1>💼 AI Business Proposal Generator</h1>
 
-<p>Create professional proposals in seconds.</p>
+<p>
+Create professional business and project proposals in seconds.
+</p>
+
 
 <select id="type">
-<option>Business Proposal</option>
-<option>Project Proposal</option>
-<option>Partnership Proposal</option>
-<option>Freelance Proposal</option>
-<option>Investment Proposal</option>
-<option>Sponsorship Proposal</option>
+
+<option value="Business Proposal">
+Business Proposal
+</option>
+
+<option value="Project Proposal">
+Project Proposal
+</option>
+
+<option value="Partnership Proposal">
+Partnership Proposal
+</option>
+
+<option value="Freelance Proposal">
+Freelance Proposal
+</option>
+
+<option value="Investment Proposal">
+Investment Proposal
+</option>
+
+<option value="Sponsorship Proposal">
+Sponsorship Proposal
+</option>
+
 </select>
+
 
 <input
 id="client"
 type="text"
 placeholder="Client or Company Name">
 
+
 <textarea
 id="project"
-placeholder="Describe the project or opportunity"></textarea>
+placeholder="Describe the project or opportunity">
+</textarea>
 
-<button onclick="generateProposal()">
+
+<button
+id="generateBtn"
+class="generate-btn"
+onclick="generateProposal()">
+
 Generate Proposal
+
 </button>
 
-<button onclick="copyProposal()">
-Copy Proposal
-</button>
 
 <div id="result"></div>
 
+
+<button
+id="copyBtn"
+onclick="copyProposal()">
+
+📋 Copy Proposal
+
+</button>
+
 </div>
+
 
 <script>
 
 async function generateProposal(){
 
-    const type = document.getElementById("type").value.trim();
-    const client = document.getElementById("client").value.trim();
-    const project = document.getElementById("project").value.trim();
+    const type =
+        document.getElementById("type").value.trim();
 
-    if(client === "" || project === ""){
+    const client =
+        document.getElementById("client").value.trim();
+
+    const project =
+        document.getElementById("project").value.trim();
+
+    const result =
+        document.getElementById("result");
+
+    const button =
+        document.getElementById("generateBtn");
+
+
+    /* Validate fields */
+
+    if(!client || !project){
+
         alert("Please complete all fields.");
+
         return;
+
     }
 
-    const result = document.getElementById("result");
 
-    result.innerText = "⏳ Creating your professional proposal...";
+    /* Loading state */
 
-    try {
+    button.disabled = true;
+
+    button.innerText =
+        "⏳ Generating...";
+
+    result.innerText =
+        "🤖 Captivate AI is creating your professional proposal...";
+
+
+    try{
 
         const response = await fetch(
-            "https://captivate-ai-api.sirwhitethepolymath.workers.dev",
-            {
-                method: "POST",
 
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
+            "https://captivate-ai-api.sirwhitethepolymath.workers.dev/",
+
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    "Content-Type":
+                    "application/json",
+
+                    "Accept":
+                    "application/json"
+
                 },
 
-                body: JSON.stringify({
-                    type: "proposal",
-                    topic: `
+                body:JSON.stringify({
+
+                    type:"proposal",
+
+                    topic:`
+
 Proposal Type: ${type}
 
 Client or Company Name: ${client}
 
 Project or Opportunity:
 ${project}
+
 `
+
                 })
+
             }
+
         );
 
-        const data = await response.json();
 
-        if(!response.ok || !data.success){
+        const data =
+            await response.json();
+
+
+        /* Check server response */
+
+        if(!response.ok){
+
             throw new Error(
+
                 data.message ||
                 data.error ||
                 "AI generation failed."
+
             );
+
         }
 
-        result.innerText =
-            data.proposal ||
-            data.result ||
-            "No proposal was returned.";
 
-    } catch(error){
+        /* Get proposal */
+
+        const proposal =
+
+            data.proposal ||
+
+            data.result ||
+
+            data.output ||
+
+            data.text ||
+
+            "";
+
+
+        if(!proposal){
+
+            throw new Error(
+                "No proposal was returned by the AI."
+            );
+
+        }
+
+
+        /* Clean response */
+
+        const cleanProposal =
+            proposal
+
+            .replace(/\\n/g,"\n")
+
+            .replace(/^"+|"+$/g,"")
+
+            .trim();
+
+
+        /* Display proposal */
+
+        result.innerText =
+            cleanProposal;
+
+
+    }catch(error){
 
         console.error(error);
 
         result.innerText =
+
             "❌ Error generating proposal.\n\n" +
-            (error.message || "Please try again.");
+
+            (error.message ||
+            "Please try again.");
+
+    }finally{
+
+        /* Restore button */
+
+        button.disabled = false;
+
+        button.innerText =
+            "Generate Proposal";
+
     }
+
 }
 
+
+/* Copy Proposal */
 
 function copyProposal(){
 
     const text =
         document.getElementById("result").innerText;
 
+
     if(
-        text.trim() === "" ||
-        text.includes("Creating your professional proposal")
+
+        !text.trim() ||
+
+        text.includes(
+            "Captivate AI is creating"
+        ) ||
+
+        text.includes(
+            "Error generating proposal"
+        )
+
     ){
+
         alert("Generate a proposal first.");
+
         return;
+
     }
 
-    navigator.clipboard.writeText(text);
 
-    alert("Proposal copied!");
+    navigator.clipboard.writeText(text)
+
+    .then(()=>{
+
+        alert("✅ Proposal copied successfully!");
+
+    })
+
+    .catch(()=>{
+
+        alert(
+            "Unable to copy automatically. Please select and copy the proposal."
+        );
+
+    });
 
 }
 
 </script>
 
 </body>
+
 </html>
