@@ -406,3 +406,38 @@ box-shadow:0 10px 30px rgba(0,0,0,.25);
 opacity:1;
 transform:translateY(0);
 }
+/* ================= CAPTIVATE AI ================= */
+
+.captivate-hero{
+    text-align:center;
+    padding:30px 20px;
+    margin:20px 0 30px;
+    border-radius:18px;
+    background:linear-gradient(135deg,#6a0dad,#8e44ad);
+    color:white;
+}
+
+.captivate-hero h3{
+    font-size:28px;
+    margin-bottom:10px;
+}
+
+.captivate-hero p{
+    max-width:700px;
+    margin:0 auto 20px;
+    line-height:1.6;
+}
+
+.captivate-badges{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.captivate-badges span{
+    background:rgba(255,255,255,.15);
+    padding:8px 14px;
+    border-radius:20px;
+    font-size:14px;
+}
