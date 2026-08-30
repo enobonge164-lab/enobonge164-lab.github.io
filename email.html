@@ -1,64 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Email Writer</title>
+
+<title>AI Email Writer | Sirwhite The Polymath</title>
 
 <style>
+
 body{
-font-family:Arial,sans-serif;
-background:#f5f7fb;
-padding:40px;
-max-width:900px;
-margin:auto;
+    font-family:Arial,sans-serif;
+    background:#f5f7fb;
+    padding:20px;
+    max-width:900px;
+    margin:auto;
 }
 
 .card{
-background:#fff;
-padding:25px;
-border-radius:15px;
-box-shadow:0 10px 30px rgba(0,0,0,.1);
+    background:#fff;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
 }
 
 h1{
-color:#0b57d0;
+    color:#0b57d0;
 }
 
-select,textarea,input{
-width:100%;
-padding:12px;
-margin:10px 0;
-border:1px solid #ddd;
-border-radius:8px;
-font-size:16px;
+select,
+textarea,
+input{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border:1px solid #ddd;
+    border-radius:8px;
+    font-size:16px;
+    box-sizing:border-box;
 }
 
 textarea{
-height:120px;
+    height:120px;
+    resize:vertical;
 }
 
 button{
-padding:12px 20px;
-background:#0b57d0;
-color:white;
-border:none;
-border-radius:8px;
-cursor:pointer;
-margin-top:10px;
+    padding:12px 20px;
+    background:#0b57d0;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    margin-top:10px;
+    font-size:16px;
 }
 
 button:hover{
-background:#0845a6;
+    background:#0845a6;
+}
+
+button:disabled{
+    opacity:.7;
+    cursor:not-allowed;
 }
 
 #result{
-margin-top:20px;
-background:#eef3ff;
-padding:20px;
-border-radius:10px;
-white-space:pre-wrap;
+    margin-top:20px;
+    background:#eef3ff;
+    padding:20px;
+    border-radius:10px;
+    white-space:pre-wrap;
+    line-height:1.6;
+    min-height:100px;
 }
+
+.back{
+    display:inline-block;
+    margin-bottom:20px;
+    text-decoration:none;
+}
+
 </style>
 
 </head>
@@ -67,13 +90,21 @@ white-space:pre-wrap;
 
 <div class="card">
 
+<a class="back" href="index.html">
+⬅ Back to Captivate AI
+</a>
+
 <h1>📧 AI Email Writer</h1>
 
-<p>Create professional emails instantly.</p>
+<p>
+Create professional emails instantly.
+</p>
+
 
 <label>Email Type</label>
 
 <select id="type">
+
 <option>Business</option>
 <option>Job Application</option>
 <option>Customer Support</option>
@@ -81,7 +112,9 @@ white-space:pre-wrap;
 <option>Marketing</option>
 <option>Follow Up</option>
 <option>Thank You</option>
+
 </select>
+
 
 <label>Recipient</label>
 
@@ -90,109 +123,240 @@ type="text"
 id="recipient"
 placeholder="Example: Hiring Manager">
 
+
 <label>Topic</label>
 
 <textarea
 id="topic"
-placeholder="Example: Applying for Security Officer Position"></textarea>
+placeholder="Example: Applying for Security Officer Position">
+</textarea>
 
-<button onclick="generateEmail()">
+
+<button
+id="generateBtn"
+onclick="generateEmail()">
+
 Generate Email
+
 </button>
 
-<button onclick="copyEmail()">
-Copy Email
-</button>
 
 <div id="result"></div>
 
+
+<button
+id="copyBtn"
+onclick="copyEmail()">
+
+📋 Copy Email
+
+</button>
+
 </div>
+
 
 <script>
 
 async function generateEmail(){
 
-    const type = document.getElementById("type").value;
-    const recipient = document.getElementById("recipient").value;
-    const topic = document.getElementById("topic").value;
+    const type =
+        document.getElementById("type").value;
 
-    if(topic.trim() === ""){
+    const recipient =
+        document.getElementById("recipient").value.trim();
+
+    const topic =
+        document.getElementById("topic").value.trim();
+
+    const result =
+        document.getElementById("result");
+
+    const button =
+        document.getElementById("generateBtn");
+
+
+    /* Validate topic */
+
+    if(!topic){
+
         alert("Please enter a topic.");
+
         return;
+
     }
 
-    const result = document.getElementById("result");
 
-    result.innerText = "⏳ Creating your professional email...";
+    /* Loading state */
 
-    try {
+    button.disabled = true;
+
+    button.innerText =
+        "⏳ Generating...";
+
+    result.innerText =
+        "🤖 Captivate AI is creating your professional email...";
+
+
+    try{
 
         const response = await fetch(
-            "https://captivate-ai-api.sirwhitethepolymath.workers.dev",
-            {
-                method: "POST",
 
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
+            "https://captivate-ai-api.sirwhitethepolymath.workers.dev/",
+
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    "Content-Type":
+                    "application/json",
+
+                    "Accept":
+                    "application/json"
+
                 },
 
-                body: JSON.stringify({
-                    type: "email",
-                    emailType: type,
-                    recipient: recipient,
-                    topic: topic
+                body:JSON.stringify({
+
+                    type:"email",
+
+                    emailType:type,
+
+                    recipient:recipient,
+
+                    topic:topic
+
                 })
+
             }
+
         );
 
-        const data = await response.json();
+
+        const data =
+            await response.json();
+
+
+        /* Check server response */
 
         if(!response.ok){
-            throw new Error(data.error || "AI generation failed.");
+
+            throw new Error(
+
+                data.error ||
+                data.message ||
+                "AI generation failed."
+
+            );
+
         }
 
-        if(data.result){
-            result.innerText = data.result;
-        }
-        else if(data.output){
-            result.innerText = data.output;
-        }
-        else if(data.text){
-            result.innerText = data.text;
-        }
-        else {
-            result.innerText = JSON.stringify(data, null, 2);
+
+        /* Get AI result */
+
+        const email =
+
+            data.result ||
+
+            data.output ||
+
+            data.text ||
+
+            data.email ||
+
+            "";
+
+
+        if(!email){
+
+            throw new Error(
+                "No email was returned by the AI."
+            );
+
         }
 
-    } catch(error){
+
+        /* Display email */
+
+        result.innerText =
+            email;
+
+
+    }catch(error){
 
         console.error(error);
 
         result.innerText =
+
             "❌ Error generating email.\n\n" +
-            error.message;
+
+            (error.message ||
+            "Please try again.");
+
+    }finally{
+
+        /* Restore button */
+
+        button.disabled = false;
+
+        button.innerText =
+            "Generate Email";
+
     }
+
 }
 
+
+/* Copy Email */
 
 function copyEmail(){
 
-    const text = document.getElementById("result").innerText;
+    const result =
+        document.getElementById("result").innerText;
+
 
     if(
-        text === "" ||
-        text.includes("Creating your professional email")
+
+        !result.trim() ||
+
+        result.includes(
+            "Captivate AI is creating"
+        ) ||
+
+        result.includes(
+            "Error generating email"
+        )
+
     ){
+
         alert("Generate an email first.");
+
         return;
+
     }
 
-    navigator.clipboard.writeText(text);
 
-    alert("Email copied!");
+    navigator.clipboard.writeText(result)
+
+    .then(()=>{
+
+        alert("✅ Email copied successfully!");
+
+    })
+
+    .catch(()=>{
+
+        alert(
+            "Unable to copy automatically. Please select and copy the email."
+        );
+
+    });
+
 }
 
 </script>
+
 </body>
+
 </html>
