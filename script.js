@@ -1,46 +1,67 @@
-// Welcome Message
+// ================= WELCOME MESSAGE =================
+
 console.log("Welcome to Sirwhite The Polymath");
-// Smooth Button Hover
-document.querySelectorAll("a").forEach(link=>{
-link.addEventListener("mouseenter",()=>{
-link.style.transform="scale(1.05)";
+
+
+// ================= SMOOTH BUTTON HOVER =================
+
+document.querySelectorAll("a").forEach(link => {
+
+    link.addEventListener("mouseenter", () => {
+        link.style.transform = "scale(1.05)";
+    });
+
+    link.addEventListener("mouseleave", () => {
+        link.style.transform = "scale(1)";
+    });
+
 });
 
-link.addEventListener("mouseleave",()=>{
-link.style.transform="scale(1)";
-});
-});
 
-// Current Year Footer
-const footer=document.querySelector("footer");
+// ================= COPYRIGHT =================
+// Copyright is already inside index.html.
+// DO NOT add another copyright here.
 
-const year=new Date().getFullYear();
 
-footer.innerHTML += `<p style="margin-top:20px;">© ${year} Sirwhite The Polymath. All Rights Reserved.</p>`;
 // ================= SCROLL REVEAL =================
 
 const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
+
+    entries.forEach(entry => {
+
         if (entry.isIntersecting) {
+
             entry.target.classList.add("show");
+
+            // Optional: stop observing after animation
+            observer.unobserve(entry.target);
+
         }
+
     });
+
+}, {
+    threshold: 0.1
 });
 
-document.querySelectorAll("section, .card").forEach((el) => {
+
+document.querySelectorAll("section, .card").forEach(el => {
+
     el.classList.add("hidden");
+
     observer.observe(el);
+
 });
 
 
 // ================= TYPING ANIMATION =================
 
 const words = [
-  "AI Builder",
-  "Web Developer",
-  "Content Creator",
-  "Prompt Engineer",
-  "Founder of Captivate AI"
+    "AI Builder",
+    "Web Developer",
+    "Content Creator",
+    "Prompt Engineer",
+    "Founder of Captivate AI"
 ];
 
 let wordIndex = 0;
@@ -49,124 +70,278 @@ let isDeleting = false;
 
 const typingElement = document.getElementById("typing");
 
+
 function type() {
+
+    // Stop safely if typing element doesn't exist
+    if (!typingElement) {
+        return;
+    }
 
     const currentWord = words[wordIndex];
 
     if (!isDeleting) {
 
         typingElement.textContent =
-        currentWord.substring(0, letterIndex++);
+            currentWord.substring(0, letterIndex);
+
+        letterIndex++;
 
         if (letterIndex > currentWord.length) {
+
             isDeleting = true;
+
             setTimeout(type, 1500);
+
             return;
         }
 
     } else {
 
-        typingElement.textContent =
-        currentWord.substring(0, letterIndex--);
+        letterIndex--;
 
-        if (letterIndex < 0) {
+        typingElement.textContent =
+            currentWord.substring(0, letterIndex);
+
+        if (letterIndex <= 0) {
+
+            letterIndex = 0;
+
             isDeleting = false;
-            wordIndex = (wordIndex + 1) % words.length;
+
+            wordIndex =
+                (wordIndex + 1) % words.length;
+
         }
 
     }
 
-    setTimeout(type, isDeleting ? 50 : 100);
+    setTimeout(
+        type,
+        isDeleting ? 50 : 100
+    );
 
 }
+
 
 type();
+
+
 // ================= DARK / LIGHT MODE =================
 
-const themeToggle = document.getElementById("theme-toggle");
+const themeToggle =
+    document.getElementById("theme-toggle");
 
-themeToggle.addEventListener("click", () => {
 
-    document.body.classList.toggle("light-mode");
+if (themeToggle) {
 
-    if (document.body.classList.contains("light-mode")) {
-        themeToggle.textContent = "☀️";
-        localStorage.setItem("theme", "light");
-    } else {
-        themeToggle.textContent = "🌙";
-        localStorage.setItem("theme", "dark");
-    }
+    themeToggle.addEventListener("click", () => {
 
-});
+        document.body.classList.toggle("light-mode");
 
-// Remember user preference
-if (localStorage.getItem("theme") === "light") {
-    document.body.classList.add("light-mode");
-    themeToggle.textContent = "☀️";
-}
-// ================= BACK TO TOP =================
+        if (
+            document.body.classList.contains("light-mode")
+        ) {
 
-const backToTop = document.getElementById("backToTop");
+            themeToggle.textContent = "☀️";
 
-window.addEventListener("scroll", () => {
+            localStorage.setItem(
+                "theme",
+                "light"
+            );
 
-    if (window.scrollY > 300) {
-        backToTop.style.display = "block";
-    } else {
-        backToTop.style.display = "none";
-    }
+        } else {
 
-});
+            themeToggle.textContent = "🌙";
 
-backToTop.addEventListener("click", () => {
+            localStorage.setItem(
+                "theme",
+                "dark"
+            );
 
-    window.scrollTo({
-        top:0,
-        behavior:"smooth"
+        }
+
     });
 
-});
+
+    // Remember user's theme preference
+
+    if (
+        localStorage.getItem("theme") === "light"
+    ) {
+
+        document.body.classList.add("light-mode");
+
+        themeToggle.textContent = "☀️";
+
+    }
+
+}
+
+
+// ================= BACK TO TOP =================
+
+const backToTop =
+    document.getElementById("backToTop");
+
+
+if (backToTop) {
+
+    // Hide button when page loads
+
+    backToTop.style.display = "none";
+
+
+    window.addEventListener("scroll", () => {
+
+        if (window.scrollY > 300) {
+
+            backToTop.style.display = "block";
+
+        } else {
+
+            backToTop.style.display = "none";
+
+        }
+
+    });
+
+
+    backToTop.addEventListener("click", () => {
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+    });
+
+}
+
+
 // ================= SIMPLE COUNTER =================
 
 function startCounters() {
 
-    const counters = document.querySelectorAll(".counter");
+    const counters =
+        document.querySelectorAll(".counter");
+
 
     counters.forEach(counter => {
 
-        const target = parseInt(counter.dataset.target);
+        const target =
+            parseInt(counter.dataset.target);
+
+
+        if (isNaN(target)) {
+            return;
+        }
+
 
         let count = 0;
 
-        const increment = Math.ceil(target / 80);
+        const increment =
+            Math.max(1, Math.ceil(target / 80));
 
-        const timer = setInterval(() => {
 
-            count += increment;
+        const timer =
+            setInterval(() => {
 
-            if (count >= target) {
+                count += increment;
 
-                counter.innerText = target;
-                clearInterval(timer);
 
-            } else {
+                if (count >= target) {
 
-                counter.innerText = count;
+                    counter.innerText =
+                        target;
 
-            }
+                    clearInterval(timer);
 
-        }, 30);
+                } else {
+
+                    counter.innerText =
+                        count;
+
+                }
+
+            }, 30);
 
     });
 
 }
 
-window.addEventListener("load", startCounters);
+
+window.addEventListener(
+    "load",
+    startCounters
+);
+
+
 // ================= HAMBURGER MENU =================
 
-const menuToggle = document.getElementById("menu-toggle");
-const navMenu = document.querySelector(".navbar ul");
+const menuToggle =
+    document.getElementById("menu-toggle");
 
-menuToggle.addEventListener("click", () => {
-    navMenu.classList.toggle("active");
-});
+const navMenu =
+    document.querySelector(".navbar ul");
+
+
+if (menuToggle && navMenu) {
+
+    menuToggle.addEventListener("click", () => {
+
+        navMenu.classList.toggle("active");
+
+    });
+
+
+    // Close mobile menu when a link is clicked
+
+    navMenu.querySelectorAll("a").forEach(link => {
+
+        link.addEventListener("click", () => {
+
+            navMenu.classList.remove("active");
+
+        });
+
+    });
+
+}
+
+
+// ================= NEWSLETTER FORM =================
+// Prevent empty form submission for now.
+// We can connect this to a real email service during
+// the monetisation/production stage.
+
+const newsletterForm =
+    document.querySelector("#newsletter form");
+
+
+if (newsletterForm) {
+
+    newsletterForm.addEventListener("submit", (event) => {
+
+        event.preventDefault();
+
+        const emailInput =
+            newsletterForm.querySelector('input[type="email"]');
+
+        if (!emailInput || emailInput.value.trim() === "") {
+
+            alert("Please enter your email address.");
+
+            return;
+
+        }
+
+        alert(
+            "Thanks for subscribing! Newsletter integration will be connected soon."
+        );
+
+        emailInput.value = "";
+
+    });
+
+}
