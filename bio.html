@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -8,146 +10,324 @@
 
 <link rel="stylesheet" href="style.css">
 
+<style>
+
+.generate-btn{
+    width:100%;
+    margin-top:12px;
+}
+
+.generate-btn:disabled{
+    opacity:0.7;
+    cursor:not-allowed;
+}
+
+#result{
+    min-height:120px;
+    margin-top:20px;
+    white-space:pre-wrap;
+    line-height:1.6;
+}
+
+</style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-<a class="back" href="index.html">← Back to Portfolio</a>
+<a class="back" href="index.html">
+⬅ Back to Captivate AI
+</a>
 
 <div class="card">
 
 <h1>👤 AI Bio Generator</h1>
 
-<p>Create professional bios for any social media platform.</p>
+<p>
+Create professional bios for your social media platform.
+</p>
+
 
 <select id="platform">
-<option>Facebook</option>
-<option>Instagram</option>
-<option>LinkedIn</option>
-<option>TikTok</option>
-<option>YouTube</option>
-<option>X (Twitter)</option>
+
+<option value="Facebook">Facebook</option>
+
+<option value="Instagram">Instagram</option>
+
+<option value="LinkedIn">LinkedIn</option>
+
+<option value="TikTok">TikTok</option>
+
+<option value="YouTube">YouTube</option>
+
+<option value="X (Twitter)">X (Twitter)</option>
+
 </select>
+
 
 <textarea
 id="topic"
 placeholder="Example: AI Creator">
 </textarea>
 
-<button onclick="generateBio()">
+
+<button
+id="generateBtn"
+class="generate-btn"
+onclick="generateBio()">
+
 Generate Bio
+
 </button>
+
 
 <div id="result"></div>
 
-<button onclick="copyBio()" class="btn">
+
+<button
+onclick="copyBio()"
+class="btn">
+
 📋 Copy Bio
+
 </button>
 
 </div>
 
 </div>
+
 
 <div id="toast" class="toast">
 ✅ Bio copied successfully!
 </div>
+
 
 <script>
 
 async function generateBio(){
 
     const platform =
-        document.getElementById("platform").value.trim();
+        document.getElementById("platform").value;
 
     const topic =
         document.getElementById("topic").value.trim();
 
-    if(topic === ""){
-        alert("Please enter what you do.");
-        return;
-    }
-
     const result =
         document.getElementById("result");
 
-    result.innerText =
-        "⏳ Creating your professional bio...";
+    const button =
+        document.getElementById("generateBtn");
 
-    try {
+
+    /* Validate topic */
+
+    if(!topic){
+
+        alert("Please enter what you do.");
+
+        return;
+
+    }
+
+
+    /* Loading state */
+
+    button.disabled = true;
+
+    button.innerText =
+        "⏳ Generating...";
+
+    result.innerText =
+        "🤖 Captivate AI is creating your professional bio...";
+
+
+    try{
 
         const response = await fetch(
-            "https://captivate-ai-api.sirwhitethepolymath.workers.dev",
-            {
-                method: "POST",
 
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
+            "https://captivate-ai-api.sirwhitethepolymath.workers.dev/",
+
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    "Content-Type":
+                    "application/json",
+
+                    "Accept":
+                    "application/json"
+
                 },
 
-                body: JSON.stringify({
-                    type: "bio",
-                    topic: topic,
-                    platform: platform
+                body:JSON.stringify({
+
+                    type:"bio",
+
+                    topic:topic,
+
+                    platform:platform
+
                 })
+
             }
+
         );
 
-        const data = await response.json();
 
-        if(!response.ok || !data.success){
+        const data =
+            await response.json();
+
+
+        /* Check server response */
+
+        if(!response.ok){
+
             throw new Error(
+
                 data.message ||
                 data.error ||
                 "AI generation failed."
+
             );
+
         }
 
-        result.innerText =
-            data.bio ||
-            data.result ||
-            "No bio was returned.";
 
-    } catch(error){
+        /* Get generated bio */
+
+        const bio =
+
+            data.bio ||
+
+            data.result ||
+
+            data.output ||
+
+            data.text ||
+
+            "";
+
+
+        if(!bio){
+
+            throw new Error(
+                "No bio was returned by the AI."
+            );
+
+        }
+
+
+        /* Clean response */
+
+        const cleanBio =
+            bio
+
+            .replace(/\\n/g,"\n")
+
+            .replace(/^"+|"+$/g,"")
+
+            .trim();
+
+
+        /* Display bio */
+
+        result.innerText =
+            cleanBio;
+
+
+    }catch(error){
 
         console.error(error);
 
         result.innerText =
+
             "❌ Error generating bio.\n\n" +
-            (error.message || "Please try again.");
+
+            (error.message ||
+            "Please try again.");
+
+    }finally{
+
+        /* Restore button */
+
+        button.disabled = false;
+
+        button.innerText =
+            "Generate Bio";
+
     }
+
 }
 
+
+/* Copy Bio */
 
 function copyBio(){
 
     const result =
         document.getElementById("result").innerText;
 
+
     if(
-        result.trim() === "" ||
-        result.includes("Creating your professional bio")
+
+        !result.trim() ||
+
+        result.includes(
+            "Captivate AI is creating"
+        ) ||
+
+        result.includes(
+            "Error generating bio"
+        )
+
     ){
-        alert("Nothing to copy.");
+
+        alert("Generate a bio first.");
+
         return;
+
     }
 
-    navigator.clipboard.writeText(result);
 
-    const toast =
-        document.getElementById("toast");
+    navigator.clipboard.writeText(result)
 
-    toast.classList.add("show");
+    .then(()=>{
 
-    setTimeout(() => {
-        toast.classList.remove("show");
-    }, 2500);
+        const toast =
+            document.getElementById("toast");
+
+
+        if(toast){
+
+            toast.classList.add("show");
+
+
+            setTimeout(()=>{
+
+                toast.classList.remove("show");
+
+            },2500);
+
+        }
+
+    })
+
+    .catch(()=>{
+
+        alert(
+            "Unable to copy automatically. Please select and copy the bio."
+        );
+
+    });
 
 }
 
 </script>
 
 </body>
+
 </html>
