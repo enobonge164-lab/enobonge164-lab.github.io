@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>CAPTIVATE AI — AI Workspace</title>
+
+<link rel="icon" type="image/png" href="favicon.png">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+    --bg:#080b12;
+    --sidebar:#0d111a;
+    --card:#111827;
+    --card-hover:#172033;
+    --border:#202938;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --primary:#8b5cf6;
+    --primary2:#a78bfa;
+    --success:#22c55e;
+    --shadow:0 18px 50px rgba(0,0,0,.25);
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+}
+
+button,
+a{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+/* ================= APP ================= */
+
+.app{
+    display:flex;
+    min-height:100vh;
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar{
+    width:270px;
+    position:fixed;
+    top:0;
+    left:0;
+    bottom:0;
+    background:var(--sidebar);
+    border-right:1px solid var(--border);
+    padding:22px 16px;
+    z-index:1000;
+    overflow-y:auto;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:5px 10px 25px;
+}
+
+.brand img{
+    width:44px;
+    height:44px;
+    object-fit:cover;
+    border-radius:13px;
+}
+
+.brand-text strong{
+    display:block;
+    font-size:18px;
+}
+
+.brand-text span{
+    color:var(--primary2);
+    font-size:12px;
+}
+
+.nav-title{
+    color:#64748b;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1.2px;
+    padding:16px 12px 8px;
+}
+
+.nav{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.nav a{
+    color:#cbd5e1;
+    text-decoration:none;
+    padding:12px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    transition:.2s;
+}
+
+.nav a:hover,
+.nav a.active{
+    background:#171226;
+    color:white;
+}
+
+.nav-icon{
+    width:24px;
+    text-align:center;
+    font-size:18px;
+}
+
+.sidebar-bottom{
+    margin-top:25px;
+    border-top:1px solid var(--border);
+    padding-top:15px;
+}
+
+.back-link{
+    display:block;
+    color:var(--muted);
+    text-decoration:none;
+    padding:11px 12px;
+}
+
+.back-link:hover{
+    color:white;
+}
+
+/* ================= MAIN ================= */
+
+.main{
+    margin-left:270px;
+    width:calc(100% - 270px);
+}
+
+/* ================= TOPBAR ================= */
+
+.topbar{
+    height:72px;
+    position:sticky;
+    top:0;
+    z-index:900;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 32px;
+    background:rgba(8,11,18,.88);
+    backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--border);
+}
+
+.mobile-menu{
+    display:none;
+    background:none;
+    border:0;
+    color:white;
+    font-size:25px;
+}
+
+.status{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#cbd5e1;
+    font-size:13px;
+}
+
+.status-dot{
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:var(--success);
+    box-shadow:0 0 10px rgba(34,197,94,.6);
+}
+
+.top-actions{
+    display:flex;
+    gap:10px;
+}
+
+.top-button{
+    background:#111827;
+    border:1px solid var(--border);
+    color:#cbd5e1;
+    border-radius:9px;
+    padding:9px 13px;
+}
+
+/* ================= CONTENT ================= */
+
+.content{
+    max-width:1450px;
+    margin:auto;
+    padding:38px 32px 70px;
+}
+
+.hero{
+    background:
+        radial-gradient(circle at 85% 20%,rgba(139,92,246,.23),transparent 35%),
+        linear-gradient(135deg,#111827,#0b1020);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:42px;
+    box-shadow:var(--shadow);
+    margin-bottom:32px;
+}
+
+.hero-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    background:#171226;
+    border:1px solid #33235d;
+    color:#c4b5fd;
+    padding:7px 12px;
+    border-radius:30px;
+    font-size:12px;
+    margin-bottom:18px;
+}
+
+.hero h1{
+    font-size:42px;
+    line-height:1.15;
+    max-width:800px;
+    margin-bottom:15px;
+}
+
+.hero h1 span{
+    color:var(--primary2);
+}
+
+.hero p{
+    color:var(--muted);
+    max-width:760px;
+    font-size:16px;
+}
+
+.hero-actions{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:25px;
+}
+
+.primary-btn,
+.secondary-btn{
+    text-decoration:none;
+    border-radius:10px;
+    padding:12px 18px;
+    font-weight:bold;
+}
+
+.primary-btn{
+    background:var(--primary);
+    color:white;
+}
+
+.secondary-btn{
+    background:#111827;
+    color:#e2e8f0;
+    border:1px solid var(--border);
+}
+
+/* ================= SECTION ================= */
+
+.section{
+    margin-top:38px;
+    scroll-margin-top:95px;
+}
+
+.section-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:end;
+    margin-bottom:17px;
+}
+
+.section-header h2{
+    font-size:23px;
+}
+
+.section-header p{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:4px;
+}
+
+.view-all{
+    color:#a78bfa;
+    text-decoration:none;
+    font-size:13px;
+}
+
+/* ================= CARDS ================= */
+
+.tool-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+}
+
+.tool-card{
+    display:block;
+    text-decoration:none;
+    color:inherit;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:17px;
+    padding:22px;
+    min-height:190px;
+    transition:.25s;
+    position:relative;
+    overflow:hidden;
+}
+
+.tool-card:hover{
+    transform:translateY(-5px);
+    background:var(--card-hover);
+    border-color:#49377a;
+    box-shadow:0 15px 35px rgba(0,0,0,.25);
+}
+
+.tool-icon{
+    width:48px;
+    height:48px;
+    border-radius:13px;
+    background:#1a1530;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:23px;
+    margin-bottom:18px;
+}
+
+.tool-card h3{
+    font-size:16px;
+    margin-bottom:8px;
+}
+
+.tool-card p{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.55;
+}
+
+.tool-arrow{
+    position:absolute;
+    right:18px;
+    bottom:17px;
+    color:#64748b;
+}
+
+.tool-card:hover .tool-arrow{
+    color:#c4b5fd;
+}
+
+/* ================= COMING SOON ================= */
+
+.coming{
+    opacity:.75;
+}
+
+.coming:hover{
+    transform:none;
+    cursor:default;
+}
+
+.coming-badge{
+    position:absolute;
+    top:15px;
+    right:15px;
+    font-size:10px;
+    padding:5px 8px;
+    border-radius:20px;
+    background:#172033;
+    color:#94a3b8;
+}
+
+/* ================= FEATURE CARDS ================= */
+
+.feature-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+}
+
+.feature{
+    background:linear-gradient(145deg,#111827,#0d1320);
+    border:1px solid var(--border);
+    border-radius:17px;
+    padding:24px;
+}
+
+.feature-icon{
+    font-size:27px;
+    margin-bottom:15px;
+}
+
+.feature h3{
+    margin-bottom:8px;
+}
+
+.feature p{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.6;
+}
+
+/* ================= FOOTER ================= */
+
+.footer{
+    text-align:center;
+    color:#64748b;
+    border-top:1px solid var(--border);
+    margin-top:60px;
+    padding-top:25px;
+    font-size:12px;
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:1100px){
+
+    .tool-grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+}
+
+@media(max-width:800px){
+
+    .sidebar{
+        transform:translateX(-100%);
+        transition:.25s;
+    }
+
+    .sidebar.open{
+        transform:translateX(0);
+    }
+
+    .main{
+        margin-left:0;
+        width:100%;
+    }
+
+    .mobile-menu{
+        display:block;
+    }
+
+    .topbar{
+        padding:0 18px;
+    }
+
+    .content{
+        padding:22px 16px 50px;
+    }
+
+    .hero{
+        padding:28px 22px;
+    }
+
+    .hero h1{
+        font-size:31px;
+    }
+
+    .tool-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .feature-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+@media(max-width:500px){
+
+    .tool-grid{
+        grid-template-columns:1fr;
+    }
+
+    .hero-actions{
+        flex-direction:column;
+    }
+
+    .primary-btn,
+    .secondary-btn{
+        text-align:center;
+    }
+
+    .status{
+        display:none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar" id="sidebar">
+
+    <div class="brand">
+        <img src="logo.png" alt="CAPTIVATE AI">
+        <div class="brand-text">
+            <strong>CAPTIVATE AI</strong>
+            <span>AI Workspace</span>
+        </div>
+    </div>
+
+    <div class="nav-title">Workspace</div>
+
+    <nav class="nav">
+
+        <a href="#dashboard" class="active">
+            <span class="nav-icon">🏠</span>
+            Dashboard
+        </a>
+
+        <a href="#toolkit">
+            <span class="nav-icon">🧰</span>
+            AI Toolkit
+        </a>
+
+        <a href="#content-studio">
+            <span class="nav-icon">🎬</span>
+            Content Studio
+        </a>
+
+        <a href="#business-ai">
+            <span class="nav-icon">🏢</span>
+            Business AI
+        </a>
+
+        <a href="#automation">
+            <span class="nav-icon">⚙️</span>
+            Automation
+        </a>
+
+        <a href="#builder">
+            <span class="nav-icon">💻</span>
+            AI Builder
+        </a>
+
+        <a href="#gaming">
+            <span class="nav-icon">🎮</span>
+            Gaming
+        </a>
+
+    </nav>
+
+    <div class="nav-title">Account</div>
+
+    <nav class="nav">
+
+        <a href="#projects">
+            <span class="nav-icon">📁</span>
+            Projects
+        </a>
+
+        <a href="#settings">
+            <span class="nav-icon">⚙️</span>
+            Settings
+        </a>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+        <a class="back-link" href="index.html">
+            ← Sirwhite Portfolio
+        </a>
+    </div>
+
+</aside>
+
+
+<!-- ================= MAIN ================= -->
+
+<main class="main">
+
+    <header class="topbar">
+
+        <button
+            class="mobile-menu"
+            id="mobileMenu"
+            aria-label="Open menu">
+            ☰
+        </button>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            CAPTIVATE AI Online
+        </div>
+
+        <div class="top-actions">
+            <button class="top-button" id="themeButton">
+                🌙
+            </button>
+        </div>
+
+    </header>
+
+
+    <div class="content">
+
+        <!-- ================= HERO ================= -->
+
+        <section class="hero" id="dashboard">
+
+            <div class="hero-badge">
+                ✨ CAPTIVATE AI V2
+            </div>
+
+            <h1>
+                Your AI workspace to
+                <span>create, build & grow.</span>
+            </h1>
+
+            <p>
+                Create content, solve business problems,
+                automate work, build digital products and
+                eventually play and explore AI-powered games —
+                all from one CAPTIVATE AI workspace.
+            </p>
+
+            <div class="hero-actions">
+
+                <a
+                    href="#toolkit"
+                    class="primary-btn">
+                    Explore AI Tools
+                </a>
+
+                <a
+                    href="#content-studio"
+                    class="secondary-btn">
+                    Open Content Studio
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= AI TOOLKIT ================= -->
+
+        <section class="section" id="toolkit">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>🧰 AI Toolkit</h2>
+                    <p>
+                        Your existing CAPTIVATE AI generators.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="tool-grid">
+
+                <a class="tool-card" href="caption.html">
+                    <div class="tool-icon">📝</div>
+                    <h3>Caption Generator</h3>
+                    <p>
+                        Create engaging captions for your
+                        social-media content.
+                    </p>
+                    <span class="tool-arrow">→</span>
+                </a>
+
+
+                <a class="tool-card" href="hashtags.html">
+                    <div class="tool-icon">#️⃣</div>
+                    <h3>Hashtag Generator</h3>
+                    <p>
+                        Generate relevant hashtags for your
+                        content and audience.
+                    </p>
+                    <span class="tool-arrow">→</span>
+                </a>
+
+
+                <a class="tool-card" href="script.html">
+                    <div class="tool-icon">🎬</div>
+                    <h3>YouTube Script Generator</h3>
+                    <p>
+                        Turn ideas into structured video scripts.
+                    </p>
+                    <span class="tool-arrow">→</span>
+                </a>
+
+
+                <a class="tool-card" href="email.html">
+                    <div class="tool-icon">📧</div>
+                    <h3>Email Writer</h3>
+                    <p>
+                        Write clear and professional emails quickly.
+                    </p>
+                    <span class="tool-arrow">→</span>
+                </a>
+
+
+                <a class="tool-card" href="prompt.html">
+                    <div class="tool-icon">🧠</div>
+                    <h3>Prompt Generator</h3>
+                    <p>
+                        Create high-quality prompts for AI tools.
+                    </p>
+                    <span class="tool-arrow">→</span>
+                </a>
+
+
+                <a class="tool-card" href="bio.html">
+                    <div class="tool-icon">👤</div>
+                    <h3>Bio Generator</h3>
+                    <p>
+                        Create concise, professional personal-brand bios.
+                    </p>
+                    <span class="tool-arrow">→</span>
+                </a>
+
+
+                <a class="tool-card" href="resume.html">
+                    <div class="tool-icon">📄</div>
+                    <h3>Resume Builder</h3>
+                    <p>
+                        Build professional resume content from your information.
+                    </p>
+                    <span class="tool-arrow">→</span>
+                </a>
+
+
+                <a class="tool-card" href="invoice.html">
+                    <div class="tool-icon">🧾</div>
+                    <h3>Invoice Generator</h3>
+                    <p>
+                        Create clean, copyable invoices.
+                    </p>
+                    <span class="tool-arrow">→</span>
+                </a>
+
+
+                <a class="tool-card" href="proposal.html">
+                    <div class="tool-icon">💼</div>
+                    <h3>Business Proposal</h3>
+                    <p>
+                        Create professional business proposals.
+                    </p>
+                    <span class="tool-arrow">→</span>
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= CONTENT STUDIO ================= -->
+
+        <section class="section" id="content-studio">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>🎬 Content Studio</h2>
+                    <p>
+                        The next generation of CAPTIVATE content creation.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="tool-grid">
+
+                <div class="tool-card coming">
+                    <span class="coming-badge">COMING SOON</span>
+                    <div class="tool-icon">🖼️</div>
+                    <h3>AI Image Generator</h3>
+                    <p>
+                        Create realistic images, product photography,
+                        marketing visuals and creative assets.
+                    </p>
+                </div>
+
+
+                <div class="tool-card coming">
+                    <span class="coming-badge">COMING SOON</span>
+                    <div class="tool-icon">🎥</div>
+                    <h3>AI Video Generator</h3>
+                    <p>
+                        Turn ideas and scripts into platform-ready
+                        video content.
+                    </p>
+                </div>
+
+
+                <div class="tool-card coming">
+                    <span class="coming-badge">COMING SOON</span>
+                    <div class="tool-icon">🎙️</div>
+                    <h3>AI Voice Studio</h3>
+                    <p>
+                        Create natural AI narration for videos,
+                        advertisements and content.
+                    </p>
+                </div>
+
+
+                <div class="tool-card coming">
+                    <span class="coming-badge">COMING SOON</span>
+                    <div class="tool-icon">🖼️</div>
+                    <h3>Thumbnail Generator</h3>
+                    <p>
+                        Create attention-grabbing thumbnails for
+                        YouTube and other platforms.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= BUSINESS AI ================= -->
+
+        <section class="section" id="business-ai">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>🏢 Business AI</h2>
+                    <p>
+                        AI agents designed to help businesses work and grow.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="tool-grid">
+
+                <div class="tool-card coming">
+                    <span class="coming-badge">PLANNED</span>
+                    <div class="tool-icon">🤖</div>
+                    <h3>Customer Support Agent</h3>
+                    <p>
+                        Help businesses answer customer questions
+                        and manage support workflows.
+                    </p>
+                </div>
+
+
+                <div class="tool-card coming">
+                    <span class="coming-badge">PLANNED</span>
+                    <div class="tool-icon">💬</div>
+                    <h3>WhatsApp Business Assistant</h3>
+                    <p>
+                        AI assistance for customer conversations,
+                        sales and follow-ups.
+                    </p>
+                </div>
+
+
+                <div class="tool-card coming">
+                    <span class="coming-badge">PLANNED</span>
+                    <div class="tool-icon">🎯</div>
+                    <h3>Lead Generation Agent</h3>
+                    <p>
+                        Help businesses discover and qualify
+                        potential customers.
+                    </p>
+                </div>
+
+
+                <div class="tool-card coming">
+                    <span class="coming-badge">PLANNED</span>
+                    <div class="tool-icon">💰</div>
+                    <h3>AI Sales Assistant</h3>
+                    <p>
+                        Assist with prospects, product questions,
+                        objections and follow-ups.
+                    </p>
+                </div>
+
+
+                <div class="tool-card coming">
+                    <span class="coming-badge">PLANNED</span>
+                    <div class="tool-icon">📊</div>
+                    <h3>AI Business Analyst</h3>
+                    <p>
+                        Turn business information and data into
+                        useful insights.
+                    </p>
+                </div>
+
+
+                <div class="tool-card coming">
+                    <span class="coming-badge">PLANNED</span>
+                    <div class="tool-icon">🔎</div>
+                    <h3>AI Research Agent</h3>
+                    <p>
+                        Research topics and turn findings into
+                        structured reports.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= AUTOMATION ================= -->
+
+        <section class="section" id="automation">
+
+        
