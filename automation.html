@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Automation Builder — CAPTIVATE AI</title>
+
+<meta
+    name="description"
+    content="Build AI-powered workflows with CAPTIVATE AI."
+>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+
+    --bg:#080b12;
+    --sidebar:#0d111a;
+    --panel:#101722;
+    --panel2:#141c29;
+    --border:#243044;
+
+    --text:#f8fafc;
+    --muted:#94a3b8;
+
+    --primary:#8b5cf6;
+    --primary-light:#a78bfa;
+
+    --success:#22c55e;
+    --danger:#ef4444;
+
+    --shadow:
+        0 20px 50px rgba(0,0,0,.30);
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:var(--bg);
+
+    color:var(--text);
+
+    min-height:100vh;
+}
+
+
+/* =========================================
+   APP
+========================================= */
+
+.app{
+
+    display:flex;
+
+    min-height:100vh;
+
+}
+
+
+/* =========================================
+   SIDEBAR
+========================================= */
+
+.sidebar{
+
+    width:260px;
+
+    position:fixed;
+
+    top:0;
+    bottom:0;
+    left:0;
+
+    background:var(--sidebar);
+
+    border-right:
+        1px solid var(--border);
+
+    padding:22px 16px;
+
+    overflow-y:auto;
+
+    z-index:1000;
+
+    transition:.25s ease;
+
+}
+
+
+.brand{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:
+        5px 10px 25px;
+
+}
+
+
+.brand-icon{
+
+    width:44px;
+    height:44px;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    border-radius:13px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #7c3aed,
+            #a855f7
+        );
+
+    font-size:22px;
+
+}
+
+
+.brand strong{
+
+    display:block;
+
+    font-size:17px;
+
+}
+
+
+.brand span{
+
+    color:var(--primary-light);
+
+    font-size:11px;
+
+}
+
+
+.nav-title{
+
+    color:#64748b;
+
+    font-size:10px;
+
+    text-transform:uppercase;
+
+    letter-spacing:1.2px;
+
+    padding:
+        16px 12px 8px;
+
+}
+
+
+.nav{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:4px;
+
+}
+
+
+.nav a{
+
+    color:#cbd5e1;
+
+    text-decoration:none;
+
+    padding:11px 12px;
+
+    border-radius:10px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    font-size:14px;
+
+    transition:.2s;
+
+}
+
+
+.nav a:hover,
+.nav a.active{
+
+    background:#171226;
+
+    color:white;
+
+}
+
+
+.nav-icon{
+
+    width:22px;
+
+    text-align:center;
+
+    font-size:17px;
+
+}
+
+
+.sidebar-bottom{
+
+    margin-top:25px;
+
+    padding-top:15px;
+
+    border-top:
+        1px solid var(--border);
+
+}
+
+
+.sidebar-bottom a{
+
+    color:var(--muted);
+
+    text-decoration:none;
+
+    display:block;
+
+    padding:10px 12px;
+
+    font-size:13px;
+
+}
+
+
+.sidebar-bottom a:hover{
+
+    color:white;
+
+}
+
+
+/* =========================================
+   MAIN
+========================================= */
+
+.main{
+
+    margin-left:260px;
+
+    width:
+        calc(100% - 260px);
+
+}
+
+
+/* =========================================
+   TOP BAR
+========================================= */
+
+.topbar{
+
+    height:70px;
+
+    position:sticky;
+
+    top:0;
+
+    z-index:900;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:
+        0 30px;
+
+    background:
+        rgba(8,11,18,.88);
+
+    backdrop-filter:
+        blur(15px);
+
+    border-bottom:
+        1px solid var(--border);
+
+}
+
+
+.mobile-menu{
+
+    display:none;
+
+    background:none;
+
+    border:0;
+
+    color:white;
+
+    font-size:25px;
+
+}
+
+
+.status{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    color:#cbd5e1;
+
+    font-size:13px;
+
+}
+
+
+.status-dot{
+
+    width:8px;
+    height:8px;
+
+    border-radius:50%;
+
+    background:var(--success);
+
+    box-shadow:
+        0 0 10px
+        rgba(34,197,94,.6);
+
+}
+
+
+.back-dashboard{
+
+    text-decoration:none;
+
+    color:#c4b5fd;
+
+    font-size:13px;
+
+}
+
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.content{
+
+    max-width:1400px;
+
+    margin:auto;
+
+    padding:
+        35px 30px 70px;
+
+}
+
+
+/* =========================================
+   HERO
+========================================= */
+
+.hero{
+
+    background:
+
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(139,92,246,.24),
+            transparent 35%
+        ),
+
+        linear-gradient(
+            135deg,
+            #111827,
+            #0b1020
+        );
+
+    border:
+        1px solid var(--border);
+
+    border-radius:22px;
+
+    padding:35px;
+
+    box-shadow:var(--shadow);
+
+    margin-bottom:28px;
+
+}
+
+
+.badge{
+
+    display:inline-flex;
+
+    background:#171226;
+
+    border:
+        1px solid #33235d;
+
+    color:#c4b5fd;
+
+    padding:
+        7px 12px;
+
+    border-radius:30px;
+
+    font-size:11px;
+
+    margin-bottom:15px;
+
+}
+
+
+.hero h1{
+
+    font-size:38px;
+
+    line-height:1.2;
+
+    margin-bottom:12px;
+
+}
+
+
+.hero h1 span{
+
+    color:var(--primary-light);
+
+}
+
+
+.hero p{
+
+    color:var(--muted);
+
+    max-width:750px;
+
+    line-height:1.6;
+
+    font-size:14px;
+
+}
+
+
+/* =========================================
+   WORKSPACE
+========================================= */
+
+.workspace{
+
+    display:grid;
+
+    grid-template-columns:
+        280px
+        minmax(0,1fr);
+
+    gap:20px;
+
+}
+
+
+/* =========================================
+   PANEL
+========================================= */
+
+.panel{
+
+    background:var(--panel);
+
+    border:
+        1px solid var(--border);
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+}
+
+
+.panel-header{
+
+    padding:
+        18px 20px;
+
+    border-bottom:
+        1px solid var(--border);
+
+}
+
+
+.panel-header h2{
+
+    font-size:16px;
+
+}
+
+
+.panel-header p{
+
+    color:var(--muted);
+
+    font-size:11px;
+
+    margin-top:5px;
+
+}
+
+
+/* =========================================
+   TEMPLATES
+========================================= */
+
+.templates{
+
+    padding:12px;
+
+}
+
+
+.template{
+
+    width:100%;
+
+    text-align:left;
+
+    background:transparent;
+
+    border:
+        1px solid transparent;
+
+    color:white;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    margin-bottom:7px;
+
+    transition:.2s;
+
+}
+
+
+.template:hover{
+
+    background:#151d2b;
+
+    border-color:
+        var(--border);
+
+}
+
+
+.template strong{
+
+    display:block;
+
+    font-size:13px;
+
+    margin-bottom:5px;
+
+}
+
+
+.template span{
+
+    display:block;
+
+    color:var(--muted);
+
+    font-size:11px;
+
+    line-height:1.4;
+
+}
+
+
+/* =========================================
+   BUILDER
+========================================= */
+
+.builder{
+
+    padding:20px;
+
+}
+
+
+.workflow-name{
+
+    display:flex;
+
+    gap:10px;
+
+    margin-bottom:20px;
+
+}
+
+
+.workflow-name input{
+
+    flex:1;
+
+    background:#0b111b;
+
+    border:
+        1px solid var(--border);
+
+    color:white;
+
+    border-radius:9px;
+
+    padding:12px;
+
+    outline:none;
+
+}
+
+
+.workflow-name input:focus{
+
+    border-color:
+        var(--primary);
+
+}
+
+
+.workflow{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+}
+
+
+.step{
+
+    width:100%;
+
+    max-width:700px;
+
+    background:var(--panel2);
+
+    border:
+        1px solid var(--border);
+
+    border-radius:15px;
+
+    padding:18px;
+
+    position:relative;
+
+}
+
+
+.step-top{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    margin-bottom:13px;
+
+}
+
+
+.step-title{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+}
+
+
+.step-icon{
+
+    width:37px;
+    height:37px;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    border-radius:10px;
+
+    background:#21183d;
+
+    font-size:18px;
+
+}
+
+
+.step-title strong{
+
+    font-size:14px;
+
+}
+
+
+.step-title span{
+
+    display:block;
+
+    color:var(--muted);
+
+    font-size:10px;
+
+    margin-top:3px;
+
+}
+
+
+.remove-step{
+
+    background:none;
+
+    border:0;
+
+    color:#64748b;
+
+    font-size:18px;
+
+}
+
+
+.remove-step:hover{
+
+    color:#ef4444;
+
+}
+
+
+.step label{
+
+    display:block;
+
+    color:#cbd5e1;
+
+    font-size:11px;
+
+    margin:
+        12px 0 6px;
+
+}
+
+
+.step input,
+.step select,
+.step textarea{
+
+    width:100%;
+
+    background:#0b111b;
+
+    border:
+        1px solid var(--border);
+
+    color:white;
+
+    border-radius:9px;
+
+    padding:11px;
+
+    outline:none;
+
+}
+
+
+.step textarea{
+
+    min-height:90px;
+
+    resize:vertical;
+
+}
+
+
+.step input:focus,
+.step select:focus,
+.step textarea:focus{
+
+    border-color:
+        var(--primary);
+
+}
+
+
+.connector{
+
+    width:2px;
+
+    height:28px;
+
+    background:
+        #38445a;
+
+}
+
+
+.connector-arrow{
+
+    margin-top:-7px;
+
+    margin-bottom:5px;
+
+    color:#64748b;
+
+    font-size:15px;
+
+}
+
+
+/* =========================================
+   ADD STEP
+========================================= */
+
+.add-step{
+
+    width:100%;
+
+    max-width:700px;
+
+    margin-top:18px;
+
+    border:
+        1px dashed #3a4660;
+
+    background:transparent;
+
+    color:#c4b5fd;
+
+    padding:14px;
+
+    border-radius:12px;
+
+}
+
+
+.add-step:hover{
+
+    background:#131a27;
+
+}
+
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.actions{
+
+    display:flex;
+
+    gap:10px;
+
+    flex-wrap:wrap;
+
+    margin-top:20px;
+
+    max-width:700px;
+
+}
+
+
+.btn{
+
+    border:0;
+
+    border-radius:9px;
+
+    padding:
+        11px 17px;
+
+    font-weight:700;
+
+}
+
+
+.btn-primary{
+
+    background:
+        linear-gradient(
+            135deg,
+            #7c3aed,
+            #a855f7
+        );
+
+    color:white;
+
+}
+
+
+.btn-secondary{
+
+    background:#151d2b;
+
+    border:
+        1px solid var(--border);
+
+    color:#cbd5e1;
+
+}
+
+
+.btn-danger{
+
+    background:#2a1418;
+
+    border:
+        1px solid #522027;
+
+    color:#fca5a5;
+
+}
+
+
+/* =========================================
+   RESULT
+========================================= */
+
+.result{
+
+    margin-top:22px;
+
+    max-width:700px;
+
+    display:none;
+
+    background:#0b111b;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:14px;
+
+    padding:18px;
+
+}
+
+
+.result.show{
+
+    display:block;
+
+}
+
+
+.result-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-bottom:12px;
+
+}
+
+
+.result-header strong{
+
+    font-size:13px;
+
+}
+
+
+.result-status{
+
+    color:#86efac;
+
+    font-size:11px;
+
+}
+
+
+.result pre{
+
+    white-space:pre-wrap;
+
+    word-break:break-word;
+
+    color:#cbd5e1;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size:12px;
+
+    line-height:1.6;
+
+}
+
+
+/* =========================================
+   HOW IT WORKS
+========================================= */
+
+.info-section{
+
+    margin-top:30px;
+
+}
+
+
+.info-grid{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:15px;
+
+}
+
+
+.info-card{
+
+    background:var(--panel);
+
+    border:
+        1px solid var(--border);
+
+    border-radius:15px;
+
+    padding:20px;
+
+}
+
+
+.info-card .icon{
+
+    font-size:24px;
+
+    margin-bottom:12px;
+
+}
+
+
+.info-card h3{
+
+    font-size:14px;
+
+    margin-bottom:7px;
+
+}
+
+
+.info-card p{
+
+    color:var(--muted);
+
+    font-size:11px;
+
+    line-height:1.6;
+
+}
+
+
+/* =========================================
+   TOAST
+========================================= */
+
+.toast{
+
+    position:fixed;
+
+    right:20px;
+
+    bottom:20px;
+
+    background:#111827;
+
+    border:
+        1px solid var(--border);
+
+    color:white;
+
+    padding:
+        13px 17px;
+
+    border-radius:10px;
+
+    box-shadow:var(--shadow);
+
+    transform:
+        translateY(120px);
+
+    opacity:0;
+
+    transition:.25s;
+
+    z-index:2000;
+
+    font-size:12px;
+
+}
+
+
+.toast.show{
+
+    transform:
+        translateY(0);
+
+    opacity:1;
+
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media(max-width:1000px){
+
+    .workspace{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .tool-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
+
+
+@media(max-width:800px){
+
+    .sidebar{
+
+        transform:
+            translateX(-100%);
+
+    }
+
+    .sidebar.open{
+
+        transform:
+            translateX(0);
+
+    }
+
+    .main{
+
+        margin-left:0;
+
+        width:100%;
+
+    }
+
+    .mobile-menu{
+
+        display:block;
+
+    }
+
+    .topbar{
+
+        padding:
+            0 18px;
+
+    }
+
+    .content{
+
+        padding:
+            22px 15px 50px;
+
+    }
+
+    .hero{
+
+        padding:25px 20px;
+
+    }
+
+    .hero h1{
+
+        font-size:29px;
+
+    }
+
+    .info-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
+
+
+@media(max-width:500px){
+
+    .actions{
+
+        flex-direction:column;
+
+    }
+
+    .btn{
+
+        width:100%;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+<!-- =========================================
+     SIDEBAR
+========================================= -->
+
+<aside class="sidebar" id="sidebar">
+
+    <div class="brand">
+
+        <div class="brand-icon">
+            ⚡
+        </div>
+
+        <div>
+
+            <strong>
+                CAPTIVATE AI
+            </strong>
+
+            <span>
+                Automation
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="nav-title">
+        Workspace
+    </div>
+
+
+    <nav class="nav">
+
+        <a href="captivate.html">
+            <span class="nav-icon">🏠</span>
+            Dashboard
+        </a>
+
+        <a href="captivate.html#toolkit">
+            <span class="nav-icon">🧰</span>
+            AI Toolkit
+        </a>
+
+        <a href="captivate.html#content-studio">
+            <span class="nav-icon">🎬</span>
+            Content Studio
+        </a>
+
+        <a href="captivate.html#business-ai">
+            <span class="nav-icon">🏢</span>
+            Business AI
+        </a>
+
+        <a
+            href="automation.html"
+            class="active"
+        >
+            <span class="nav-icon">⚙️</span>
+            Automation
+        </a>
+
+        <a href="captivate.html#builder">
+            <span class="nav-icon">💻</span>
+            AI Builder
+        </a>
+
+        <a href="captivate.html#gaming">
+            <span class="nav-icon">🎮</span>
+            Gaming
+        </a>
+
+    </nav>
+
+
+    <div class="nav-title">
+        Automation
+    </div>
+
+
+    <nav class="nav">
+
+        <a href="#builder">
+            <span class="nav-icon">🧩</span>
+            Workflow Builder
+        </a>
+
+        <a href="#templates">
+            <span class="nav-icon">📚</span>
+            Templates
+        </a>
+
+    </nav>
+
+
+    <div class="sidebar-bottom">
+
+        <a href="captivate.html">
+            ← Back to CAPTIVATE
+        </a>
+
+    </div>
+
+</aside>
+
+
+
+<!-- =========================================
+     MAIN
+========================================= -->
+
+<main class="main">
+
+
+<header class="topbar">
+
+    <button
+        class="mobile-menu"
+        id="mobileMenu"
+    >
+        ☰
+    </button>
+
+
+    <div class="status">
+
+        <span class="status-dot"></span>
+
+        Automation Builder
+
+    </div>
+
+
+    <a
+        href="captivate.html"
+        class="back-dashboard"
+    >
+        ← Dashboard
+    </a>
+
+</header>
+
+
+
+<div class="content">
+
+
+<!-- =========================================
+     HERO
+========================================= -->
+
+<section class="hero">
+
+    <div class="badge">
+        ⚙️ CAPTIVATE AUTOMATION
+    </div>
+
+
+    <h1>
+
+        Build workflows that
+        <span>
+            work for you.
+        </span>
+
+    </h1>
+
+
+    <p>
+
+        Connect triggers, AI actions and outputs
+        into repeatable workflows. Start with a
+        template or build your own automation.
+
+    </p>
+
+</section>
+
+
+
+<!-- =========================================
+     WORKSPACE
+========================================= -->
+
+<section
+    class="workspace"
+    id="builder"
+>
+
+
+<!-- =========================================
+     TEMPLATES
+========================================= -->
+
+<div
+    class="panel"
+    id="templates"
+>
+
+    <div class="panel-header">
+
+        <h2>
+            📚 Templates
+        </h2>
+
+        <p>
+            Start with a ready-made workflow.
+        </p>
+
+    </div>
+
+
+    <div class="templates">
+
+
+        <button
+            class="template"
+            data-template="customer"
+        >
+
+            <strong>
+                💬 Customer Support
+            </strong>
+
+            <span>
+                Receive a question → AI writes
+                a response → prepare reply
+            </span>
+
+        </button>
+
+
+        <button
+            class="template"
+            data-template="social"
+        >
+
+            <strong>
+                📱 Social Content
+            </strong>
+
+            <span>
+                Enter an idea → create caption →
+                generate hashtags
+            </span>
+
+        </button>
+
+
+        <button
+            class="template"
+            data-template="lead"
+        >
+
+            <strong>
+                🎯 Lead Follow-Up
+            </strong>
+
+            <span>
+                New lead → AI creates personalized
+                follow-up → prepare message
+            </span>
+
+        </button>
+
+
+        <button
+            class="template"
+            data-template="email"
+        >
+
+            <strong>
+                📧 Email Assistant
+            </strong>
+
+            <span>
+                Enter information → AI writes
+                professional email
+            </span>
+
+        </button>
+
+
+        <button
+            class="template"
+            data-template="research"
+        >
+
+            <strong>
+                🔎 Research Workflow
+            </strong>
+
+            <span>
+                Topic → research prompt →
+                structured report
+            </span>
+
+        </button>
+
+
+        <button
+            class="template"
+            data-template="content"
+        >
+
+            <strong>
+                🎬 Video Content
+            </strong>
+
+            <span>
+                Topic → script → caption →
+                hashtags
+            </span>
+
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================
+     BUILDER PANEL
+========================================= -->
+
+<div class="panel">
+
+    <div class="panel-header">
+
+        <h2>
+            🧩 Workflow Builder
+        </h2>
+
+        <p>
+            Build your automation step by step.
+        </p>
+
+    </div>
+
+
+    <div class="builder">
+
+
+        <!-- WORKFLOW NAME -->
+
+        <div class="workflow-name">
+
+            <input
+                id="workflowName"
+                type="text"
+                placeholder="Workflow name..."
+                value="My AI Workflow"
+            >
+
+        </div>
+
+
+
+        <!-- WORKFLOW -->
+
+        <div
+            class="workflow"
+            id="workflow"
+        >
+
+
+            <!-- TRIGGER -->
+
+            <div
+                class="step"
+                data-step="trigger"
+            >
+
+                <div class="step-top">
+
+                    <div class="step-title">
+
+                        <div class="step-icon">
+                            ⚡
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Trigger
+                            </strong>
+
+                            <span>
+                                What starts this workflow?
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <label>
+                    Trigger type
+                </label>
+
+                <select id="triggerType">
+
+                    <option value="manual">
+                        Manual
+                    </option>
+
+                    <option value="form">
+                        Form submission
+                    </option>
+
+                    <option value="message">
+                        New customer message
+                    </option>
+
+                    <option value="lead">
+                        New lead
+                    </option>
+
+                    <option value="schedule">
+                        Scheduled
+                    </option>
+
+                </select>
+
+
+                <label>
+                    Trigger information
+  </label>
