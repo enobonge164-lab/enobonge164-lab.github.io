@@ -1585,9 +1585,7 @@ body{
 
 </div>
 
-
-
-<!-- =========================================
+!-- =========================================
      BUILDER PANEL
 ========================================= -->
 
@@ -1695,4 +1693,977 @@ body{
 
                 <label>
                     Trigger information
-  </label>
+                </label>
+
+                <input
+                    id="triggerInput"
+                    type="text"
+                    placeholder="Describe what should trigger it..."
+                >
+
+            </div>
+
+
+            <div class="connector">
+            </div>
+
+            <div class="connector-arrow">
+                ▼
+            </div>
+
+
+
+            <!-- AI ACTION -->
+
+            <div
+                class="step"
+                data-step="ai"
+            >
+
+                <div class="step-top">
+
+                    <div class="step-title">
+
+                        <div class="step-icon">
+                            🤖
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                AI Action
+                            </strong>
+
+                            <span>
+                                What should CAPTIVATE do?
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        class="remove-step"
+                        title="Remove"
+                        onclick="removeStep(this)"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+
+                <label>
+                    AI action
+                </label>
+
+                <select
+                    class="ai-action"
+                >
+
+                    <option value="generate">
+                        Generate text
+                    </option>
+
+                    <option value="caption">
+                        Create caption
+                    </option>
+
+                    <option value="script">
+                        Write script
+                    </option>
+
+                    <option value="email">
+                        Write email
+                    </option>
+
+                    <option value="proposal">
+                        Create proposal
+                    </option>
+
+                    <option value="summarize">
+                        Summarize information
+                    </option>
+
+                    <option value="analyze">
+                        Analyze information
+                    </option>
+
+                </select>
+
+
+                <label>
+                    Instructions
+                </label>
+
+                <textarea
+                    class="ai-instructions"
+                    placeholder="Tell the AI exactly what you want it to do..."
+                ></textarea>
+
+            </div>
+
+
+            <div class="connector">
+            </div>
+
+            <div class="connector-arrow">
+                ▼
+            </div>
+
+
+
+            <!-- OUTPUT -->
+
+            <div
+                class="step"
+                data-step="output"
+            >
+
+                <div class="step-top">
+
+                    <div class="step-title">
+
+                        <div class="step-icon">
+                            📤
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Output
+                            </strong>
+
+                            <span>
+                                What should happen with the result?
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <label>
+                    Output type
+                </label>
+
+                <select id="outputType">
+
+                    <option value="display">
+                        Show result
+                    </option>
+
+                    <option value="copy">
+                        Copy result
+                    </option>
+
+                    <option value="save">
+                        Save result
+                    </option>
+
+                    <option value="download">
+                        Download result
+                    </option>
+
+                </select>
+
+
+                <label>
+                    Output description
+                </label>
+
+                <input
+                    id="outputInput"
+                    type="text"
+                    placeholder="Describe the desired output..."
+                >
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- ADD STEP -->
+
+        <button
+            class="add-step"
+            id="addStep"
+        >
+
+            ＋ Add AI Action
+
+        </button>
+
+
+
+        <!-- ACTIONS -->
+
+        <div class="actions">
+
+            <button
+                class="btn btn-primary"
+                id="runTest"
+            >
+                ▶ Run Test
+            </button>
+
+
+            <button
+                class="btn btn-secondary"
+                id="saveWorkflow"
+            >
+                💾 Save Workflow
+            </button>
+
+
+            <button
+                class="btn btn-danger"
+                id="clearWorkflow"
+            >
+                Clear
+            </button>
+
+        </div>
+
+
+
+        <!-- RESULT -->
+
+        <div
+            class="result"
+            id="result"
+        >
+
+            <div class="result-header">
+
+                <strong>
+                    Test Result
+                </strong>
+
+                <span
+                    class="result-status"
+                    id="resultStatus"
+                >
+                    Completed
+                </span>
+
+            </div>
+
+
+            <pre id="resultText"></pre>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+</section>
+
+
+
+<!-- =========================================
+     INFO
+========================================= -->
+
+<section class="info-section">
+
+
+<div class="info-grid">
+
+
+<div class="info-card">
+
+    <div class="icon">
+        ⚡
+    </div>
+
+    <h3>
+        1. Choose a Trigger
+    </h3>
+
+    <p>
+        Decide what starts your workflow,
+        such as a form submission, customer
+        message, new lead or manual action.
+    </p>
+
+</div>
+
+
+<div class="info-card">
+
+    <div class="icon">
+        🤖
+    </div>
+
+    <h3>
+        2. Add AI Actions
+    </h3>
+
+    <p>
+        Tell CAPTIVATE what the AI should
+        create, analyze, summarize or transform.
+    </p>
+
+</div>
+
+
+<div class="info-card">
+
+    <div class="icon">
+        📤
+    </div>
+
+    <h3>
+        3. Choose the Output
+    </h3>
+
+    <p>
+        Decide whether the result should be
+        displayed, copied, saved or downloaded.
+    </p>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+
+</div>
+
+</main>
+
+</div>
+
+
+
+<!-- =========================================
+     TOAST
+========================================= -->
+
+<div
+    class="toast"
+    id="toast"
+></div>
+
+
+
+<script>
+
+/* =========================================
+   MOBILE MENU
+========================================= */
+
+const mobileMenu =
+    document.getElementById("mobileMenu");
+
+const sidebar =
+    document.getElementById("sidebar");
+
+
+mobileMenu.addEventListener(
+    "click",
+    () => {
+
+        sidebar.classList.toggle("open");
+
+    }
+);
+
+
+/* =========================================
+   TOAST
+========================================= */
+
+function showToast(message){
+
+    const toast =
+        document.getElementById("toast");
+
+    toast.textContent = message;
+
+    toast.classList.add("show");
+
+
+    setTimeout(() => {
+
+        toast.classList.remove("show");
+
+    }, 2500);
+
+}
+
+
+/* =========================================
+   TEMPLATE DATA
+========================================= */
+
+const templates = {
+
+    customer: {
+
+        name:
+            "Customer Support Workflow",
+
+        trigger:
+            "New customer message",
+
+        triggerInfo:
+            "When a customer sends a support question",
+
+        action:
+            "generate",
+
+        instructions:
+            "Read the customer's message and create a helpful, professional and friendly response. Do not invent information.",
+
+        output:
+            "display",
+
+        outputInfo:
+            "Prepare the response for the support agent."
+
+    },
+
+
+    social: {
+
+        name:
+            "Social Content Workflow",
+
+        trigger:
+            "manual",
+
+        triggerInfo:
+            "When I enter a new content idea",
+
+        action:
+            "caption",
+
+        instructions:
+            "Create an engaging social media caption from the content idea, with a strong hook and clear call to action.",
+
+        output:
+            "display",
+
+        outputInfo:
+            "Show the generated caption."
+
+    },
+
+
+    lead: {
+
+        name:
+            "Lead Follow-Up Workflow",
+
+        trigger:
+            "lead",
+
+        triggerInfo:
+            "When a new lead is added",
+
+        action:
+            "generate",
+
+        instructions:
+            "Create a personalized, professional follow-up message based only on the lead information provided.",
+
+        output:
+            "display",
+
+        outputInfo:
+            "Prepare the message for review."
+
+    },
+
+
+    email: {
+
+        name:
+            "Email Assistant Workflow",
+
+        trigger:
+            "manual",
+
+        triggerInfo:
+            "When the user provides email information",
+
+        action:
+            "email",
+
+        instructions:
+            "Write a professional email from the supplied information. Include an appropriate subject line and clear call to action.",
+
+        output:
+            "display",
+
+        outputInfo:
+            "Show the completed email."
+
+    },
+
+
+    research: {
+
+        name:
+            "Research Workflow",
+
+        trigger:
+            "manual",
+
+        triggerInfo:
+            "When a research topic is entered",
+
+        action:
+            "summarize",
+
+        instructions:
+            "Organize the supplied research information into a clear, useful and structured summary.",
+
+        output:
+            "display",
+
+        outputInfo:
+            "Show the structured research result."
+
+    },
+
+
+    content: {
+
+        name:
+            "Video Content Workflow",
+
+        trigger:
+            "manual",
+
+        triggerInfo:
+            "When a new video topic is entered",
+
+        action:
+            "script",
+
+        instructions:
+            "Create a complete engaging video script with a strong hook, useful content, conclusion and CTA.",
+
+        output:
+            "display",
+
+        outputInfo:
+            "Show the generated script."
+
+    }
+
+};
+
+
+/* =========================================
+   LOAD TEMPLATE
+========================================= */
+
+document
+.querySelectorAll(".template")
+.forEach(button => {
+
+    button.addEventListener(
+        "click",
+        () => {
+
+            const key =
+                button.dataset.template;
+
+            const data =
+                templates[key];
+
+            if(!data) return;
+
+
+            document.getElementById(
+                "workflowName"
+            ).value =
+                data.name;
+
+
+            document.getElementById(
+                "triggerType"
+            ).value =
+                getTriggerValue(
+                    data.trigger
+                );
+
+
+            document.getElementById(
+                "triggerInput"
+            ).value =
+                data.triggerInfo;
+
+
+            const action =
+                document.querySelector(
+                    ".ai-action"
+                );
+
+            action.value =
+                data.action;
+
+
+            const instructions =
+                document.querySelector(
+                    ".ai-instructions"
+                );
+
+            instructions.value =
+                data.instructions;
+
+
+            document.getElementById(
+                "outputType"
+            ).value =
+                data.output;
+
+
+            document.getElementById(
+                "outputInput"
+            ).value =
+                data.outputInfo;
+
+
+            showToast(
+                "Template loaded successfully."
+            );
+
+
+            document
+                .getElementById("builder")
+                .scrollIntoView({
+                    behavior:"smooth"
+                });
+
+        }
+    );
+
+});
+
+
+/* =========================================
+   TRIGGER VALUE HELPER
+========================================= */
+
+function getTriggerValue(value){
+
+    const map = {
+
+        "New customer message":
+            "message",
+
+        "lead":
+            "lead",
+
+        "manual":
+            "manual",
+
+        "scheduled":
+            "schedule"
+
+    };
+
+    return map[value] || value;
+
+}
+
+
+/* =========================================
+   ADD AI ACTION
+========================================= */
+
+const addStep =
+    document.getElementById("addStep");
+
+const workflow =
+    document.getElementById("workflow");
+
+
+addStep.addEventListener(
+    "click",
+    () => {
+
+        const connectors =
+            workflow.querySelectorAll(
+                ".connector"
+            );
+
+        const arrows =
+            workflow.querySelectorAll(
+                ".connector-arrow"
+            );
+
+
+        const outputStep =
+            workflow.querySelector(
+                '[data-step="output"]'
+            );
+
+
+        const connector =
+            document.createElement(
+                "div"
+            );
+
+        connector.className =
+            "connector";
+
+
+        const arrow =
+            document.createElement(
+                "div"
+            );
+
+        arrow.className =
+            "connector-arrow";
+
+        arrow.textContent =
+            "▼";
+
+
+        const step =
+            document.createElement(
+                "div"
+            );
+
+        step.className =
+            "step extra-ai-step";
+
+
+        step.innerHTML = `
+
+            <div class="step-top">
+
+                <div class="step-title">
+
+                    <div class="step-icon">
+                        🤖
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            AI Action
+                        </strong>
+
+                        <span>
+                            Additional AI step
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="remove-step"
+                    title="Remove"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <label>
+                AI action
+            </label>
+
+            <select class="ai-action">
+
+                <option value="generate">
+                    Generate text
+                </option>
+
+                <option value="caption">
+                    Create caption
+                </option>
+
+                <option value="script">
+                    Write script
+                </option>
+
+                <option value="email">
+                    Write email
+                </option>
+
+                <option value="proposal">
+                    Create proposal
+                </option>
+
+                <option value="summarize">
+                    Summarize information
+                </option>
+
+                <option value="analyze">
+                    Analyze information
+                </option>
+
+            </select>
+
+
+            <label>
+                Instructions
+            </label>
+
+            <textarea
+                class="ai-instructions"
+                placeholder="Tell the AI what this step should do..."
+            ></textarea>
+
+        `;
+
+
+        workflow.insertBefore(
+            connector,
+            outputStep
+        );
+
+
+        workflow.insertBefore(
+            arrow,
+            outputStep
+        );
+
+
+        workflow.insertBefore(
+            step,
+            outputStep
+        );
+
+
+        step
+            .querySelector(
+                ".remove-step"
+            )
+            .addEventListener(
+                "click",
+                () => {
+
+                    const previous =
+                        step.previousElementSibling;
+
+                    const previousPrevious =
+                        previous
+                            ?.previousElementSibling;
+
+
+                    if(
+                        previous &&
+                        previous.classList.contains(
+                            "connector-arrow"
+                        )
+                    ){
+
+                        previous.remove();
+
+                    }
+
+
+                    if(
+                        previousPrevious &&
+                        previousPrevious.classList.contains(
+                            "connector"
+                        )
+                    ){
+
+                        previousPrevious.remove();
+
+                    }
+
+
+                    step.remove();
+
+                }
+            );
+
+
+        showToast(
+            "AI action added."
+        );
+
+    }
+);
+
+
+/* =========================================
+   REMOVE EXISTING STEP
+========================================= */
+
+function removeStep(button){
+
+    const step =
+        button.closest(".step");
+
+    if(!step) return;
+
+
+    if(
+        step.classList.contains(
+            "extra-ai-step"
+        )
+    ){
+
+        const previous =
+            step.previousElementSibling;
+
+        const previousPrevious =
+            previous
+                ?.previousElementSibling;
+
+
+        if(
+            previous &&
+            previous.classList.contains(
+                "connector-arrow"
+            )
+        ){
+
+            previous.remove();
+
+        }
+
+
+        if(
+            previousPrevious &&
+            previousPrevious.classList.contains(
+                "connector"
+            )
+        ){
+
+            previousPrevious.remove();
+
+        }
+
+
+        step.remove();
+
+        showToast(
+            "AI action removed."
+        );
+
+    }
+
+}
+
+
+/* =========================================
+   COLLECT WORKFLOW
+========================================= */
+
+function collectWo
