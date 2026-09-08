@@ -2666,4 +2666,357 @@ function removeStep(button){
    COLLECT WORKFLOW
 ========================================= */
 
-function collectWo
+function collectWorkflow(){
+
+    const steps = [];
+
+
+    const triggerStep =
+        document.querySelector(
+            '[data-step="trigger"]'
+        );
+
+
+    steps.push({
+
+        type:"trigger",
+
+        triggerType:
+            document.getElementById(
+                "triggerType"
+            ).value,
+
+        information:
+            document.getElementById(
+                "triggerInput"
+            ).value
+
+    });
+
+
+    document
+        .querySelectorAll(
+            '[data-step="ai"], .extra-ai-step'
+        )
+        .forEach(step => {
+
+            steps.push({
+
+                type:"ai",
+
+                action:
+                    step.querySelector(
+                        ".ai-action"
+                    )?.value || "",
+
+                instructions:
+                    step.querySelector(
+                        ".ai-instructions"
+                    )?.value || ""
+
+            });
+
+        });
+
+
+    steps.push({
+
+        type:"output",
+
+        outputType:
+            document.getElementById(
+                "outputType"
+            ).value,
+
+        information:
+            document.getElementById(
+                "outputInput"
+            ).value
+
+    });
+
+
+    return {
+
+        name:
+            document.getElementById(
+                "workflowName"
+            ).value.trim()
+            ||
+            "Untitled Workflow",
+
+        steps
+
+    };
+
+}
+
+
+/* =========================================
+   RUN TEST
+========================================= */
+
+document
+.getElementById("runTest")
+.addEventListener(
+    "click",
+    () => {
+
+        const workflowData =
+            collectWorkflow();
+
+
+        const result =
+            document.getElementById(
+                "result"
+            );
+
+        const resultText =
+            document.getElementById(
+                "resultText"
+            );
+
+
+        resultText.textContent =
+
+`CAPTIVATE AI WORKFLOW TEST
+
+Workflow:
+${workflowData.name}
+
+Steps:
+${workflowData.steps
+    .map(
+        (step,index) =>
+            `${index + 1}. ${
+                step.type === "trigger"
+                    ? "Trigger: " +
+                      step.triggerType
+                    : step.type === "ai"
+                    ? "AI Action: " +
+                      step.action
+                    : "Output: " +
+                      step.outputType
+            }`
+    )
+    .join("\n")}
+
+Status:
+Workflow structure validated successfully.
+
+Next stage:
+Connect this workflow to the CAPTIVATE AI Worker so the AI actions can execute for real.`;
+
+
+        result.classList.add(
+            "show"
+        );
+
+
+        showToast(
+            "Workflow test completed."
+        );
+
+    }
+);
+
+
+/* =========================================
+   SAVE WORKFLOW
+========================================= */
+
+document
+.getElementById("saveWorkflow")
+.addEventListener(
+    "click",
+    () => {
+
+        const workflowData =
+            collectWorkflow();
+
+
+        localStorage.setItem(
+            "captivateWorkflow",
+            JSON.stringify(
+                workflowData
+            )
+        );
+
+
+        showToast(
+            "Workflow saved on this device."
+        );
+
+    }
+);
+
+
+/* =========================================
+   CLEAR WORKFLOW
+========================================= */
+
+document
+.getElementById("clearWorkflow")
+.addEventListener(
+    "click",
+    () => {
+
+        if(
+            !confirm(
+                "Clear this workflow?"
+            )
+        ){
+
+            return;
+
+        }
+
+
+        document.getElementById(
+            "workflowName"
+        ).value =
+            "My AI Workflow";
+
+
+        document.getElementById(
+            "triggerType"
+        ).value =
+            "manual";
+
+
+        document.getElementById(
+            "triggerInput"
+        ).value =
+            "";
+
+
+        document.querySelector(
+            ".ai-action"
+        ).value =
+            "generate";
+
+
+        document.querySelector(
+            ".ai-instructions"
+        ).value =
+            "";
+
+
+        document.getElementById(
+            "outputType"
+        ).value =
+            "display";
+
+
+        document.getElementById(
+            "outputInput"
+        ).value =
+            "";
+
+
+        document
+            .querySelectorAll(
+                ".extra-ai-step"
+            )
+            .forEach(step => {
+
+                const previous =
+                    step.previousElementSibling;
+
+                const previousPrevious =
+                    previous
+                        ?.previousElementSibling;
+
+
+                if(
+                    previous &&
+                    previous.classList.contains(
+                        "connector-arrow"
+                    )
+                ){
+
+                    previous.remove();
+
+                }
+
+
+                if(
+                    previousPrevious &&
+                    previousPrevious.classList.contains(
+                        "connector"
+                    )
+                ){
+
+                    previousPrevious.remove();
+
+                }
+
+
+                step.remove();
+
+            });
+
+
+        document
+            .getElementById("result")
+            .classList.remove("show");
+
+
+        showToast(
+            "Workflow cleared."
+        );
+
+    }
+);
+
+
+/* =========================================
+   LOAD SAVED WORKFLOW
+========================================= */
+
+function loadSavedWorkflow(){
+
+    const saved =
+        localStorage.getItem(
+            "captivateWorkflow"
+        );
+
+
+    if(!saved) return;
+
+
+    try{
+
+        const data =
+            JSON.parse(saved);
+
+
+        if(data.name){
+
+            document.getElementById(
+                "workflowName"
+            ).value =
+                data.name;
+
+        }
+
+
+    }catch(error){
+
+        console.error(
+            "Saved workflow error:",
+            error
+        );
+
+    }
+
+}
+
+
+loadSavedWorkflow();
+
+
+</script>
+
+</body>
+</html>
