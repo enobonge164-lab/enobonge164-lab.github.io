@@ -2753,69 +2753,256 @@ function collectWorkflow(){
 
 
 /* =========================================
-   RUN TEST
+   RUN REAL AI TEST
 ========================================= */
+
+const CAPTIVATE_AI_API =
+    "https://captivate-ai-api.sirwhitethepolymath.workers.dev/";
+
 
 document
 .getElementById("runTest")
 .addEventListener(
     "click",
-    () => {
+    async () => {
 
         const workflowData =
             collectWorkflow();
 
-
         const result =
-            document.getElementById(
-                "result"
-            );
+            document.getElementById("result");
 
         const resultText =
-            document.getElementById(
-                "resultText"
+            document.getElementById("resultText");
+
+        const runButton =
+            document.getElementById("runTest");
+
+
+        /* =========================================
+           FIND AI STEP
+        ========================================= */
+
+        const aiStep =
+            workflowData.steps.find(
+                step => step.type === "ai"
             );
+
+
+        if (!aiStep) {
+
+            resultText.textContent =
+                "Please add an AI Action step before running the workflow.";
+
+            result.classList.add("show");
+
+            showToast(
+                "No AI action found."
+            );
+
+            return;
+
+        }
+
+
+        /* =========================================
+           GET TRIGGER INFORMATION
+        ========================================= */
+
+        const triggerStep =
+            workflowData.steps.find(
+                step => step.type === "trigger"
+            );
+
+
+        const triggerInformation =
+            triggerStep?.information ||
+            "";
+
+
+        /* =========================================
+           CHECK INPUT
+        ========================================= */
+
+        if (
+            !triggerInformation.trim() &&
+            !aiStep.instructions.trim()
+        ) {
+
+            resultText.textContent =
+                "Please provide information or instructions for the AI.";
+
+            result.classList.add("show");
+
+            showToast(
+                "AI input is required."
+            );
+
+            return;
+
+        }
+
+
+        /* =========================================
+           DISABLE BUTTON
+        ========================================= */
+
+        const originalButtonText =
+            runButton.textContent;
+
+        runButton.disabled = true;
+
+        runButton.textContent =
+            "⏳ Running AI...";
 
 
         resultText.textContent =
+            "CAPTIVATE AI is processing your workflow...";
 
-`CAPTIVATE AI WORKFLOW TEST
-
-Workflow:
-${workflowData.name}
-
-Steps:
-${workflowData.steps
-    .map(
-        (step,index) =>
-            `${index + 1}. ${
-                step.type === "trigger"
-                    ? "Trigger: " +
-                      step.triggerType
-                    : step.type === "ai"
-                    ? "AI Action: " +
-                      step.action
-                    : "Output: " +
-                      step.outputType
-            }`
-    )
-    .join("\n")}
-
-Status:
-Workflow structure validated successfully.
-
-Next stage:
-Connect this workflow to the CAPTIVATE AI Worker so the AI actions can execute for real.`;
+        result.classList.add("show");
 
 
-        result.classList.add(
-            "show"
-        );
+        try {
+
+            /* =========================================
+               BUILD AI REQUEST
+            ========================================= */
+
+            const userRequest = [
+
+                triggerInformation
+                    ? `USER INPUT:\n${triggerInformation}`
+                    : "",
+
+                aiStep.instructions
+                    ? `INSTRUCTIONS:\n${aiStep.instructions}`
+                    : ""
+
+            ]
+
+                .filter(Boolean)
+
+                .join("\n\n");
 
 
-        showToast(
-            "Workflow test completed."
-        );
+            /* =========================================
+               SEND TO CAPTIVATE AI WORKER
+            ========================================= */
+
+            const response =
+                await fetch(
+                    CAPTIVATE_AI_API,
+                    {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+
+                                type:
+                                    aiStep.action ||
+                                    "generate",
+
+                                topic:
+                                    userRequest,
+
+                                platform:
+                                    "General",
+
+                                workflow:
+                                    workflowData.name
+
+                            })
+
+                    }
+                );
+
+
+            /* =========================================
+               READ RESPONSE
+            ========================================= */
+
+            const data =
+                await response.json();
+
+
+            /* =========================================
+               HANDLE API ERROR
+            ========================================= */
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    data.error ||
+                    "CAPTIVATE AI request failed."
+                );
+
+            }
+
+
+            /* =========================================
+               DISPLAY REAL AI RESULT
+            ========================================= */
+
+            resultText.textContent =
+                data.result ||
+                data[aiStep.action] ||
+                "AI completed successfully.";
+
+
+            result.classList.add("show");
+
+
+            showToast(
+                "✅ CAPTIVATE AI completed the workflow."
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "CAPTIVATE AI Automation Error:",
+                error
+            );
+
+
+            resultText.textContent =
+                `CAPTIVATE AI ERROR
+
+${error.message}
+
+Please check your Worker and try again.`;
+
+
+            result.classList.add("show");
+
+
+            showToast(
+                "❌ AI workflow failed."
+            );
+
+
+        } finally {
+
+            /* =========================================
+               RESTORE BUTTON
+            ========================================= */
+
+            runButton.disabled = false;
+
+            runButton.textContent =
+                originalButtonText;
+
+        }
 
     }
 );
