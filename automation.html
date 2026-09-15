@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -475,26 +474,7 @@ body{
     font-size:14px;
 
 }
-
-
-/* =========================================
-   WORKSPACE
-========================================= */
-
-.workspace{
-
-    display:grid;
-
-    grid-template-columns:
-        280px
-        minmax(0,1fr);
-
-    gap:20px;
-
-}
-
-
-/* =========================================
+    /* =========================================
    PANEL
 ========================================= */
 
@@ -885,9 +865,7 @@ body{
     background:#131a27;
 
 }
-
-
-/* =========================================
+    /* =========================================
    ACTIONS
 ========================================= */
 
@@ -1264,8 +1242,8 @@ body{
 
 <div class="app">
 
-
-<!-- =========================================
+ 
+<<!-- =========================================
      SIDEBAR
 ========================================= -->
 
@@ -1372,7 +1350,7 @@ body{
 
 
 
-<!-- =========================================
+<<!-- =========================================
      MAIN
 ========================================= -->
 
@@ -1412,7 +1390,7 @@ body{
 <div class="content">
 
 
-<!-- =========================================
+<<!-- =========================================
      HERO
 ========================================= -->
 
@@ -1445,7 +1423,7 @@ body{
 
 
 
-<!-- =========================================
+<<!-- =========================================
      WORKSPACE
 ========================================= -->
 
@@ -1455,7 +1433,7 @@ body{
 >
 
 
-<!-- =========================================
+<<!-- =========================================
      TEMPLATES
 ========================================= -->
 
@@ -1585,7 +1563,7 @@ body{
 
 </div>
 
-!-- =========================================
+<!-- =========================================
      BUILDER PANEL
 ========================================= -->
 
@@ -1966,9 +1944,7 @@ body{
 
 </section>
 
-
-
-<!-- =========================================
+    <<!-- =========================================
      INFO
 ========================================= -->
 
@@ -2047,7 +2023,7 @@ body{
 
 
 
-<!-- =========================================
+<<!-- =========================================
      TOAST
 ========================================= -->
 
@@ -2060,1150 +2036,828 @@ body{
 
 <script>
 
-/* =========================================
-   MOBILE MENU
-========================================= */
-
-const mobileMenu =
-    document.getElementById("mobileMenu");
-
-const sidebar =
-    document.getElementById("sidebar");
-
-
-mobileMenu.addEventListener(
-    "click",
-    () => {
-
-        sidebar.classList.toggle("open");
-
-    }
-);
-
-
-/* =========================================
-   TOAST
-========================================= */
-
-function showToast(message){
-
-    const toast =
-        document.getElementById("toast");
-
-    toast.textContent = message;
-
-    toast.classList.add("show");
-
-
-    setTimeout(() => {
-
-        toast.classList.remove("show");
-
-    }, 2500);
-
-}
-
-
-/* =========================================
-   TEMPLATE DATA
-========================================= */
-
-const templates = {
-
-    customer: {
-
-        name:
-            "Customer Support Workflow",
-
-        trigger:
-            "New customer message",
-
-        triggerInfo:
-            "When a customer sends a support question",
-
-        action:
-            "generate",
-
-        instructions:
-            "Read the customer's message and create a helpful, professional and friendly response. Do not invent information.",
-
-        output:
-            "display",
-
-        outputInfo:
-            "Prepare the response for the support agent."
-
-    },
-
-
-    social: {
-
-        name:
-            "Social Content Workflow",
-
-        trigger:
-            "manual",
-
-        triggerInfo:
-            "When I enter a new content idea",
-
-        action:
-            "caption",
-
-        instructions:
-            "Create an engaging social media caption from the content idea, with a strong hook and clear call to action.",
-
-        output:
-            "display",
-
-        outputInfo:
-            "Show the generated caption."
-
-    },
-
-
-    lead: {
-
-        name:
-            "Lead Follow-Up Workflow",
-
-        trigger:
-            "lead",
-
-        triggerInfo:
-            "When a new lead is added",
-
-        action:
-            "generate",
-
-        instructions:
-            "Create a personalized, professional follow-up message based only on the lead information provided.",
-
-        output:
-            "display",
-
-        outputInfo:
-            "Prepare the message for review."
-
-    },
-
-
-    email: {
-
-        name:
-            "Email Assistant Workflow",
-
-        trigger:
-            "manual",
-
-        triggerInfo:
-            "When the user provides email information",
-
-        action:
-            "email",
-
-        instructions:
-            "Write a professional email from the supplied information. Include an appropriate subject line and clear call to action.",
-
-        output:
-            "display",
-
-        outputInfo:
-            "Show the completed email."
-
-    },
-
-
-    research: {
-
-        name:
-            "Research Workflow",
-
-        trigger:
-            "manual",
-
-        triggerInfo:
-            "When a research topic is entered",
-
-        action:
-            "summarize",
-
-        instructions:
-            "Organize the supplied research information into a clear, useful and structured summary.",
-
-        output:
-            "display",
-
-        outputInfo:
-            "Show the structured research result."
-
-    },
-
-
-    content: {
-
-        name:
-            "Video Content Workflow",
-
-        trigger:
-            "manual",
-
-        triggerInfo:
-            "When a new video topic is entered",
-
-        action:
-            "script",
-
-        instructions:
-            "Create a complete engaging video script with a strong hook, useful content, conclusion and CTA.",
-
-        output:
-            "display",
-
-        outputInfo:
-            "Show the generated script."
-
-    }
-
-};
-
-
-/* =========================================
-   LOAD TEMPLATE
-========================================= */
-
-document
-.querySelectorAll(".template")
-.forEach(button => {
-
-    button.addEventListener(
-        "click",
-        () => {
-
-            const key =
-                button.dataset.template;
-
-            const data =
-                templates[key];
-
-            if(!data) return;
-
-
-            document.getElementById(
-                "workflowName"
-            ).value =
-                data.name;
-
-
-            document.getElementById(
-                "triggerType"
-            ).value =
-                getTriggerValue(
-                    data.trigger
-                );
-
-
-            document.getElementById(
-                "triggerInput"
-            ).value =
-                data.triggerInfo;
-
-
-            const action =
-                document.querySelector(
-                    ".ai-action"
-                );
-
-            action.value =
-                data.action;
-
-
-            const instructions =
-                document.querySelector(
-                    ".ai-instructions"
-                );
-
-            instructions.value =
-                data.instructions;
-
-
-            document.getElementById(
-                "outputType"
-            ).value =
-                data.output;
-
-
-            document.getElementById(
-                "outputInput"
-            ).value =
-                data.outputInfo;
-
-
-            showToast(
-                "Template loaded successfully."
-            );
-
-
-            document
-                .getElementById("builder")
-                .scrollIntoView({
-                    behavior:"smooth"
-                });
-
-        }
-    );
-
-});
-
-
-/* =========================================
-   TRIGGER VALUE HELPER
-========================================= */
-
-function getTriggerValue(value){
-
-    const map = {
-
-        "New customer message":
-            "message",
-
-        "lead":
-            "lead",
-
-        "manual":
-            "manual",
-
-        "scheduled":
-            "schedule"
-
-    };
-
-    return map[value] || value;
-
-}
-
-
-/* =========================================
-   ADD AI ACTION
-========================================= */
-
-const addStep =
-    document.getElementById("addStep");
-
-const workflow =
-    document.getElementById("workflow");
-
-
-addStep.addEventListener(
-    "click",
-    () => {
-
-        const connectors =
-            workflow.querySelectorAll(
-                ".connector"
-            );
-
-        const arrows =
-            workflow.querySelectorAll(
-                ".connector-arrow"
-            );
-
-
-        const outputStep =
-            workflow.querySelector(
-                '[data-step="output"]'
-            );
-
-
-        const connector =
-            document.createElement(
-                "div"
-            );
-
-        connector.className =
-            "connector";
-
-
-        const arrow =
-            document.createElement(
-                "div"
-            );
-
-        arrow.className =
-            "connector-arrow";
-
-        arrow.textContent =
-            "▼";
-
-
-        const step =
-            document.createElement(
-                "div"
-            );
-
-        step.className =
-            "step extra-ai-step";
-
-
-        step.innerHTML = `
-
-            <div class="step-top">
-
-                <div class="step-title">
-
-                    <div class="step-icon">
-                        🤖
-                    </div>
-
-                    <div>
-
-                        <strong>
-                            AI Action
-                        </strong>
-
-                        <span>
-                            Additional AI step
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <button
-                    class="remove-step"
-                    title="Remove"
-                >
-                    ×
-                </button>
-
-            </div>
-
-
-            <label>
-                AI action
-            </label>
-
-            <select class="ai-action">
-
-                <option value="generate">
-                    Generate text
-                </option>
-
-                <option value="caption">
-                    Create caption
-                </option>
-
-                <option value="script">
-                    Write script
-                </option>
-
-                <option value="email">
-                    Write email
-                </option>
-
-                <option value="proposal">
-                    Create proposal
-                </option>
-
-                <option value="summarize">
-                    Summarize information
-                </option>
-
-                <option value="analyze">
-                    Analyze information
-                </option>
-
-            </select>
-
-
-            <label>
-                Instructions
-            </label>
-
-            <textarea
-                class="ai-instructions"
-                placeholder="Tell the AI what this step should do..."
-            ></textarea>
-
-        `;
-
-
-        workflow.insertBefore(
-            connector,
-            outputStep
-        );
-
-
-        workflow.insertBefore(
-            arrow,
-            outputStep
-        );
-
-
-        workflow.insertBefore(
-            step,
-            outputStep
-        );
-
-
-        step
-            .querySelector(
-                ".remove-step"
-            )
-            .addEventListener(
-                "click",
-                () => {
-
-                    const previous =
-                        step.previousElementSibling;
-
-                    const previousPrevious =
-                        previous
-                            ?.previousElementSibling;
-
-
-                    if(
-                        previous &&
-                        previous.classList.contains(
-                            "connector-arrow"
-                        )
-                    ){
-
-                        previous.remove();
-
-                    }
-
-
-                    if(
-                        previousPrevious &&
-                        previousPrevious.classList.contains(
-                            "connector"
-                        )
-                    ){
-
-                        previousPrevious.remove();
-
-                    }
-
-
-                    step.remove();
-
-                }
-            );
-
-
-        showToast(
-            "AI action added."
-        );
-
-    }
-);
-
-
-/* =========================================
-   REMOVE EXISTING STEP
-========================================= */
-
-function removeStep(button){
-
-    const step =
-        button.closest(".step");
-
-    if(!step) return;
-
-
-    if(
-        step.classList.contains(
-            "extra-ai-step"
-        )
-    ){
-
-        const previous =
-            step.previousElementSibling;
-
-        const previousPrevious =
-            previous
-                ?.previousElementSibling;
-
-
-        if(
-            previous &&
-            previous.classList.contains(
-                "connector-arrow"
-            )
-        ){
-
-            previous.remove();
-
-        }
-
-
-        if(
-            previousPrevious &&
-            previousPrevious.classList.contains(
-                "connector"
-            )
-        ){
-
-            previousPrevious.remove();
-
-        }
-
-
-        step.remove();
-
-        showToast(
-            "AI action removed."
-        );
-
-    }
-
-}
-
-
-/* =========================================
-   COLLECT WORKFLOW
-========================================= */
-
-function collectWorkflow(){
-
-    const steps = [];
-
-
-    const triggerStep =
-        document.querySelector(
-            '[data-step="trigger"]'
-        );
-
-
-    steps.push({
-
-        type:"trigger",
-
-        triggerType:
-            document.getElementById(
-                "triggerType"
-            ).value,
-
-        information:
-            document.getElementById(
-                "triggerInput"
-            ).value
-
-    });
-
-
-    document
-        .querySelectorAll(
-            '[data-step="ai"], .extra-ai-step'
-        )
-        .forEach(step => {
-
-            steps.push({
-
-                type:"ai",
-
-                action:
-                    step.querySelector(
-                        ".ai-action"
-                    )?.value || "",
-
-                instructions:
-                    step.querySelector(
-                        ".ai-instructions"
-                    )?.value || ""
-
-            });
-
-        });
-
-
-    steps.push({
-
-        type:"output",
-
-        outputType:
-            document.getElementById(
-                "outputType"
-            ).value,
-
-        information:
-            document.getElementById(
-                "outputInput"
-            ).value
-
-    });
-
-
-    return {
-
-        name:
-            document.getElementById(
-                "workflowName"
-            ).value.trim()
-            ||
-            "Untitled Workflow",
-
-        steps
-
-    };
-
-}
-
-
-/* =========================================
-   RUN REAL AI TEST
-========================================= */
+/* =========================================================
+   CAPTIVATE AI — AUTOMATION BUILDER
+   Complete client-side workflow engine
+   ========================================================= */
 
 const CAPTIVATE_AI_API =
     "https://captivate-ai-api.sirwhitethepolymath.workers.dev/";
 
-
-document
-.getElementById("runTest")
-.addEventListener(
-    "click",
-    async () => {
-
-        const workflowData =
-            collectWorkflow();
-
-        const result =
-            document.getElementById("result");
-
-        const resultText =
-            document.getElementById("resultText");
-
-        const runButton =
-            document.getElementById("runTest");
-
-
-        /* =========================================
-           FIND AI STEP
-        ========================================= */
-
-        const aiStep =
-            workflowData.steps.find(
-                step => step.type === "ai"
-            );
-
-
-        if (!aiStep) {
-
-            resultText.textContent =
-                "Please add an AI Action step before running the workflow.";
-
-            result.classList.add("show");
-
-            showToast(
-                "No AI action found."
-            );
-
-            return;
-
-        }
-
-
-        /* =========================================
-           GET TRIGGER INFORMATION
-        ========================================= */
-
-        const triggerStep =
-            workflowData.steps.find(
-                step => step.type === "trigger"
-            );
-
-
-        const triggerInformation =
-            triggerStep?.information ||
-            "";
-
-
-        /* =========================================
-           CHECK INPUT
-        ========================================= */
-
-        if (
-            !triggerInformation.trim() &&
-            !aiStep.instructions.trim()
-        ) {
-
-            resultText.textContent =
-                "Please provide information or instructions for the AI.";
-
-            result.classList.add("show");
-
-            showToast(
-                "AI input is required."
-            );
-
-            return;
-
-        }
-
-
-        /* =========================================
-           DISABLE BUTTON
-        ========================================= */
-
-        const originalButtonText =
-            runButton.textContent;
-
-        runButton.disabled = true;
-
-        runButton.textContent =
-            "⏳ Running AI...";
-
-
-        resultText.textContent =
-            "CAPTIVATE AI is processing your workflow...";
-
-        result.classList.add("show");
-
-
-        try {
-
-            /* =========================================
-               BUILD AI REQUEST
-            ========================================= */
-
-            const userRequest = [
-
-                triggerInformation
-                    ? `USER INPUT:\n${triggerInformation}`
-                    : "",
-
-                aiStep.instructions
-                    ? `INSTRUCTIONS:\n${aiStep.instructions}`
-                    : ""
-
-            ]
-
-                .filter(Boolean)
-
-                .join("\n\n");
-
-
-            /* =========================================
-               SEND TO CAPTIVATE AI WORKER
-            ========================================= */
-
-            const response =
-                await fetch(
-                    CAPTIVATE_AI_API,
-                    {
-
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify({
-
-                                type:
-                                    aiStep.action ||
-                                    "generate",
-
-                                topic:
-                                    userRequest,
-
-                                platform:
-                                    "General",
-
-                                workflow:
-                                    workflowData.name
-
-                            })
-
-                    }
-                );
-
-
-            /* =========================================
-               READ RESPONSE
-            ========================================= */
-
-            const data =
-                await response.json();
-
-
-            /* =========================================
-               HANDLE API ERROR
-            ========================================= */
-
-            if (
-                !response.ok ||
-                !data.success
-            ) {
-
-                throw new Error(
-                    data.message ||
-                    data.error ||
-                    "CAPTIVATE AI request failed."
-                );
-
-            }
-
-
-            /* =========================================
-               DISPLAY REAL AI RESULT
-            ========================================= */
-
-            resultText.textContent =
-                data.result ||
-                data[aiStep.action] ||
-                "AI completed successfully.";
-
-
-            result.classList.add("show");
-
-
-            showToast(
-                "✅ CAPTIVATE AI completed the workflow."
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "CAPTIVATE AI Automation Error:",
-                error
-            );
-
-
-            resultText.textContent =
-                `CAPTIVATE AI ERROR
-
-${error.message}
-
-Please check your Worker and try again.`;
-
-
-            result.classList.add("show");
-
-
-            showToast(
-                "❌ AI workflow failed."
-            );
-
-
-        } finally {
-
-            /* =========================================
-               RESTORE BUTTON
-            ========================================= */
-
-            runButton.disabled = false;
-
-            runButton.textContent =
-                originalButtonText;
-
-        }
-
-    }
-);
-
-
-/* =========================================
-   SAVE WORKFLOW
-========================================= */
-
-document
-.getElementById("saveWorkflow")
-.addEventListener(
-    "click",
-    () => {
-
-        const workflowData =
-            collectWorkflow();
-
-
-        localStorage.setItem(
-            "captivateWorkflow",
-            JSON.stringify(
-                workflowData
-            )
-        );
-
-
-        showToast(
-            "Workflow saved on this device."
-        );
-
-    }
-);
-
-
-/* =========================================
-   CLEAR WORKFLOW
-========================================= */
-
-document
-.getElementById("clearWorkflow")
-.addEventListener(
-    "click",
-    () => {
-
-        if(
-            !confirm(
-                "Clear this workflow?"
-            )
-        ){
-
-            return;
-
-        }
-
-
-        document.getElementById(
-            "workflowName"
-        ).value =
-            "My AI Workflow";
-
-
-        document.getElementById(
-            "triggerType"
-        ).value =
-            "manual";
-
-
-        document.getElementById(
-            "triggerInput"
-        ).value =
-            "";
-
-
-        document.querySelector(
-            ".ai-action"
-        ).value =
-            "generate";
-
-
-        document.querySelector(
-            ".ai-instructions"
-        ).value =
-            "";
-
-
-        document.getElementById(
-            "outputType"
-        ).value =
-            "display";
-
-
-        document.getElementById(
-            "outputInput"
-        ).value =
-            "";
-
-
-        document
-            .querySelectorAll(
-                ".extra-ai-step"
-            )
-            .forEach(step => {
-
-                const previous =
-                    step.previousElementSibling;
-
-                const previousPrevious =
-                    previous
-                        ?.previousElementSibling;
-
-
-                if(
-                    previous &&
-                    previous.classList.contains(
-                        "connector-arrow"
-                    )
-                ){
-
-                    previous.remove();
-
-                }
-
-
-                if(
-                    previousPrevious &&
-                    previousPrevious.classList.contains(
-                        "connector"
-                    )
-                ){
-
-                    previousPrevious.remove();
-
-                }
-
-
-                step.remove();
-
-            });
-
-
-        document
-            .getElementById("result")
-            .classList.remove("show");
-
-
-        showToast(
-            "Workflow cleared."
-        );
-
-    }
-);
-
-
-/* =========================================
-   LOAD SAVED WORKFLOW
-========================================= */
-
-function loadSavedWorkflow(){
-
-    const saved =
-        localStorage.getItem(
-            "captivateWorkflow"
-        );
-
-
-    if(!saved) return;
-
-
-    try{
-
-        const data =
-            JSON.parse(saved);
-
-
-        if(data.name){
-
-            document.getElementById(
-                "workflowName"
-            ).value =
-                data.name;
-
-        }
-
-
-    }catch(error){
-
-        console.error(
-            "Saved workflow error:",
-            error
-        );
-
-    }
-
+const STORAGE_KEY = "captivateWorkflow";
+const RESULT_KEY = "captivateLastAutomationResult";
+
+const mobileMenu = document.getElementById("mobileMenu");
+const sidebar = document.getElementById("sidebar");
+const workflow = document.getElementById("workflow");
+const addStepButton = document.getElementById("addStep");
+const runButton = document.getElementById("runTest");
+const saveButton = document.getElementById("saveWorkflow");
+const clearButton = document.getElementById("clearWorkflow");
+
+/* =========================================================
+   MOBILE MENU
+   ========================================================= */
+
+if (mobileMenu && sidebar) {
+    mobileMenu.addEventListener("click", () => {
+        sidebar.classList.toggle("open");
+    });
 }
 
+/* =========================================================
+   TOAST
+   ========================================================= */
 
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    if (!toast) return;
+
+    toast.textContent = message;
+    toast.classList.add("show");
+
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2800);
+}
+
+/* =========================================================
+   AI ACTION OPTIONS
+   ========================================================= */
+
+const AI_ACTION_OPTIONS = `
+    <option value="generate">Generate text</option>
+    <option value="caption">Create caption</option>
+    <option value="script">Write script</option>
+    <option value="email">Write email</option>
+    <option value="proposal">Create proposal</option>
+    <option value="summarize">Summarize information</option>
+    <option value="analyze">Analyze information</option>
+`;
+
+/* =========================================================
+   TEMPLATE DATA
+   ========================================================= */
+
+const templates = {
+
+    customer: {
+        name: "Customer Support Workflow",
+        trigger: "message",
+        triggerInfo: "When a customer sends a support question",
+        actions: [
+            {
+                action: "generate",
+                instructions:
+                    "Read the customer's message and create a helpful, professional and friendly response. Do not invent information."
+            }
+        ],
+        output: "display",
+        outputInfo: "Prepare the response for the support agent."
+    },
+
+    social: {
+        name: "Social Content Workflow",
+        trigger: "manual",
+        triggerInfo: "When I enter a new content idea",
+        actions: [
+            {
+                action: "caption",
+                instructions:
+                    "Create an engaging social media caption from the content idea, with a strong hook and clear call to action."
+            },
+            {
+                action: "generate",
+                instructions:
+                    "Using the caption from the previous step, create a concise set of relevant social media hashtags. Return only the hashtags."
+            }
+        ],
+        output: "display",
+        outputInfo: "Show the generated caption and hashtag result."
+    },
+
+    lead: {
+        name: "Lead Follow-Up Workflow",
+        trigger: "lead",
+        triggerInfo: "When a new lead is added",
+        actions: [
+            {
+                action: "generate",
+                instructions:
+                    "Create a personalized, professional follow-up message based only on the lead information provided."
+            },
+            {
+                action: "email",
+                instructions:
+                    "Turn the previous follow-up message into a polished email with an appropriate subject line and clear call to action."
+            }
+        ],
+        output: "display",
+        outputInfo: "Prepare the final message for review."
+    },
+
+    email: {
+        name: "Email Assistant Workflow",
+        trigger: "manual",
+        triggerInfo: "When the user provides email information",
+        actions: [
+            {
+                action: "email",
+                instructions:
+                    "Write a professional email from the supplied information. Include an appropriate subject line and clear call to action."
+            }
+        ],
+        output: "display",
+        outputInfo: "Show the completed email."
+    },
+
+    research: {
+        name: "Research Workflow",
+        trigger: "manual",
+        triggerInfo: "When research information or notes are entered",
+        actions: [
+            {
+                action: "summarize",
+                instructions:
+                    "Organize the supplied research information into a clear, useful and structured summary."
+            },
+            {
+                action: "analyze",
+                instructions:
+                    "Analyze the previous summary and identify the most important findings, opportunities, risks and practical next steps."
+            }
+        ],
+        output: "display",
+        outputInfo: "Show the structured research result and analysis."
+    },
+
+    content: {
+        name: "Video Content Workflow",
+        trigger: "manual",
+        triggerInfo: "When a new video topic is entered",
+        actions: [
+            {
+                action: "script",
+                instructions:
+                    "Create a complete engaging video script with a strong hook, useful content, conclusion and CTA."
+            },
+            {
+                action: "caption",
+                instructions:
+                    "Create an engaging social media caption from the completed video script. Include a strong hook and clear call to action."
+            }
+        ],
+        output: "display",
+        outputInfo: "Show the final content result."
+    }
+};
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function getTriggerValue(value) {
+    const map = {
+        "New customer message": "message",
+        "lead": "lead",
+        "manual": "manual",
+        "scheduled": "schedule",
+        "form": "form",
+        "message": "message",
+        "schedule": "schedule"
+    };
+
+    return map[value] || value || "manual";
+}
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function getAiSteps() {
+    return Array.from(
+        workflow.querySelectorAll('[data-step="ai"]')
+    );
+}
+
+function createAiStep(action = "generate", instructions = "", extra = true) {
+    const step = document.createElement("div");
+    step.className = extra ? "step extra-ai-step" : "step";
+    step.dataset.step = "ai";
+
+    step.innerHTML = `
+        <div class="step-top">
+            <div class="step-title">
+                <div class="step-icon">🤖</div>
+                <div>
+                    <strong>AI Action</strong>
+                    <span>${extra ? "Additional AI step" : "What should CAPTIVATE do?"}</span>
+                </div>
+            </div>
+            <button class="remove-step" type="button" title="Remove">×</button>
+        </div>
+
+        <label>AI action</label>
+        <select class="ai-action">${AI_ACTION_OPTIONS}</select>
+
+        <label>Instructions</label>
+        <textarea class="ai-instructions" placeholder="Tell the AI exactly what you want it to do..."></textarea>
+    `;
+
+    step.querySelector(".ai-action").value = action || "generate";
+    step.querySelector(".ai-instructions").value = instructions || "";
+
+    step.querySelector(".remove-step").addEventListener("click", () => {
+        removeAiStep(step);
+    });
+
+    return step;
+}
+
+function refreshWorkflowConnections() {
+    workflow.querySelectorAll(".connector, .connector-arrow").forEach(el => el.remove());
+
+    const steps = Array.from(workflow.children).filter(el =>
+        el.classList.contains("step")
+    );
+
+    steps.forEach((step, index) => {
+        if (index === steps.length - 1) return;
+
+        const connector = document.createElement("div");
+        connector.className = "connector";
+
+        const arrow = document.createElement("div");
+        arrow.className = "connector-arrow";
+        arrow.textContent = "▼";
+
+        step.after(connector, arrow);
+    });
+}
+
+function removeAiStep(step) {
+    const aiSteps = getAiSteps();
+
+    if (aiSteps.length <= 1) {
+        showToast("At least one AI Action is required.");
+        return;
+    }
+
+    step.remove();
+    refreshWorkflowConnections();
+    showToast("AI action removed.");
+}
+
+function clearExtraAiSteps() {
+    workflow
+        .querySelectorAll(".extra-ai-step")
+        .forEach(step => step.remove());
+
+    refreshWorkflowConnections();
+}
+
+function addAiStep(action = "generate", instructions = "") {
+    const outputStep = workflow.querySelector('[data-step="output"]');
+    const step = createAiStep(action, instructions, true);
+
+    workflow.insertBefore(step, outputStep);
+    refreshWorkflowConnections();
+
+    showToast("AI action added.");
+}
+
+/* =========================================================
+   TEMPLATE LOADING
+   ========================================================= */
+
+document.querySelectorAll(".template").forEach(button => {
+    button.addEventListener("click", () => {
+        const data = templates[button.dataset.template];
+        if (!data) return;
+
+        document.getElementById("workflowName").value = data.name;
+        document.getElementById("triggerType").value = getTriggerValue(data.trigger);
+        document.getElementById("triggerInput").value = data.triggerInfo || "";
+        document.getElementById("outputType").value = data.output || "display";
+        document.getElementById("outputInput").value = data.outputInfo || "";
+
+        clearExtraAiSteps();
+
+        const actions = Array.isArray(data.actions)
+            ? data.actions
+            : [{
+                action: data.action || "generate",
+                instructions: data.instructions || ""
+            }];
+
+        const first = getAiSteps()[0];
+        if (first && actions[0]) {
+            first.querySelector(".ai-action").value = actions[0].action || "generate";
+            first.querySelector(".ai-instructions").value = actions[0].instructions || "";
+        }
+
+        actions.slice(1).forEach(item => {
+            addAiStep(item.action, item.instructions);
+        });
+
+        showToast("Template loaded successfully.");
+
+        document.getElementById("builder").scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    });
+});
+
+/* =========================================================
+   ADD AI ACTION
+   ========================================================= */
+
+if (addStepButton) {
+    addStepButton.addEventListener("click", () => addAiStep());
+}
+
+/* =========================================================
+   COLLECT WORKFLOW
+   ========================================================= */
+
+function collectWorkflow() {
+    const steps = [];
+
+    steps.push({
+        type: "trigger",
+        triggerType: document.getElementById("triggerType").value,
+        information: document.getElementById("triggerInput").value.trim()
+    });
+
+    getAiSteps().forEach(step => {
+        steps.push({
+            type: "ai",
+            action: step.querySelector(".ai-action")?.value || "generate",
+            instructions: step.querySelector(".ai-instructions")?.value.trim() || ""
+        });
+    });
+
+    steps.push({
+        type: "output",
+        outputType: document.getElementById("outputType").value,
+        information: document.getElementById("outputInput").value.trim()
+    });
+
+    return {
+        name:
+            document.getElementById("workflowName").value.trim() ||
+            "Untitled Workflow",
+        steps,
+        updatedAt: new Date().toISOString()
+    };
+}
+
+/* =========================================================
+   VALIDATE WORKFLOW
+   ========================================================= */
+
+function validateWorkflow(data) {
+    const errors = [];
+    const trigger = data.steps.find(step => step.type === "trigger");
+    const aiSteps = data.steps.filter(step => step.type === "ai");
+
+    if (!data.name.trim()) {
+        errors.push("Please enter a workflow name.");
+    }
+
+    if (!trigger) {
+        errors.push("A trigger is required.");
+    }
+
+    if (!aiSteps.length) {
+        errors.push("Please add at least one AI Action.");
+    }
+
+    aiSteps.forEach((step, index) => {
+        if (!step.action) {
+            errors.push(`AI Action ${index + 1} is missing an action type.`);
+        }
+
+        if (!step.instructions.trim()) {
+            errors.push(`AI Action ${index + 1} needs instructions.`);
+        }
+    });
+
+    if (!trigger?.information.trim()) {
+        errors.push("Please enter Trigger information to provide test input.");
+    }
+
+    return errors;
+}
+
+function showResult(message, status = "Completed") {
+    const result = document.getElementById("result");
+    const resultText = document.getElementById("resultText");
+    const resultStatus = document.getElementById("resultStatus");
+
+    resultText.textContent = message;
+    resultStatus.textContent = status;
+    result.classList.add("show");
+}
+
+/* =========================================================
+   EXTRACT AI RESULT
+   ========================================================= */
+
+function extractAiResult(data, action) {
+    if (typeof data === "string") return data;
+
+    if (data && typeof data.result === "string") {
+        return data.result;
+    }
+
+    if (data && typeof data[action] === "string") {
+        return data[action];
+    }
+
+    if (data && typeof data.output === "string") {
+        return data.output;
+    }
+
+    if (data && data.data && typeof data.data.result === "string") {
+        return data.data.result;
+    }
+
+    return JSON.stringify(data, null, 2);
+}
+
+/* =========================================================
+   RUN ONE AI ACTION
+   ========================================================= */
+
+async function runAiAction(step, input, workflowName, stepNumber, totalSteps) {
+    const action = step.action || "generate";
+
+    const topic = [
+        `WORKFLOW: ${workflowName}`,
+        `AI STEP: ${stepNumber} OF ${totalSteps}`,
+        "",
+        "INPUT FROM PREVIOUS STEP:",
+        input || "No previous output. Use the original trigger input.",
+        "",
+        "INSTRUCTIONS:",
+        step.instructions || "Complete the requested task clearly and accurately."
+    ].join("\n");
+
+    const response = await fetch(CAPTIVATE_AI_API, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            type: action,
+            topic,
+            platform: "General",
+            workflow: workflowName
+        })
+    });
+
+    let data;
+    const rawText = await response.text();
+
+    try {
+        data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+        throw new Error(
+            `Worker returned an invalid JSON response (HTTP ${response.status}).`
+        );
+    }
+
+    if (!response.ok || data.success === false) {
+        throw new Error(
+            data.message ||
+            data.error ||
+            `CAPTIVATE AI request failed with HTTP ${response.status}.`
+        );
+    }
+
+    return extractAiResult(data, action);
+}
+    /* =========================================================
+   OUTPUT HANDLERS
+   ========================================================= */
+
+async function copyResult(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+    }
+
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand("copy");
+    area.remove();
+}
+
+function saveResult(text, workflowName) {
+    const payload = {
+        workflow: workflowName,
+        result: text,
+        savedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(RESULT_KEY, JSON.stringify(payload));
+}
+
+function downloadResult(text, workflowName) {
+    const safeName = (workflowName || "captivate-workflow")
+        .replace(/[^a-z0-9-_]+/gi, "-")
+        .replace(/^-+|-+$/g, "")
+        .toLowerCase() || "captivate-workflow";
+
+    const blob = new Blob([text], {
+        type: "text/plain;charset=utf-8"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${safeName}-result.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+}
+
+async function handleOutput(outputStep, finalResult, workflowName) {
+    const type = outputStep?.outputType || "display";
+
+    if (type === "copy") {
+        try {
+            await copyResult(finalResult);
+            showToast("Result copied to clipboard.");
+        } catch (error) {
+            console.error("Copy result error:", error);
+            showToast("Result generated, but copying failed.");
+        }
+    }
+
+    if (type === "save") {
+        saveResult(finalResult, workflowName);
+        showToast("Result saved on this device.");
+    }
+
+    if (type === "download") {
+        downloadResult(finalResult, workflowName);
+        showToast("Result downloaded.");
+    }
+}
+
+/* =========================================================
+   RUN WORKFLOW
+   ========================================================= */
+
+if (runButton) {
+    runButton.addEventListener("click", async () => {
+        const workflowData = collectWorkflow();
+        const errors = validateWorkflow(workflowData);
+
+        if (errors.length) {
+            showResult(
+                "Please fix the following:\n\n• " + errors.join("\n• "),
+                "Needs input"
+            );
+            showToast("Please complete the workflow first.");
+            return;
+        }
+
+        const trigger = workflowData.steps.find(step => step.type === "trigger");
+        const aiSteps = workflowData.steps.filter(step => step.type === "ai");
+        const outputStep = workflowData.steps.find(step => step.type === "output");
+
+        const originalButtonText = runButton.textContent;
+        runButton.disabled = true;
+        runButton.textContent = "⏳ Running workflow...";
+
+        showResult(
+            `CAPTIVATE AI is starting your workflow...\n\n0 / ${aiSteps.length} AI actions completed.`,
+            "Running"
+        );
+
+        try {
+            let currentInput = trigger.information.trim();
+            const results = [];
+
+            for (let index = 0; index < aiSteps.length; index++) {
+                const step = aiSteps[index];
+
+                showResult(
+                    `CAPTIVATE AI is processing AI Action ${index + 1} of ${aiSteps.length}...\n\n` +
+                    `Action: ${step.action}\n` +
+                    `The previous result will be passed into this step.`,
+                    "Running"
+                );
+
+                const output = await runAiAction(
+                    step,
+                    currentInput,
+                    workflowData.name,
+                    index + 1,
+                    aiSteps.length
+                );
+
+                currentInput = output;
+                results.push({
+                    step: index + 1,
+                    action: step.action,
+                    result: output
+                });
+            }
+
+            const finalResult = currentInput;
+
+            let formattedResult = finalResult;
+
+            if (aiSteps.length > 1) {
+                formattedResult = results
+                    .map(item =>
+                        `AI ACTION ${item.step} — ${item.action.toUpperCase()}\n\n${item.result}`
+                    )
+                    .join("\n\n────────────────────────\n\n");
+            }
+
+            showResult(formattedResult, "Completed");
+
+            await handleOutput(
+                outputStep,
+                finalResult,
+                workflowData.name
+            );
+
+            localStorage.setItem(
+                RESULT_KEY,
+                JSON.stringify({
+                    workflow: workflowData.name,
+                    result: finalResult,
+                    steps: results,
+                    savedAt: new Date().toISOString()
+                })
+            );
+
+            showToast("✅ CAPTIVATE AI completed the workflow.");
+
+        } catch (error) {
+            console.error("CAPTIVATE AI Automation Error:", error);
+
+            showResult(
+                `CAPTIVATE AI ERROR\n\n${error.message}\n\nPlease check your Worker and try again.`,
+                "Failed"
+            );
+
+            showToast("❌ AI workflow failed.");
+
+        } finally {
+            runButton.disabled = false;
+            runButton.textContent = originalButtonText;
+        }
+    });
+}
+
+/* =========================================================
+   SAVE WORKFLOW
+   ========================================================= */
+
+if (saveButton) {
+    saveButton.addEventListener("click", () => {
+        const workflowData = collectWorkflow();
+        const errors = validateWorkflow({
+            ...workflowData,
+            steps: workflowData.steps.filter(step => step.type !== "trigger" || step.information.trim())
+        });
+
+        if (!workflowData.name.trim()) {
+            showToast("Please enter a workflow name first.");
+            return;
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(workflowData));
+        showToast("Workflow saved on this device.");
+    });
+}
+
+/* =========================================================
+   RESTORE WORKFLOW UI
+   ========================================================= */
+
+function loadWorkflowData(data, silent = false) {
+    if (!data || !Array.isArray(data.steps)) return false;
+
+    document.getElementById("workflowName").value = data.name || "My AI Workflow";
+
+    const trigger = data.steps.find(step => step.type === "trigger");
+    const output = data.steps.find(step => step.type === "output");
+    const aiSteps = data.steps.filter(step => step.type === "ai");
+
+    if (trigger) {
+        document.getElementById("triggerType").value = getTriggerValue(trigger.triggerType);
+        document.getElementById("triggerInput").value = trigger.information || "";
+    }
+
+    if (output) {
+        document.getElementById("outputType").value = output.outputType || "display";
+        document.getElementById("outputInput").value = output.information || "";
+    }
+
+    clearExtraAiSteps();
+
+    const firstAi = getAiSteps()[0];
+
+    if (firstAi && aiSteps[0]) {
+        firstAi.querySelector(".ai-action").value = aiSteps[0].action || "generate";
+        firstAi.querySelector(".ai-instructions").value = aiSteps[0].instructions || "";
+    }
+
+    aiSteps.slice(1).forEach(step => {
+        addAiStep(step.action, step.instructions);
+    });
+
+    refreshWorkflowConnections();
+
+    if (!silent) {
+        showToast("Saved workflow restored.");
+    }
+
+    return true;
+}
+
+function loadSavedWorkflow() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+
+    try {
+        const data = JSON.parse(saved);
+        loadWorkflowData(data, true);
+    } catch (error) {
+        console.error("Saved workflow error:", error);
+        localStorage.removeItem(STORAGE_KEY);
+    }
+}
+
+/* =========================================================
+   CLEAR WORKFLOW
+   ========================================================= */
+
+if (clearButton) {
+    clearButton.addEventListener("click", () => {
+        if (!confirm("Clear this workflow?")) return;
+
+        document.getElementById("workflowName").value = "My AI Workflow";
+        document.getElementById("triggerType").value = "manual";
+        document.getElementById("triggerInput").value = "";
+        document.getElementById("outputType").value = "display";
+        document.getElementById("outputInput").value = "";
+
+        clearExtraAiSteps();
+
+        const firstAi = getAiSteps()[0];
+        if (firstAi) {
+            firstAi.querySelector(".ai-action").value = "generate";
+            firstAi.querySelector(".ai-instructions").value = "";
+        }
+
+        document.getElementById("result").classList.remove("show");
+        document.getElementById("resultText").textContent = "";
+        document.getElementById("resultStatus").textContent = "Completed";
+
+        localStorage.removeItem(STORAGE_KEY);
+
+        showToast("Workflow cleared.");
+    });
+}
+
+/* =========================================================
+   INITIALIZE EXISTING AI STEP
+   ========================================================= */
+
+const initialAiStep = workflow.querySelector('[data-step="ai"]');
+
+if (initialAiStep) {
+    initialAiStep.querySelector(".remove-step")?.addEventListener("click", () => {
+        removeAiStep(initialAiStep);
+    });
+}
+
+refreshWorkflowConnections();
 loadSavedWorkflow();
-
 
 </script>
 
 </body>
 </html>
+    
