@@ -47,13 +47,38 @@ const SUPPORTED_TOOLS = [
   "resume",
   "invoice",
   "prompt",
-  "bio"
+  "bio",
+  "image-generator",
+  "video-generator",
+  "voice-studio",
+  "thumbnail-generator",
+  "website-builder",
+  "app-builder",
+  "code-generator",
+  "business-tool-builder",
+  "gaming-assistant",
+  "game-story-generator",
+  "gaming-tools"
 ];
 
 
 /* =========================================================
    TOOL PROMPTS
 ========================================================= */
+
+const NEW_TOOL_PROMPTS = {
+  "image-generator": "Create a detailed image-generation brief with subject, composition, style, lighting, camera, aspect ratio and negative prompt.",
+  "video-generator": "Create a production-ready video plan with scenes, shots, narration, motion, duration and aspect ratio. Do not claim to render video.",
+  "voice-studio": "Create a narration script and voice-direction brief including tone, pacing, pronunciation and pauses. Do not claim to synthesize audio.",
+  "thumbnail-generator": "Create three thumbnail concepts with headline text, visual composition, contrast, subject placement and safe-area guidance.",
+  "website-builder": "Create a website specification and starter implementation plan including pages, sections, features, responsive behavior and code structure.",
+  "app-builder": "Create an app specification including user flow, screens, data model, API needs and starter implementation plan.",
+  "code-generator": "Generate or explain code based only on the supplied requirements. Include assumptions, setup and testing notes.",
+  "business-tool-builder": "Design a practical business tool with inputs, outputs, workflow, validation, roles and implementation steps.",
+  "gaming-assistant": "Provide game coaching, strategy, practice plans and decision support without pretending to access live game state.",
+  "game-story-generator": "Create a game concept with genre, premise, world, characters, mechanics, missions and story arc.",
+  "gaming-tools": "Create a useful gaming checklist, build planner, challenge plan or utility based on the request."
+};
 
 const TOOL_PROMPTS = {
 
