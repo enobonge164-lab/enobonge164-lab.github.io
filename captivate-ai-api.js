@@ -1,10 +1,10 @@
 /* =========================================================
    CAPTIVATE AI API
-   Version 7.1
+   Version 7.3
    Stable Core Engine
 ========================================================= */
 
-const API_VERSION = "7.1";
+const API_VERSION = "7.3";
 
 /*
 =========================================================
@@ -18,8 +18,16 @@ The model is controlled here and cannot be overridden
 by an environment variable.
 */
 
-const STANDARD_MODEL =
-  "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+const MODELS = {
+  TEXT: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+  CODE: "@cf/qwen/qwen2.5-coder-32b-instruct",
+  IMAGE: "black-forest-labs/flux-2-pro-preview",
+  VIDEO: "runwayml/gen-4.5",
+  VOICE: "@cf/deepgram/aura-2-en",
+  VISION: "@cf/meta/llama-4-scout-17b-16e-instruct"
+};
+
+const STANDARD_MODEL = MODELS.TEXT;
 
 
 /* =========================================================
@@ -813,50 +821,232 @@ async function runAI(
   env,
   systemPrompt,
   userPrompt,
-  maxTokens = 4096
+  maxTokens = 4096,
+  model = STANDARD_MODEL
 ) {
 
   /*
-  IMPORTANT:
-  The model is intentionally hard-coded above.
-  env.AI_MODEL is NOT used.
+  CAPTIVATE AI text-generation call.
+  This model accepts the unscoped prompt format.
   */
 
+  const combinedPrompt =
+    `SYSTEM INSTRUCTIONS:\n${systemPrompt}\n\n` +
+    `USER REQUEST:\n${userPrompt}\n\n` +
+    `IMPORTANT: Follow the system instructions exactly. ` +
+    `Return only the useful final answer.`;
+
   return await env.AI.run(
-    STANDARD_MODEL,
+    model,
     {
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: userPrompt
-        }
-      ],
-
-      /*
-      Explicit output limit.
-      Cloudflare's default is only 256 tokens.
-      */
-
+      prompt: combinedPrompt,
       max_tokens: maxTokens,
-
-      /*
-      Lower temperature gives more consistent
-      quantity compliance.
-      */
-
       temperature: 0.3,
-
-      /*
-      Helps prevent repetitive list items.
-      */
-
       top_p: 0.9
     }
   );
+}
+
+
+/* =========================================================
+   MEDIA / SPECIALIZED MODEL HELPERS
+========================================================= */
+
+function clampInteger(value, fallback, min, max) {
+  const n = Number.parseInt(value, 10);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+}
+
+function cleanPrompt(value, fallback = "") {
+  return cleanText(value ?? fallback, 12000);
+}
+
+async function generateImage(env, body) {
+  const prompt = cleanPrompt(body.prompt || body.topic);
+  if (!prompt) throw new Error("Image prompt is required.");
+
+  const width = clampInteger(body.width, 1024, 64, 2048);
+  const height = clampInteger(body.height, 1024, 64, 2048);
+  const outputFormat = ["jpeg", "png", "webp"].includes(String(body.output_format || "jpeg").toLowerCase())
+    ? String(body.output_format || "jpeg").toLowerCase()
+    : "jpeg";
+
+  const input = {
+    prompt,
+    width,
+    height,
+    output_format: outputFormat
+  };
+
+  if (body.seed !== undefined && body.seed !== "") {
+    input.seed = Number(body.seed);
+  }
+
+  if (body.safety_tolerance !== undefined && body.safety_tolerance !== "") {
+    input.safety_tolerance = clampInteger(body.safety_tolerance, 2, 0, 5);
+  }
+
+  if (Array.isArray(body.input_images) && body.input_images.length) {
+    input.input_images = body.input_images
+      .filter((v) => typeof v === "string" && v.trim())
+      .slice(0, 8);
+  }
+
+  const response = await env.AI.run(MODELS.IMAGE, input);
+  const image = response?.result?.image || response?.image;
+
+  if (!image) {
+    throw new Error("Image model returned no image URL.");
+  }
+
+  return {
+    success: true,
+    type: "image-generator",
+    model: MODELS.IMAGE,
+    state: response?.state || "Completed",
+    image,
+    prompt,
+    width,
+    height,
+    outputFormat
+  };
+}
+
+async function generateVideo(env, body) {
+  const prompt = cleanPrompt(body.prompt || body.topic);
+  if (!prompt) throw new Error("Video prompt is required.");
+
+  const duration = clampInteger(body.duration, 5, 2, 10);
+  const ratio = String(body.ratio || body.aspect_ratio || "1280:720");
+  const allowedRatios = ["1280:720", "720:1280", "1024:1024", "1920:1080", "1080:1920"];
+
+  const input = {
+    prompt,
+    duration,
+    ratio: allowedRatios.includes(ratio) ? ratio : "1280:720"
+  };
+
+  if (body.image_url) {
+    input.image_url = cleanText(body.image_url, 4000);
+  }
+
+  const response = await env.AI.run(MODELS.VIDEO, input);
+  const video = response?.result?.video || response?.video;
+
+  if (!video) {
+    throw new Error("Video model returned no video URL.");
+  }
+
+  return {
+    success: true,
+    type: "video-generator",
+    model: MODELS.VIDEO,
+    state: response?.state || "Completed",
+    video,
+    prompt,
+    duration,
+    ratio
+  };
+}
+
+async function streamToDataURI(stream, mimeType = "audio/mpeg") {
+  const buffer = await new Response(stream).arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const chunkSize = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+
+  return `data:${mimeType};base64,${btoa(binary)}`;
+}
+
+async function generateVoice(env, body) {
+  const text = cleanPrompt(body.text || body.script || body.topic);
+  if (!text) throw new Error("Voice text is required.");
+
+  const speaker = String(body.speaker || "luna");
+  const encoding = ["linear16", "flac", "mulaw", "alaw", "mp3", "opus", "aac"].includes(String(body.encoding || "mp3"))
+    ? String(body.encoding || "mp3")
+    : "mp3";
+
+  const response = await env.AI.run(MODELS.VOICE, {
+    text,
+    speaker,
+    encoding
+  });
+
+  if (!response) throw new Error("Voice model returned no audio.");
+
+  const mime = encoding === "mp3" ? "audio/mpeg" : `audio/${encoding}`;
+  const audio = await streamToDataURI(response, mime);
+
+  return {
+    success: true,
+    type: "voice-studio",
+    model: MODELS.VOICE,
+    audio,
+    speaker,
+    encoding,
+    text
+  };
+}
+
+async function generateThumbnail(env, body) {
+  const topic = cleanPrompt(body.prompt || body.topic);
+  if (!topic) throw new Error("Thumbnail topic is required.");
+
+  const title = cleanText(body.title || topic, 300);
+  const style = cleanText(body.style || "high-contrast cinematic YouTube thumbnail", 500);
+  const prompt = [
+    `Create a professional YouTube thumbnail for: ${topic}`,
+    `Headline text: ${title}`,
+    `Style: ${style}`,
+    "Strong focal subject, dramatic lighting, clear hierarchy, bold readable typography, minimal clutter, mobile-friendly composition.",
+    "Use a 16:9 landscape composition with safe margins for text."
+  ].join("\n");
+
+  const response = await env.AI.run(MODELS.IMAGE, {
+    prompt,
+    width: 1280,
+    height: 720,
+    output_format: "png"
+  });
+
+  const image = response?.result?.image || response?.image;
+  if (!image) throw new Error("Thumbnail model returned no image URL.");
+
+  return {
+    success: true,
+    type: "thumbnail-generator",
+    model: MODELS.IMAGE,
+    state: response?.state || "Completed",
+    image,
+    title,
+    topic,
+    width: 1280,
+    height: 720
+  };
+}
+
+function isMediaTool(type) {
+  return [
+    "image-generator",
+    "video-generator",
+    "voice-studio",
+    "thumbnail-generator"
+  ].includes(type);
+}
+
+function isCodeTool(type) {
+  return [
+    "website-builder",
+    "app-builder",
+    "code-generator",
+    "business-tool-builder"
+  ].includes(type);
 }
 
 
@@ -901,13 +1091,24 @@ export default {
 
           aiBinding: !!env.AI,
 
-          model: STANDARD_MODEL,
+          model: isCodeTool(type) ? MODELS.CODE : STANDARD_MODEL,
 
-          modelSource: "fixed",
+          models: MODELS,
+
+          modelSource: "fixed-production-registry",
 
           environmentModelOverride: false,
 
-          tools: SUPPORTED_TOOLS
+          tools: SUPPORTED_TOOLS,
+
+          capabilities: {
+            text: MODELS.TEXT,
+            code: MODELS.CODE,
+            image: MODELS.IMAGE,
+            video: MODELS.VIDEO,
+            voice: MODELS.VOICE,
+            vision: MODELS.VISION
+          }
 
         });
       }
@@ -984,8 +1185,8 @@ export default {
 
       const topic =
         cleanText(
-          body.topic,
-          8000
+          body.topic || body.prompt || body.text || body.script,
+          12000
         );
 
       const platform =
@@ -996,13 +1197,13 @@ export default {
 
 
       /* ===================================================
-         VALIDATE TOPIC
+         VALIDATE REQUEST CONTENT
       =================================================== */
 
       if (!topic) {
 
         return errorResponse(
-          "Please provide a topic or request.",
+          "Please provide a topic, prompt, text, or request.",
           400
         );
       }
@@ -1028,6 +1229,27 @@ export default {
 
 
       /* ===================================================
+         SPECIALIZED MODEL ROUTING
+      =================================================== */
+
+      if (type === "image-generator") {
+        return jsonResponse(await generateImage(env, body));
+      }
+
+      if (type === "video-generator") {
+        return jsonResponse(await generateVideo(env, body));
+      }
+
+      if (type === "voice-studio") {
+        return jsonResponse(await generateVoice(env, body));
+      }
+
+      if (type === "thumbnail-generator") {
+        return jsonResponse(await generateThumbnail(env, body));
+      }
+
+
+      /* ===================================================
          REQUESTED NUMBER
       =================================================== */
 
@@ -1040,7 +1262,25 @@ export default {
       =================================================== */
 
       const systemPrompt =
-        TOOL_PROMPTS[type];
+        TOOL_PROMPTS[type] ||
+        NEW_TOOL_PROMPTS[type];
+
+
+      /* ===================================================
+         SYSTEM PROMPT VALIDATION
+      =================================================== */
+
+      if (!systemPrompt) {
+
+        return errorResponse(
+          `No system prompt is configured for tool: ${type}`,
+          500,
+          {
+            type,
+            supportedTools: SUPPORTED_TOOLS
+          }
+        );
+      }
 
 
       /* ===================================================
@@ -1065,7 +1305,8 @@ export default {
           userPrompt,
           requestedNumber
             ? 6144
-            : 4096
+            : 4096,
+          isCodeTool(type) ? MODELS.CODE : STANDARD_MODEL
         );
 
 
@@ -1121,7 +1362,8 @@ export default {
             env,
             systemPrompt,
             correctionPrompt,
-            6144
+            6144,
+            isCodeTool(type) ? MODELS.CODE : STANDARD_MODEL
           );
 
 
