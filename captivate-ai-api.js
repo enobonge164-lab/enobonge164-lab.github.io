@@ -1,10 +1,10 @@
 /* =========================================================
    CAPTIVATE AI API
-   Version 7.3
+   Version 7.4
    Stable Core Engine
 ========================================================= */
 
-const API_VERSION = "7.3";
+const API_VERSION = "7.4";
 
 /*
 =========================================================
@@ -19,12 +19,21 @@ by an environment variable.
 */
 
 const MODELS = {
+  // Cloudflare-hosted Workers AI models only.
+  // No AI Gateway ID is supplied by this Worker, so these requests use
+  // the normal Workers AI billing path rather than Unified Billing credits.
   TEXT: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
   CODE: "@cf/qwen/qwen2.5-coder-32b-instruct",
-  IMAGE: "black-forest-labs/flux-2-pro-preview",
-  VIDEO: "runwayml/gen-4.5",
+  IMAGE: "@cf/black-forest-labs/flux-2-klein-9b",
   VOICE: "@cf/deepgram/aura-2-en",
   VISION: "@cf/meta/llama-4-scout-17b-16e-instruct"
+};
+
+const VIDEO_CONFIG = {
+  enabled: false,
+  provider: "not-configured",
+  model: null,
+  reason: "Video generation requires a separately configured video provider. v7.4 never silently routes video requests to a third-party model or AI Gateway Unified Billing."
 };
 
 const STANDARD_MODEL = MODELS.TEXT;
@@ -790,6 +799,35 @@ Original request:
 Previous answer:
 ${currentResult}
 
+The previous answer did NOT contain exactly ${requestedNumber} hashtags.
+
+Rewrite the answer.
+
+STRICT REQUIREMENTS:
+- Return EXACTLY ${requestedNumber} hashtags.
+- Count them before finishing.
+- Do not provide fewer.
+- Do not provide more.
+- Every hashtag must be relevant.
+- Do not add explanations.
+- Do not number the hashtags.
+- Return ONLY the hashtags.
+`;
+  }
+
+
+  return `
+The user requested EXACTLY ${requestedNumber} items.
+
+Tool:
+${type}
+
+Original request:
+"${originalRequest}"
+
+Previous answer:
+${currentResult}
+
 The previous answer did NOT contain exactly ${requestedNumber}
 numbered items.
 
@@ -862,95 +900,111 @@ function cleanPrompt(value, fallback = "") {
   return cleanText(value ?? fallback, 12000);
 }
 
+function base64ToDataURI(base64, mimeType = "image/png") {
+  if (!base64 || typeof base64 !== "string") return null;
+  if (base64.startsWith("data:")) return base64;
+  return `data:${mimeType};base64,${base64}`;
+}
+
 async function generateImage(env, body) {
   const prompt = cleanPrompt(body.prompt || body.topic);
   if (!prompt) throw new Error("Image prompt is required.");
 
-  const width = clampInteger(body.width, 1024, 64, 2048);
-  const height = clampInteger(body.height, 1024, 64, 2048);
-  const outputFormat = ["jpeg", "png", "webp"].includes(String(body.output_format || "jpeg").toLowerCase())
-    ? String(body.output_format || "jpeg").toLowerCase()
-    : "jpeg";
+  const width = clampInteger(body.width, 1024, 256, 1920);
+  const height = clampInteger(body.height, 768, 256, 1920);
+  const guidance = Number(body.guidance);
+  const seed = body.seed !== undefined && body.seed !== ""
+    ? Number.parseInt(body.seed, 10)
+    : null;
 
-  const input = {
-    prompt,
-    width,
-    height,
-    output_format: outputFormat
-  };
+  // FLUX.2 Klein 9B on Workers AI requires multipart input even for
+  // prompt-only generation. This avoids the previous JSON-schema error.
+  const form = new FormData();
+  form.append("prompt", prompt);
+  form.append("width", String(width));
+  form.append("height", String(height));
 
-  if (body.seed !== undefined && body.seed !== "") {
-    input.seed = Number(body.seed);
+  if (Number.isFinite(guidance)) {
+    form.append("guidance", String(Math.min(20, Math.max(0, guidance))));
   }
 
-  if (body.safety_tolerance !== undefined && body.safety_tolerance !== "") {
-    input.safety_tolerance = clampInteger(body.safety_tolerance, 2, 0, 5);
+  if (Number.isInteger(seed) && seed >= 0) {
+    form.append("seed", String(seed));
   }
 
-  if (Array.isArray(body.input_images) && body.input_images.length) {
-    input.input_images = body.input_images
-      .filter((v) => typeof v === "string" && v.trim())
-      .slice(0, 8);
+  const formResponse = new Response(form);
+  const formStream = formResponse.body;
+  const contentType = formResponse.headers.get("content-type");
+
+  if (!formStream || !contentType) {
+    throw new Error("Could not prepare image generation request.");
   }
 
-  const response = await env.AI.run(MODELS.IMAGE, input);
-  const image = response?.result?.image || response?.image;
+  const response = await env.AI.run(MODELS.IMAGE, {
+    multipart: {
+      body: formStream,
+      contentType
+    }
+  });
+
+  const rawImage = response?.result?.image || response?.image;
+  const image = base64ToDataURI(rawImage, "image/png");
 
   if (!image) {
-    throw new Error("Image model returned no image URL.");
+    throw new Error("Image model returned no image data.");
   }
 
   return {
     success: true,
+    version: API_VERSION,
     type: "image-generator",
     model: MODELS.IMAGE,
+    provider: "cloudflare-workers-ai",
+    billingPath: "standard-workers-ai",
     state: response?.state || "Completed",
     image,
     prompt,
     width,
-    height,
-    outputFormat
+    height
   };
 }
 
-async function generateVideo(env, body) {
-  const prompt = cleanPrompt(body.prompt || body.topic);
-  if (!prompt) throw new Error("Video prompt is required.");
+async function generateThumbnail(env, body) {
+  const topic = cleanPrompt(body.prompt || body.topic);
+  if (!topic) throw new Error("Thumbnail topic is required.");
 
-  const duration = clampInteger(body.duration, 5, 2, 10);
-  const ratio = String(body.ratio || body.aspect_ratio || "1280:720");
-  const allowedRatios = ["1280:720", "720:1280", "1024:1024", "1920:1080", "1080:1920"];
+  const title = cleanText(body.title || topic, 300);
+  const style = cleanText(
+    body.style || "high-contrast cinematic YouTube thumbnail",
+    500
+  );
 
-  const input = {
+  const prompt = [
+    `Create a professional YouTube thumbnail for: ${topic}`,
+    `Headline text: ${title}`,
+    `Style: ${style}`,
+    "Strong focal subject, dramatic lighting, clear visual hierarchy, bold readable typography, minimal clutter, mobile-friendly composition.",
+    "Use a 16:9 landscape composition with safe margins for text.",
+    "Do not add watermarks or unrelated logos."
+  ].join("\n");
+
+  const response = await generateImage(env, {
     prompt,
-    duration,
-    ratio: allowedRatios.includes(ratio) ? ratio : "1280:720"
-  };
-
-  if (body.image_url) {
-    input.image_url = cleanText(body.image_url, 4000);
-  }
-
-  const response = await env.AI.run(MODELS.VIDEO, input);
-  const video = response?.result?.video || response?.video;
-
-  if (!video) {
-    throw new Error("Video model returned no video URL.");
-  }
+    width: 1280,
+    height: 720
+  });
 
   return {
-    success: true,
-    type: "video-generator",
-    model: MODELS.VIDEO,
-    state: response?.state || "Completed",
-    video,
-    prompt,
-    duration,
-    ratio
+    ...response,
+    type: "thumbnail-generator",
+    title,
+    topic
   };
 }
 
 async function streamToDataURI(stream, mimeType = "audio/mpeg") {
+  if (!stream) throw new Error("Voice model returned no audio stream.");
+
   const buffer = await new Response(stream).arrayBuffer();
   const bytes = new Uint8Array(buffer);
   let binary = "";
@@ -964,12 +1018,35 @@ async function streamToDataURI(stream, mimeType = "audio/mpeg") {
 }
 
 async function generateVoice(env, body) {
-  const text = cleanPrompt(body.text || body.script || body.topic);
+  const text = cleanText(
+    body.text || body.script || body.topic,
+    6000
+  );
+
   if (!text) throw new Error("Voice text is required.");
 
-  const speaker = String(body.speaker || "luna");
-  const encoding = ["linear16", "flac", "mulaw", "alaw", "mp3", "opus", "aac"].includes(String(body.encoding || "mp3"))
-    ? String(body.encoding || "mp3")
+  const allowedSpeakers = new Set([
+    "amalthea", "andromeda", "apollo", "arcas", "aries", "asteria",
+    "athena", "atlas", "aurora", "callista", "cora", "cordelia",
+    "delia", "draco", "electra", "harmonia", "helena", "hera",
+    "hermes", "hyperion", "iris", "janus", "juno", "jupiter",
+    "luna", "mars", "minerva", "neptune", "odysseus", "ophelia",
+    "orion", "orpheus", "pandora", "phoebe", "pluto", "saturn",
+    "thalia", "theia", "vesta", "zeus"
+  ]);
+
+  const speakerCandidate = String(body.speaker || "luna").toLowerCase();
+  const speaker = allowedSpeakers.has(speakerCandidate)
+    ? speakerCandidate
+    : "luna";
+
+  const allowedEncodings = new Set([
+    "linear16", "flac", "mulaw", "alaw", "mp3", "opus", "aac"
+  ]);
+
+  const encodingCandidate = String(body.encoding || "mp3").toLowerCase();
+  const encoding = allowedEncodings.has(encodingCandidate)
+    ? encodingCandidate
     : "mp3";
 
   const response = await env.AI.run(MODELS.VOICE, {
@@ -978,15 +1055,25 @@ async function generateVoice(env, body) {
     encoding
   });
 
-  if (!response) throw new Error("Voice model returned no audio.");
+  const mime = {
+    mp3: "audio/mpeg",
+    opus: "audio/ogg",
+    aac: "audio/aac",
+    flac: "audio/flac",
+    linear16: "audio/wav",
+    mulaw: "audio/basic",
+    alaw: "audio/basic"
+  }[encoding] || "audio/mpeg";
 
-  const mime = encoding === "mp3" ? "audio/mpeg" : `audio/${encoding}`;
   const audio = await streamToDataURI(response, mime);
 
   return {
     success: true,
+    version: API_VERSION,
     type: "voice-studio",
     model: MODELS.VOICE,
+    provider: "cloudflare-workers-ai",
+    billingPath: "standard-workers-ai",
     audio,
     speaker,
     encoding,
@@ -994,40 +1081,16 @@ async function generateVoice(env, body) {
   };
 }
 
-async function generateThumbnail(env, body) {
-  const topic = cleanPrompt(body.prompt || body.topic);
-  if (!topic) throw new Error("Thumbnail topic is required.");
-
-  const title = cleanText(body.title || topic, 300);
-  const style = cleanText(body.style || "high-contrast cinematic YouTube thumbnail", 500);
-  const prompt = [
-    `Create a professional YouTube thumbnail for: ${topic}`,
-    `Headline text: ${title}`,
-    `Style: ${style}`,
-    "Strong focal subject, dramatic lighting, clear hierarchy, bold readable typography, minimal clutter, mobile-friendly composition.",
-    "Use a 16:9 landscape composition with safe margins for text."
-  ].join("\n");
-
-  const response = await env.AI.run(MODELS.IMAGE, {
-    prompt,
-    width: 1280,
-    height: 720,
-    output_format: "png"
-  });
-
-  const image = response?.result?.image || response?.image;
-  if (!image) throw new Error("Thumbnail model returned no image URL.");
-
+function videoUnavailableResponse() {
   return {
-    success: true,
-    type: "thumbnail-generator",
-    model: MODELS.IMAGE,
-    state: response?.state || "Completed",
-    image,
-    title,
-    topic,
-    width: 1280,
-    height: 720
+    success: false,
+    version: API_VERSION,
+    type: "video-generator",
+    code: "VIDEO_PROVIDER_REQUIRED",
+    provider: VIDEO_CONFIG.provider,
+    model: VIDEO_CONFIG.model,
+    available: false,
+    message: VIDEO_CONFIG.reason
   };
 }
 
@@ -1091,23 +1154,35 @@ export default {
 
           aiBinding: !!env.AI,
 
-          model: isCodeTool(type) ? MODELS.CODE : STANDARD_MODEL,
+          model: STANDARD_MODEL,
 
           models: MODELS,
 
-          modelSource: "fixed-production-registry",
+          modelSource: "cloudflare-hosted-model-registry",
+
+          billing: {
+            mode: "standard-workers-ai",
+            aiGatewayCreditsRequiredByDefault: false,
+            gatewayIdConfigured: false,
+            note: "v7.4 does not pass an AI Gateway ID to env.AI.run()."
+          },
 
           environmentModelOverride: false,
 
           tools: SUPPORTED_TOOLS,
 
           capabilities: {
-            text: MODELS.TEXT,
-            code: MODELS.CODE,
-            image: MODELS.IMAGE,
-            video: MODELS.VIDEO,
-            voice: MODELS.VOICE,
-            vision: MODELS.VISION
+            text: { available: true, model: MODELS.TEXT },
+            code: { available: true, model: MODELS.CODE },
+            image: { available: true, model: MODELS.IMAGE },
+            thumbnail: { available: true, model: MODELS.IMAGE },
+            voice: { available: true, model: MODELS.VOICE },
+            vision: { available: true, model: MODELS.VISION },
+            video: {
+              available: VIDEO_CONFIG.enabled,
+              model: VIDEO_CONFIG.model,
+              reason: VIDEO_CONFIG.reason
+            }
           }
 
         });
@@ -1237,7 +1312,7 @@ export default {
       }
 
       if (type === "video-generator") {
-        return jsonResponse(await generateVideo(env, body));
+        return jsonResponse(videoUnavailableResponse(), 503);
       }
 
       if (type === "voice-studio") {
@@ -1426,7 +1501,7 @@ export default {
 
         platform,
 
-        model: STANDARD_MODEL,
+        model: isCodeTool(type) ? MODELS.CODE : STANDARD_MODEL,
 
         requestedNumber:
           requestedNumber || null,
