@@ -1,5 +1,1064 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>AI Image Generator — CAPTIVATE AI</title><link rel="icon" href="favicon.png"><link rel="stylesheet" href="style.css"></head><body><main class="app-shell"><section class="section"><a class="back-link" href="captivate.html">← Back to CAPTIVATE AI</a><div class="section-header"><div><span class="coming-badge">CAPTIVATE AI</span><h1>AI Image Generator</h1><p>Create image prompts and image-generation jobs from your ideas.</p></div></div><div class="card tool-workspace"><label for="request">Your request</label><textarea id="request" rows="8" placeholder="Describe what you want CAPTIVATE AI to create..."></textarea><div class="form-row"><label for="platform">Platform / format</label><input id="platform" placeholder="Optional"></div><button id="run">Generate with CAPTIVATE AI</button><p id="status" role="status"></p><pre id="result" class="result-box"></pre></div></section></main><script>
-const API='https://captivate-ai-api.sirwhitethepolymath.workers.dev';
-const type='image-generator';
-document.getElementById('run').addEventListener('click',async()=>{const request=document.getElementById('request').value.trim();const platform=document.getElementById('platform').value.trim();const status=document.getElementById('status');const result=document.getElementById('result');if(!request){status.textContent='Please describe your request first.';return;}status.textContent='Working...';result.textContent='';try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,topic:request,platform})});const data=await r.json();if(!r.ok||data.success===false)throw new Error(data.error||'Request failed');result.textContent=data.output||data.result||data.response||JSON.stringify(data,null,2);status.textContent='Completed.';}catch(e){status.textContent='Error: '+e.message;}});
-</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Image Generator — CAPTIVATE AI</title>
+
+<link rel="icon" href="favicon.png">
+<link rel="stylesheet" href="style.css">
+
+<style>
+/* =========================================================
+   CAPTIVATE AI IMAGE GENERATOR
+========================================================= */
+
+.image-result {
+    margin-top: 24px;
+    display: none;
+}
+
+.image-result.visible {
+    display: block;
+}
+
+.image-result-card {
+    background: rgba(17, 24, 39, 0.95);
+    border: 1px solid rgba(139, 92, 246, 0.35);
+    border-radius: 20px;
+    padding: 18px;
+    overflow: hidden;
+}
+
+.image-result-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: #ffffff;
+}
+
+.generated-image-wrapper {
+    width: 100%;
+    background: #080b12;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.generated-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 750px;
+    object-fit: contain;
+}
+
+.image-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.image-action {
+    border: 1px solid rgba(139, 92, 246, 0.45);
+    background: #111827;
+    color: #ffffff;
+    padding: 11px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.image-action:hover {
+    background: #8b5cf6;
+}
+
+.image-meta {
+    margin-top: 14px;
+    color: #aeb5c5;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.image-prompt {
+    margin-top: 14px;
+    padding: 12px;
+    background: #0d111a;
+    border-radius: 10px;
+    color: #cbd5e1;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.error-box {
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 10px;
+    background: rgba(127, 29, 29, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+    display: none;
+}
+
+.loading-box {
+    margin-top: 18px;
+    padding: 14px;
+    border-radius: 10px;
+    background: rgba(139, 92, 246, 0.10);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    color: #c4b5fd;
+    display: none;
+}
+
+.loading-box.visible {
+    display: block;
+}
+
+.spinner {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255,255,255,0.25);
+    border-top-color: #a78bfa;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: -3px;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.empty-state {
+    color: #94a3b8;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<main class="app-shell">
+
+<section class="section">
+
+    <a class="back-link" href="captivate.html">
+        ← Back to CAPTIVATE AI
+    </a>
+
+    <div class="section-header">
+
+        <div>
+
+            <span class="coming-badge">
+                CAPTIVATE AI
+            </span>
+
+            <h1>
+                AI Image Generator
+            </h1>
+
+            <p>
+                Turn your ideas into AI-generated images with CAPTIVATE AI.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         GENERATOR CARD
+    ====================================================== -->
+
+    <div class="card tool-workspace">
+
+        <label for="request">
+            Describe your image
+        </label>
+
+        <textarea
+            id="request"
+            rows="8"
+            placeholder="Describe what you want CAPTIVATE AI to create..."
+        ></textarea>
+
+
+        <div class="form-row">
+
+            <label for="platform">
+                Platform / format
+            </label>
+
+            <input
+                id="platform"
+                placeholder="Optional — e.g. YouTube thumbnail, Instagram post, 16:9"
+            >
+
+        </div>
+
+
+        <button id="run">
+            Generate with CAPTIVATE AI
+        </button>
+
+
+        <!-- Loading -->
+
+        <div id="loading" class="loading-box">
+
+            <span class="spinner"></span>
+
+            CAPTIVATE AI is creating your image...
+
+        </div>
+
+
+        <!-- Status -->
+
+        <p
+            id="status"
+            role="status"
+        ></p>
+
+
+        <!-- Error -->
+
+        <div
+            id="error"
+            class="error-box"
+        ></div>
+
+
+        <!-- =================================================
+             IMAGE RESULT
+        ================================================== -->
+
+        <div
+            id="imageResult"
+            class="image-result"
+        >
+
+            <div class="image-result-card">
+
+                <div class="image-result-title">
+                    ✨ Generated Image
+                </div>
+
+
+                <div class="generated-image-wrapper">
+
+                    <img
+                        id="generatedImage"
+                        class="generated-image"
+                        alt="CAPTIVATE AI generated image"
+                    >
+
+                </div>
+
+
+                <div class="image-actions">
+
+                    <a
+                        id="downloadButton"
+                        class="image-action"
+                        href="#"
+                        download="captivate-ai-image.jpg"
+                    >
+                        ⬇️ Download Image
+                    </a>
+
+
+                    <button
+                        id="fullscreenButton"
+                        class="image-action"
+                        type="button"
+                    >
+                        ⛶ Fullscreen
+                    </button>
+
+
+                    <button
+                        id="copyButton"
+                        class="image-action"
+                        type="button"
+                    >
+                        📋 Copy Image
+                    </button>
+
+
+                    <button
+                        id="regenerateButton"
+                        class="image-action"
+                        type="button"
+                    >
+                        🔄 Generate Again
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="imageMeta"
+                    class="image-meta"
+                ></div>
+
+
+                <div
+                    id="imagePrompt"
+                    class="image-prompt"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Debug/result fallback -->
+
+        <pre
+            id="result"
+            class="result-box"
+            style="display:none;"
+        ></pre>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<script>
+
+const API =
+    'https://captivate-ai-api.sirwhitethepolymath.workers.dev';
+
+const type =
+    'image-generator';
+
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const requestInput =
+    document.getElementById('request');
+
+const platformInput =
+    document.getElementById('platform');
+
+const runButton =
+    document.getElementById('run');
+
+const status =
+    document.getElementById('status');
+
+const loading =
+    document.getElementById('loading');
+
+const errorBox =
+    document.getElementById('error');
+
+const imageResult =
+    document.getElementById('imageResult');
+
+const generatedImage =
+    document.getElementById('generatedImage');
+
+const downloadButton =
+    document.getElementById('downloadButton');
+
+const fullscreenButton =
+    document.getElementById('fullscreenButton');
+
+const copyButton =
+    document.getElementById('copyButton');
+
+const regenerateButton =
+    document.getElementById('regenerateButton');
+
+const imageMeta =
+    document.getElementById('imageMeta');
+
+const imagePrompt =
+    document.getElementById('imagePrompt');
+
+const result =
+    document.getElementById('result');
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let lastRequest = '';
+
+let lastPlatform = '';
+
+let currentImageData = '';
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function showLoading() {
+
+    loading.classList.add('visible');
+
+    errorBox.style.display = 'none';
+
+    imageResult.classList.remove('visible');
+
+    status.textContent = '';
+
+}
+
+
+function hideLoading() {
+
+    loading.classList.remove('visible');
+
+}
+
+
+function showError(message) {
+
+    hideLoading();
+
+    errorBox.textContent =
+        'Error: ' + message;
+
+    errorBox.style.display =
+        'block';
+
+    status.textContent = '';
+
+}
+
+
+function normalizeImageData(value) {
+
+    if (!value) {
+        return null;
+    }
+
+    if (typeof value !== 'string') {
+        return null;
+    }
+
+    const clean =
+        value.trim();
+
+    if (!clean) {
+        return null;
+    }
+
+
+    /*
+     * Already a data URI
+     */
+
+    if (
+        clean.startsWith('data:image/')
+    ) {
+
+        return clean;
+
+    }
+
+
+    /*
+     * Raw Base64 returned by Cloudflare.
+     */
+
+    if (
+        clean.startsWith('/9j/')
+    ) {
+
+        return 'data:image/jpeg;base64,' + clean;
+
+    }
+
+
+    /*
+     * PNG Base64 signatures.
+     */
+
+    if (
+        clean.startsWith('iVBORw0KGgo')
+    ) {
+
+        return 'data:image/png;base64,' + clean;
+
+    }
+
+
+    /*
+     * WebP Base64 signature.
+     */
+
+    if (
+        clean.startsWith('UklGR')
+    ) {
+
+        return 'data:image/webp;base64,' + clean;
+
+    }
+
+
+    /*
+     * If it is another raw Base64 string,
+     * assume JPEG because FLUX.1 Schnell
+     * currently returns JPEG image data.
+     */
+
+    return 'data:image/jpeg;base64,' + clean;
+
+}
+
+
+/* =========================================================
+   FIND IMAGE IN API RESPONSE
+========================================================= */
+
+function findImage(data) {
+
+    if (!data) {
+        return null;
+    }
+
+
+    /*
+     * Most direct response:
+     *
+     * data.image
+     */
+
+    if (typeof data.image === 'string') {
+
+        const image =
+            normalizeImageData(data.image);
+
+        if (image) {
+            return image;
+        }
+
+    }
+
+
+    /*
+     * Some response formats use dataURI.
+     */
+
+    if (typeof data.dataURI === 'string') {
+
+        const image =
+            normalizeImageData(data.dataURI);
+
+        if (image) {
+            return image;
+        }
+
+    }
+
+
+    /*
+     * Some wrappers may place it in output.
+     */
+
+    if (typeof data.output === 'string') {
+
+        const image =
+            normalizeImageData(data.output);
+
+        if (image) {
+            return image;
+        }
+
+    }
+
+
+    /*
+     * Nested result object.
+     */
+
+    if (
+        data.result &&
+        typeof data.result === 'object'
+    ) {
+
+        const image =
+            findImage(data.result);
+
+        if (image) {
+            return image;
+        }
+
+    }
+
+
+    /*
+     * Nested response object.
+     */
+
+    if (
+        data.response &&
+        typeof data.response === 'object'
+    ) {
+
+        const image =
+            findImage(data.response);
+
+        if (image) {
+            return image;
+        }
+
+    }
+
+
+    return null;
+
+}
+
+
+/* =========================================================
+   GENERATE IMAGE
+========================================================= */
+
+async function generateImage() {
+
+    const request =
+        requestInput.value.trim();
+
+    const platform =
+        platformInput.value.trim();
+
+
+    if (!request) {
+
+        status.textContent =
+            'Please describe your image first.';
+
+        return;
+
+    }
+
+
+    lastRequest =
+        request;
+
+    lastPlatform =
+        platform;
+
+
+    showLoading();
+
+    runButton.disabled =
+        true;
+
+    runButton.style.opacity =
+        '0.6';
+
+    runButton.textContent =
+        'Creating image...';
+
+
+    try {
+
+        const response =
+            await fetch(
+                API,
+                {
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+
+                    body: JSON.stringify({
+
+                        type: type,
+
+                        topic: request,
+
+                        platform: platform
+
+                    })
+
+                }
+            );
+
+
+        /*
+         * Read JSON response.
+         */
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            'CAPTIVATE Image API response:',
+            data
+        );
+
+
+        /*
+         * Handle API errors.
+         */
+
+        if (
+            !response.ok ||
+            data.success === false
+        ) {
+
+            throw new Error(
+                data.error ||
+                data.message ||
+                'Image generation failed.'
+            );
+
+        }
+
+
+        /*
+         * Find actual image.
+         */
+
+        const image =
+            findImage(data);
+
+
+        if (!image) {
+
+            /*
+             * Do not display a giant Base64
+             * string in the interface.
+             */
+
+            console.log(
+                'Full image response:',
+                data
+            );
+
+            throw new Error(
+                'The image was generated, but the image data could not be displayed.'
+            );
+
+        }
+
+
+        currentImageData =
+            image;
+
+
+        /*
+         * Display image.
+         */
+
+        generatedImage.src =
+            image;
+
+
+        generatedImage.alt =
+            request;
+
+
+        /*
+         * Download button.
+         */
+
+        downloadButton.href =
+            image;
+
+
+        /*
+         * Display metadata.
+         */
+
+        const model =
+            data.model ||
+            '@cf/black-forest-labs/flux-1-schnell';
+
+        const steps =
+            data.steps ||
+            4;
+
+        const provider =
+            data.provider ||
+            'cloudflare-workers-ai';
+
+
+        imageMeta.innerHTML =
+
+            '<strong>Model:</strong> ' +
+            escapeHtml(model) +
+
+            '<br>' +
+
+            '<strong>Steps:</strong> ' +
+            escapeHtml(String(steps)) +
+
+            '<br>' +
+
+            '<strong>Provider:</strong> ' +
+            escapeHtml(provider);
+
+
+        imagePrompt.innerHTML =
+
+            '<strong>Prompt</strong><br>' +
+
+            escapeHtml(request);
+
+
+        /*
+         * Show result.
+         */
+
+        imageResult.classList.add(
+            'visible'
+        );
+
+
+        hideLoading();
+
+
+        status.textContent =
+            'Image generated successfully.';
+
+
+        /*
+         * Scroll result into view.
+         */
+
+        setTimeout(() => {
+
+            imageResult.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+
+        }, 100);
+
+
+    } catch (error) {
+
+        console.error(
+            'CAPTIVATE Image Generator error:',
+            error
+        );
+
+
+        showError(
+            error.message ||
+            'Something went wrong while generating the image.'
+        );
+
+    } finally {
+
+        runButton.disabled =
+            false;
+
+        runButton.style.opacity =
+            '1';
+
+        runButton.textContent =
+            'Generate with CAPTIVATE AI';
+
+    }
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHtml(value) {
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            '&amp;'
+        )
+
+        .replace(
+            /</g,
+            '&lt;'
+        )
+
+        .replace(
+            />/g,
+            '&gt;'
+        )
+
+        .replace(
+            /"/g,
+            '&quot;'
+        )
+
+        .replace(
+            /'/g,
+            '&#039;'
+        );
+
+}
+
+
+/* =========================================================
+   FULLSCREEN
+========================================================= */
+
+fullscreenButton.addEventListener(
+    'click',
+    () => {
+
+        if (
+            generatedImage.requestFullscreen
+        ) {
+
+            generatedImage.requestFullscreen();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   COPY IMAGE
+========================================================= */
+
+copyButton.addEventListener(
+    'click',
+    async () => {
+
+        if (!currentImageData) {
+
+            return;
+
+        }
+
+
+        try {
+
+            /*
+             * Try modern Clipboard API.
+             */
+
+            if (
+                navigator.clipboard &&
+                window.ClipboardItem
+            ) {
+
+                const blob =
+                    await fetch(
+                        currentImageData
+                    ).then(
+                        response =>
+                            response.blob()
+                    );
+
+
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        [blob.type]: blob
+                    })
+                ]);
+
+
+                status.textContent =
+                    'Image copied to clipboard.';
+
+                return;
+
+            }
+
+
+            /*
+             * Android/browser fallback.
+             */
+
+            status.textContent =
+                'Copy is not supported by this browser. Use Download Image instead.';
+
+        } catch (error) {
+
+            console.error(
+                'Copy image error:',
+                error
+            );
+
+            status.textContent =
+                'Copy is not supported here. Use Download Image instead.';
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   REGENERATE
+========================================================= */
+
+regenerateButton.addEventListener(
+    'click',
+    () => {
+
+        generateImage();
+
+    }
+);
+
+
+/* =========================================================
+   GENERATE BUTTON
+========================================================= */
+
+runButton.addEventListener(
+    'click',
+    generateImage
+);
+
+
+/* =========================================================
+   ENTER KEY SUPPORT
+========================================================= */
+
+requestInput.addEventListener(
+    'keydown',
+    event => {
+
+        if (
+            event.key === 'Enter' &&
+            (event.ctrlKey || event.metaKey)
+        ) {
+
+            event.preventDefault();
+
+            generateImage();
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+  </html>
