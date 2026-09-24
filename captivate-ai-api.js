@@ -1,10 +1,16 @@
 /* =========================================================
    CAPTIVATE AI API
-   Version 7.4
+   Version 7.5
    Stable Core Engine
 ========================================================= */
 
-const API_VERSION = "7.4";
+const API_VERSION = "7.5";
+
+/*
+   v7.5 changes the image engine to the Cloudflare-hosted
+   FLUX.1 [schnell] JSON API. This avoids the FLUX.2 Klein
+   multipart request path that returned HTTP 4009 in testing.
+*/
 
 /*
 =========================================================
@@ -24,7 +30,7 @@ const MODELS = {
   // the normal Workers AI billing path rather than Unified Billing credits.
   TEXT: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
   CODE: "@cf/qwen/qwen2.5-coder-32b-instruct",
-  IMAGE: "@cf/black-forest-labs/flux-2-klein-9b",
+  IMAGE: "@cf/black-forest-labs/flux-1-schnell",
   VOICE: "@cf/deepgram/aura-2-en",
   VISION: "@cf/meta/llama-4-scout-17b-16e-instruct"
 };
@@ -33,7 +39,7 @@ const VIDEO_CONFIG = {
   enabled: false,
   provider: "not-configured",
   model: null,
-  reason: "Video generation requires a separately configured video provider. v7.4 never silently routes video requests to a third-party model or AI Gateway Unified Billing."
+  reason: "Video generation requires a separately configured video provider. v7.5 never silently routes video requests to a third-party model or AI Gateway Unified Billing."
 };
 
 const STANDARD_MODEL = MODELS.TEXT;
@@ -781,36 +787,7 @@ STRICT REQUIREMENTS:
 - Do not provide more.
 - Every hashtag must be relevant.
 - Do not add explanations.
-- Do not number the hashtags.
-- Return ONLY the hashtags.
-`;
-  }
-
-
-  return `
-The user requested EXACTLY ${requestedNumber} items.
-
-Tool:
-${type}
-
-Original request:
-"${originalRequest}"
-
-Previous answer:
-${currentResult}
-
-The previous answer did NOT contain exactly ${requestedNumber} hashtags.
-
-Rewrite the answer.
-
-STRICT REQUIREMENTS:
-- Return EXACTLY ${requestedNumber} hashtags.
-- Count them before finishing.
-- Do not provide fewer.
-- Do not provide more.
-- Every hashtag must be relevant.
-- Do not add explanations.
-- Do not number the hashtags.
+- Do not number the hashtag.
 - Return ONLY the hashtags.
 `;
   }
@@ -907,51 +884,82 @@ function base64ToDataURI(base64, mimeType = "image/png") {
 }
 
 async function generateImage(env, body) {
-  const prompt = cleanPrompt(body.prompt || body.topic);
-  if (!prompt) throw new Error("Image prompt is required.");
+  /*
+  ---------------------------------------------------------
+  v7.5 IMAGE ENGINE
+  ---------------------------------------------------------
+  Uses Cloudflare-hosted FLUX.1 [schnell].
 
-  const width = clampInteger(body.width, 1024, 256, 1920);
-  const height = clampInteger(body.height, 768, 256, 1920);
-  const guidance = Number(body.guidance);
-  const seed = body.seed !== undefined && body.seed !== ""
-    ? Number.parseInt(body.seed, 10)
-    : null;
+  Important:
+  - FLUX.1 [schnell] accepts a normal JSON object through env.AI.run().
+  - prompt is required and supports up to 2048 characters.
+  - steps is optional and has a maximum of 8.
+  - The model returns response.image as Base64.
+  - Do NOT send width/height or FLUX.2 multipart fields here.
+  ---------------------------------------------------------
+  */
 
-  // FLUX.2 Klein 9B on Workers AI requires multipart input even for
-  // prompt-only generation. This avoids the previous JSON-schema error.
-  const form = new FormData();
-  form.append("prompt", prompt);
-  form.append("width", String(width));
-  form.append("height", String(height));
+  const prompt = cleanText(
+    body.prompt || body.topic,
+    2048
+  );
 
-  if (Number.isFinite(guidance)) {
-    form.append("guidance", String(Math.min(20, Math.max(0, guidance))));
+  if (!prompt) {
+    throw new Error("Image prompt is required.");
   }
+
+  const steps = clampInteger(
+    body.steps,
+    4,
+    1,
+    8
+  );
+
+  const seed =
+    body.seed !== undefined && body.seed !== ""
+      ? Number.parseInt(body.seed, 10)
+      : null;
+
+  const input = {
+    prompt,
+    steps
+  };
 
   if (Number.isInteger(seed) && seed >= 0) {
-    form.append("seed", String(seed));
+    input.seed = seed;
   }
 
-  const formResponse = new Response(form);
-  const formStream = formResponse.body;
-  const contentType = formResponse.headers.get("content-type");
+  let response;
 
-  if (!formStream || !contentType) {
-    throw new Error("Could not prepare image generation request.");
+  try {
+    response = await env.AI.run(
+      MODELS.IMAGE,
+      input
+    );
+  } catch (error) {
+    const message =
+      error?.message ||
+      String(error || "Unknown image model error");
+
+    throw new Error(
+      `Image generation failed using ${MODELS.IMAGE}: ${message}`
+    );
   }
 
-  const response = await env.AI.run(MODELS.IMAGE, {
-    multipart: {
-      body: formStream,
-      contentType
-    }
-  });
+  const rawImage =
+    response?.result?.image ||
+    response?.image;
 
-  const rawImage = response?.result?.image || response?.image;
-  const image = base64ToDataURI(rawImage, "image/png");
+  const image =
+    base64ToDataURI(
+      rawImage,
+      "image/jpeg"
+    );
 
   if (!image) {
-    throw new Error("Image model returned no image data.");
+    throw new Error(
+      `Image model ${MODELS.IMAGE} returned no image data.`
+    );
   }
 
   return {
@@ -964,34 +972,43 @@ async function generateImage(env, body) {
     state: response?.state || "Completed",
     image,
     prompt,
-    width,
-    height
+    steps,
+    seed: Number.isInteger(seed) && seed >= 0 ? seed : null
   };
 }
 
 async function generateThumbnail(env, body) {
-  const topic = cleanPrompt(body.prompt || body.topic);
-  if (!topic) throw new Error("Thumbnail topic is required.");
+  const topic = cleanText(
+    body.prompt || body.topic,
+    1800
+  );
 
-  const title = cleanText(body.title || topic, 300);
+  if (!topic) {
+    throw new Error("Thumbnail topic is required.");
+  }
+
+  const title = cleanText(
+    body.title || topic,
+    300
+  );
+
   const style = cleanText(
     body.style || "high-contrast cinematic YouTube thumbnail",
-    500
+    400
   );
 
   const prompt = [
     `Create a professional YouTube thumbnail for: ${topic}`,
-    `Headline text: ${title}`,
+    `Headline concept: ${title}`,
     `Style: ${style}`,
     "Strong focal subject, dramatic lighting, clear visual hierarchy, bold readable typography, minimal clutter, mobile-friendly composition.",
-    "Use a 16:9 landscape composition with safe margins for text.",
+    "Use a landscape YouTube-thumbnail composition with safe margins for text.",
     "Do not add watermarks or unrelated logos."
   ].join("\n");
 
   const response = await generateImage(env, {
     prompt,
-    width: 1280,
-    height: 720
+    steps: body.steps
   });
 
   return {
@@ -1094,6 +1111,30 @@ function videoUnavailableResponse() {
   };
 }
 
+function mediaErrorResponse(type, error, status = 502) {
+  const message =
+    error?.message ||
+    String(error || "Unknown media generation error");
+
+  return errorResponse(
+    message,
+    status,
+    {
+      type,
+      provider: "cloudflare-workers-ai",
+      model:
+        type === "voice-studio"
+          ? MODELS.VOICE
+          : MODELS.IMAGE,
+      billingPath: "standard-workers-ai",
+      hint:
+        type === "image-generator" || type === "thumbnail-generator"
+          ? "v7.5 uses the Cloudflare-hosted FLUX.1 [schnell] JSON API. Check the Worker console if this request still fails."
+          : "Check the Worker console for the underlying media-model error."
+    }
+  );
+}
+
 function isMediaTool(type) {
   return [
     "image-generator",
@@ -1164,7 +1205,14 @@ export default {
             mode: "standard-workers-ai",
             aiGatewayCreditsRequiredByDefault: false,
             gatewayIdConfigured: false,
-            note: "v7.4 does not pass an AI Gateway ID to env.AI.run()."
+            note: "v7.5 does not pass an AI Gateway ID to env.AI.run()."
+          },
+
+          imageEngine: {
+            model: MODELS.IMAGE,
+            requestFormat: "json",
+            output: "base64-image",
+            steps: { min: 1, max: 8, default: 4 }
           },
 
           environmentModelOverride: false,
@@ -1308,7 +1356,12 @@ export default {
       =================================================== */
 
       if (type === "image-generator") {
-        return jsonResponse(await generateImage(env, body));
+        try {
+          return jsonResponse(await generateImage(env, body));
+        } catch (error) {
+          console.error("CAPTIVATE image-generator error:", error);
+          return mediaErrorResponse(type, error, 502);
+        }
       }
 
       if (type === "video-generator") {
@@ -1316,11 +1369,21 @@ export default {
       }
 
       if (type === "voice-studio") {
-        return jsonResponse(await generateVoice(env, body));
+        try {
+          return jsonResponse(await generateVoice(env, body));
+        } catch (error) {
+          console.error("CAPTIVATE voice-studio error:", error);
+          return mediaErrorResponse(type, error, 502);
+        }
       }
 
       if (type === "thumbnail-generator") {
-        return jsonResponse(await generateThumbnail(env, body));
+        try {
+          return jsonResponse(await generateThumbnail(env, body));
+        } catch (error) {
+          console.error("CAPTIVATE thumbnail-generator error:", error);
+          return mediaErrorResponse(type, error, 502);
+        }
       }
 
 
@@ -1532,3 +1595,4 @@ export default {
     }
   }
 };
+     
