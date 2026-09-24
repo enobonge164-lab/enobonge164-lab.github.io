@@ -1,5 +1,297 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>AI Voice Studio — CAPTIVATE AI</title><link rel="icon" href="favicon.png"><link rel="stylesheet" href="style.css"></head><body><main class="app-shell"><section class="section"><a class="back-link" href="captivate.html">← Back to CAPTIVATE AI</a><div class="section-header"><div><span class="coming-badge">CAPTIVATE AI</span><h1>AI Voice Studio</h1><p>Prepare narration, voice direction and audio-production scripts.</p></div></div><div class="card tool-workspace"><label for="request">Your request</label><textarea id="request" rows="8" placeholder="Describe what you want CAPTIVATE AI to create..."></textarea><div class="form-row"><label for="platform">Platform / format</label><input id="platform" placeholder="Optional"></div><button id="run">Generate with CAPTIVATE AI</button><p id="status" role="status"></p><pre id="result" class="result-box"></pre></div></section></main><script>
-const API='https://captivate-ai-api.sirwhitethepolymath.workers.dev';
-const type='voice-studio';
-document.getElementById('run').addEventListener('click',async()=>{const request=document.getElementById('request').value.trim();const platform=document.getElementById('platform').value.trim();const status=document.getElementById('status');const result=document.getElementById('result');if(!request){status.textContent='Please describe your request first.';return;}status.textContent='Working...';result.textContent='';try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,topic:request,platform})});const data=await r.json();if(!r.ok||data.success===false)throw new Error(data.error||'Request failed');result.textContent=data.output||data.result||data.response||JSON.stringify(data,null,2);status.textContent='Completed.';}catch(e){status.textContent='Error: '+e.message;}});
-</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>AI Voice Studio — CAPTIVATE AI</title>
+  <link rel="icon" href="favicon.png">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .voice-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:20px}
+    .voice-card{background:#111827;border:1px solid rgba(167,139,250,.18);border-radius:18px;padding:22px}
+    .voice-card h2{margin:0 0 8px}
+    .voice-card p{opacity:.78}
+    .field{margin:18px 0}
+    .field label{display:block;margin-bottom:8px;font-weight:700}
+    textarea,input,select{width:100%;box-sizing:border-box;border:1px solid rgba(167,139,250,.25);background:#0b1020;color:inherit;border-radius:12px;padding:13px;font:inherit}
+    textarea{resize:vertical;min-height:190px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .primary-btn{width:100%;border:0;border-radius:12px;padding:14px 18px;background:#8b5cf6;color:#fff;font-weight:800;cursor:pointer}
+    .primary-btn:disabled{opacity:.6;cursor:wait}
+    .status{min-height:24px;margin-top:12px}
+    .audio-panel{display:none}
+    .audio-panel.show{display:block}
+    audio{width:100%;margin:16px 0}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .actions a,.actions button{border:1px solid rgba(167,139,250,.28);background:#0b1020;color:inherit;border-radius:10px;padding:11px 14px;text-decoration:none;cursor:pointer}
+    .meta{font-size:.88rem;opacity:.7;line-height:1.6}
+    .error{color:#fca5a5}
+    .success{color:#86efac}
+    .loading{display:none;margin:16px 0;text-align:center;opacity:.8}
+    .loading.show{display:block}
+    .tip{border-left:3px solid #8b5cf6;padding:10px 13px;background:rgba(139,92,246,.07);border-radius:8px}
+    @media(max-width:800px){.voice-layout{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main class="app-shell">
+  <section class="section">
+    <a class="back-link" href="captivate.html">← Back to CAPTIVATE AI</a>
+
+    <div class="section-header">
+      <div>
+        <span class="coming-badge">CAPTIVATE AI • CONTENT STUDIO</span>
+        <h1>AI Voice Studio</h1>
+        <p>Turn your script into natural AI voice audio directly from CAPTIVATE AI.</p>
+      </div>
+    </div>
+
+    <div class="voice-layout">
+      <div class="voice-card">
+        <h2>🎙️ Create Voice</h2>
+        <p>Write or paste the exact text you want spoken.</p>
+
+        <div class="field">
+          <label for="text">Voice script</label>
+          <textarea id="text" maxlength="12000" placeholder="Example: Welcome to CAPTIVATE AI. Today, I'll show you how artificial intelligence can help creators and businesses work smarter."></textarea>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="language">Language</label>
+            <select id="language">
+              <option value="en">English</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="style">Voice style</label>
+            <select id="style">
+              <option value="natural">Natural</option>
+              <option value="professional">Professional</option>
+              <option value="friendly">Friendly</option>
+              <option value="energetic">Energetic</option>
+              <option value="calm">Calm</option>
+              <option value="storytelling">Storytelling</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="voice">Voice</label>
+          <select id="voice">
+            <option value="aura-asteria-en">Asteria — Natural Female</option>
+            <option value="aura-luna-en">Luna — Natural Female</option>
+            <option value="aura-stella-en">Stella — Natural Female</option>
+            <option value="aura-athena-en">Athena — Clear Female</option>
+            <option value="aura-orion-en">Orion — Natural Male</option>
+            <option value="aura-arcas-en">Arcas — Natural Male</option>
+            <option value="aura-perseus-en">Perseus — Strong Male</option>
+            <option value="aura-angus-en">Angus — Deep Male</option>
+          </select>
+        </div>
+
+        <div class="tip">
+          <strong>Tip:</strong> Use punctuation and short paragraphs to create more natural pacing.
+        </div>
+
+        <br>
+        <button id="generate" class="primary-btn">Generate AI Voice</button>
+        <div id="loading" class="loading">🎙️ Generating your voice audio…</div>
+        <div id="status" class="status" role="status"></div>
+      </div>
+
+      <div class="voice-card">
+        <h2>🔊 Audio Result</h2>
+        <p>Your generated voice will appear here.</p>
+
+        <div id="empty">
+          <div class="tip">No audio generated yet. Enter a script and tap <strong>Generate AI Voice</strong>.</div>
+        </div>
+
+        <div id="audioPanel" class="audio-panel">
+          <audio id="player" controls preload="metadata"></audio>
+          <div class="actions">
+            <a id="download" href="#" download="captivate-ai-voice.wav">⬇ Download WAV</a>
+            <button id="copyScript" type="button">📋 Copy Script</button>
+            <button id="regenerate" type="button">↻ Regenerate</button>
+          </div>
+          <p id="meta" class="meta"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const API = 'https://captivate-ai-api.sirwhitethepolymath.workers.dev';
+const TYPE = 'voice-studio';
+
+const textEl = document.getElementById('text');
+const voiceEl = document.getElementById('voice');
+const styleEl = document.getElementById('style');
+const languageEl = document.getElementById('language');
+const generateBtn = document.getElementById('generate');
+const statusEl = document.getElementById('status');
+const loadingEl = document.getElementById('loading');
+const emptyEl = document.getElementById('empty');
+const audioPanel = document.getElementById('audioPanel');
+const player = document.getElementById('player');
+const download = document.getElementById('download');
+const meta = document.getElementById('meta');
+
+let lastRequest = null;
+let currentAudioUrl = null;
+
+function setStatus(message, kind='') {
+  statusEl.textContent = message;
+  statusEl.className = 'status ' + kind;
+}
+
+function normalizeDataUri(text) {
+  if (typeof text !== 'string') return null;
+  const value = text.trim();
+  const m = value.match(/data:audio\/(?:wav|mpeg|mp3|ogg|webm);(?:charset=[^;,]+;)?base64,[A-Za-z0-9+/=\s]+/i);
+  return m ? m[0].replace(/\s+/g, '') : null;
+}
+
+function extractAudio(value, depth=0) {
+  if (value == null || depth > 8) return null;
+
+  if (typeof value === 'string') {
+    const uri = normalizeDataUri(value);
+    if (uri) return uri;
+
+    // Some API responses may return only the Base64 payload.
+    const s = value.trim().replace(/\s+/g, '');
+    if (s.length > 1000) {
+      if (s.startsWith('UklGR')) return 'data:audio/wav;base64,' + s;
+      if (s.startsWith('SUQz') || s.startsWith('//uQ') || s.startsWith('AAAA')) {
+        return 'data:audio/mpeg;base64,' + s;
+      }
+    }
+    return null;
+  }
+
+  if (typeof value !== 'object') return null;
+
+  const preferred = [
+    'audio','audioData','audio_data','audioBase64','audio_base64',
+    'dataURI','dataUri','data_url','dataUrl','output','result','response'
+  ];
+
+  for (const key of preferred) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      const found = extractAudio(value[key], depth + 1);
+      if (found) return found;
+    }
+  }
+
+  for (const key of Object.keys(value)) {
+    if (preferred.includes(key)) continue;
+    const found = extractAudio(value[key], depth + 1);
+    if (found) return found;
+  }
+
+  return null;
+}
+
+function revokeOldUrl() {
+  if (currentAudioUrl) {
+    URL.revokeObjectURL(currentAudioUrl);
+    currentAudioUrl = null;
+  }
+}
+
+async function generateVoice() {
+  const script = textEl.value.trim();
+
+  if (!script) {
+    setStatus('Please enter a script first.', 'error');
+    textEl.focus();
+    return;
+  }
+
+  lastRequest = {
+    type: TYPE,
+    topic: script,
+    text: script,
+    voice: voiceEl.value,
+    language: languageEl.value,
+    style: styleEl.value
+  };
+
+  generateBtn.disabled = true;
+  loadingEl.classList.add('show');
+  setStatus('Connecting to CAPTIVATE AI…');
+  audioPanel.classList.remove('show');
+
+  try {
+    const response = await fetch(API, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(lastRequest)
+    });
+
+    const raw = await response.text();
+    let data;
+
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      throw new Error('The API returned an invalid response.');
+    }
+
+    if (!response.ok || data.success === false) {
+      throw new Error(data.error || data.message || 'Voice generation failed.');
+    }
+
+    const audioData = extractAudio(data);
+
+    if (!audioData) {
+      throw new Error(
+        'The API completed the request but no audio data was found in the response.'
+      );
+    }
+
+    revokeOldUrl();
+    player.src = audioData;
+    download.href = audioData;
+    download.download = 'captivate-ai-voice.wav';
+
+    emptyEl.style.display = 'none';
+    audioPanel.classList.add('show');
+
+    const chars = script.length.toLocaleString();
+    meta.textContent =
+      `CAPTIVATE AI • Voice: ${voiceEl.options[voiceEl.selectedIndex].text} • ` +
+      `Style: ${styleEl.options[styleEl.selectedIndex].text} • ` +
+      `${chars} characters`;
+
+    setStatus('Voice generated successfully.', 'success');
+  } catch (error) {
+    setStatus('Error: ' + error.message, 'error');
+  } finally {
+    generateBtn.disabled = false;
+    loadingEl.classList.remove('show');
+  }
+}
+
+generateBtn.addEventListener('click', generateVoice);
+
+document.getElementById('regenerate').addEventListener('click', () => {
+  if (lastRequest) generateVoice();
+});
+
+document.getElementById('copyScript').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(textEl.value);
+    setStatus('Script copied to clipboard.', 'success');
+  } catch {
+    setStatus('Could not copy automatically. Select and copy the script manually.', 'error');
+  }
+});
+
+window.addEventListener('beforeunload', revokeOldUrl);
+</script>
+</body>
+</html>
