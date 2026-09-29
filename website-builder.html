@@ -1,5 +1,592 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>AI Website Builder — CAPTIVATE AI</title><link rel="icon" href="favicon.png"><link rel="stylesheet" href="style.css"></head><body><main class="app-shell"><section class="section"><a class="back-link" href="captivate.html">← Back to CAPTIVATE AI</a><div class="section-header"><div><span class="coming-badge">CAPTIVATE AI</span><h1>AI Website Builder</h1><p>Turn a business idea into a website plan and starter code.</p></div></div><div class="card tool-workspace"><label for="request">Your request</label><textarea id="request" rows="8" placeholder="Describe what you want CAPTIVATE AI to create..."></textarea><div class="form-row"><label for="platform">Platform / format</label><input id="platform" placeholder="Optional"></div><button id="run">Generate with CAPTIVATE AI</button><p id="status" role="status"></p><pre id="result" class="result-box"></pre></div></section></main><script>
-const API='https://captivate-ai-api.sirwhitethepolymath.workers.dev';
-const type='website-builder';
-document.getElementById('run').addEventListener('click',async()=>{const request=document.getElementById('request').value.trim();const platform=document.getElementById('platform').value.trim();const status=document.getElementById('status');const result=document.getElementById('result');if(!request){status.textContent='Please describe your request first.';return;}status.textContent='Working...';result.textContent='';try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,topic:request,platform})});const data=await r.json();if(!r.ok||data.success===false)throw new Error(data.error||'Request failed');result.textContent=data.output||data.result||data.response||JSON.stringify(data,null,2);status.textContent='Completed.';}catch(e){status.textContent='Error: '+e.message;}});
-</script></body></html>
+t<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080b12">
+<title>CAPTIVATE AI — Website Builder</title>
+<style>
+:root{
+  --bg:#080b12;
+  --panel:#111827;
+  --panel2:#0d111a;
+  --border:rgba(167,139,250,.18);
+  --primary:#8b5cf6;
+  --primary2:#a78bfa;
+  --text:#f8fafc;
+  --muted:#a8b0c0;
+  --success:#34d399;
+  --danger:#fb7185;
+  --shadow:0 24px 70px rgba(76,29,149,.24);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 80% 0%,rgba(139,92,246,.12),transparent 32rem),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.55;
+}
+a{color:var(--primary2);text-decoration:none}
+a:hover{text-decoration:underline}
+.container{width:min(1120px,calc(100% - 28px));margin:auto}
+.topbar{padding:30px 0 10px}
+.back{display:inline-block;margin-bottom:28px;font-size:16px}
+.eyebrow{font-size:14px;letter-spacing:.12em;color:var(--primary2);font-weight:800}
+h1{font-size:clamp(34px,7vw,62px);line-height:1.02;margin:8px 0 14px}
+.hero-copy{font-size:clamp(17px,3vw,21px);color:#d7dbe5;max-width:760px}
+.card{
+  background:linear-gradient(180deg,rgba(17,24,39,.96),rgba(13,17,26,.98));
+  border:1px solid var(--border);
+  border-radius:24px;
+  box-shadow:var(--shadow);
+}
+.builder{margin:28px 0 50px;padding:22px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.field{display:flex;flex-direction:column;gap:7px}
+.field.full{grid-column:1/-1}
+label{font-weight:700;color:#e8eaf0}
+input,select,textarea{
+  width:100%;
+  border:1px solid rgba(148,163,184,.2);
+  border-radius:13px;
+  background:#090d15;
+  color:var(--text);
+  padding:13px 14px;
+  font:inherit;
+  outline:none;
+}
+textarea{min-height:110px;resize:vertical}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(139,92,246,.12)
+}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+button,.button{
+  border:0;
+  border-radius:12px;
+  padding:12px 17px;
+  font:inherit;
+  font-weight:800;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.primary{background:linear-gradient(135deg,var(--primary),#6d28d9);color:#fff}
+.secondary{background:#1b2435;color:#fff;border:1px solid rgba(167,139,250,.2)}
+button:disabled{opacity:.55;cursor:not-allowed}
+.status{margin-top:16px;padding:13px 15px;border-radius:12px;background:#0a1019;color:var(--muted);display:none}
+.status.show{display:block}
+.status.success{border:1px solid rgba(52,211,153,.25);color:#b8f7dc}
+.status.error{border:1px solid rgba(251,113,133,.3);color:#fecdd3}
+.spinner{
+  width:17px;height:17px;border:2px solid rgba(255,255,255,.25);
+  border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.results{display:none;margin-bottom:70px}
+.results.show{display:block}
+.result-head{padding:22px;margin-bottom:14px}
+.result-head h2{margin:0 0 5px}
+.meta{color:var(--muted);font-size:14px}
+.tabs{display:flex;gap:8px;overflow:auto;padding:4px 0 12px}
+.tab{
+  white-space:nowrap;
+  background:#111827;
+  color:#cbd5e1;
+  border:1px solid var(--border);
+}
+.tab.active{background:rgba(139,92,246,.2);color:#fff;border-color:rgba(167,139,250,.45)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.output-card{padding:20px;margin-bottom:14px}
+.output-card h3{margin-top:0}
+pre{
+  margin:0;
+  background:#070a10;
+  border:1px solid rgba(148,163,184,.12);
+  border-radius:14px;
+  padding:16px;
+  overflow:auto;
+  white-space:pre-wrap;
+  word-break:break-word;
+  font-size:13px;
+  line-height:1.6;
+}
+.kv{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.kv-item{background:#0a1019;border:1px solid rgba(148,163,184,.1);border-radius:13px;padding:13px}
+.kv-item strong{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.list{margin:8px 0 0;padding-left:20px}
+.list li{margin:5px 0}
+.empty{color:var(--muted)}
+.notice{padding:12px 14px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.18);border-radius:12px;color:#ddd6fe}
+.footer{color:#727b8d;text-align:center;padding:30px 0 50px;font-size:13px}
+@media(max-width:700px){
+  .grid,.kv{grid-template-columns:1fr}
+  .builder{padding:16px;border-radius:19px}
+  .topbar{padding-top:22px}
+  .actions button,.actions .button{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="topbar">
+    <a class="back" href="index.html">← Back to CAPTIVATE AI</a>
+    <div class="eyebrow">CAPTIVATE AI</div>
+    <h1>AI Website Builder</h1>
+    <p class="hero-copy">Turn a business idea into a structured website plan, starter HTML and an implementation-ready build prompt.</p>
+  </header>
+
+  <section class="card builder">
+    <form id="builderForm">
+      <div class="grid">
+        <div class="field full">
+          <label for="idea">Website / Business Idea *</label>
+          <textarea id="idea" required placeholder="Example: A modern Nigerian phone accessories business selling chargers, earbuds, power banks and phone cases."></textarea>
+        </div>
+
+        <div class="field">
+          <label for="audience">Target Audience</label>
+          <input id="audience" placeholder="Example: Young Nigerian smartphone users">
+        </div>
+
+        <div class="field">
+          <label for="websiteType">Website Type</label>
+          <select id="websiteType">
+            <option>Business Website</option>
+            <option>Landing Page</option>
+            <option>Portfolio</option>
+            <option>Online Store</option>
+            <option>Blog</option>
+            <option>Web App</option>
+            <option>Booking Website</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="style">Design Style</label>
+          <select id="style">
+            <option>Modern & Premium</option>
+            <option>Minimal</option>
+            <option>Bold & Colorful</option>
+            <option>Corporate</option>
+            <option>Luxury</option>
+            <option>Tech / Futuristic</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="pages">Pages</label>
+          <input id="pages" placeholder="Home, About, Products, Contact">
+        </div>
+
+        <div class="field full">
+          <label for="features">Features</label>
+          <textarea id="features" placeholder="Product catalog, WhatsApp button, contact form, testimonials, FAQ"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="brand">Brand / Color Direction</label>
+          <input id="brand" value="Purple, white and black">
+        </div>
+
+        <div class="field">
+          <label for="extra">Extra Instructions</label>
+          <input id="extra" placeholder="Mobile-first, professional, fast and accessible">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="generateBtn" type="submit">Generate with CAPTIVATE AI</button>
+        <button class="secondary" id="clearBtn" type="button">Clear</button>
+      </div>
+
+      <div id="status" class="status"></div>
+    </form>
+  </section>
+
+  <section id="results" class="results">
+    <div class="card result-head">
+      <h2 id="projectTitle">Website Blueprint</h2>
+      <div class="meta" id="resultMeta">CAPTIVATE AI Website Builder</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="plan" type="button">Website Plan</button>
+      <button class="tab" data-tab="html" type="button">HTML Starter</button>
+      <button class="tab" data-tab="prompt" type="button">Build Prompt</button>
+      <button class="tab" data-tab="raw" type="button">Raw Response</button>
+    </div>
+
+    <div id="planPanel" class="tab-panel active">
+      <div class="card output-card">
+        <h3>Project Overview</h3>
+        <div id="overview" class="empty">No overview yet.</div>
+      </div>
+
+      <div class="card output-card">
+        <h3>Pages</h3>
+        <div id="pagesOutput" class="empty">No pages yet.</div>
+      </div>
+
+      <div class="card output-card">
+        <h3>Features</h3>
+        <div id="featuresOutput" class="empty">No features yet.</div>
+      </div>
+
+      <div class="card output-card">
+        <h3>Recommended Structure</h3>
+        <div id="structureOutput" class="empty">No structure yet.</div>
+      </div>
+
+      <div class="card output-card">
+        <h3>Notes</h3>
+        <div id="notesOutput" class="empty">No notes yet.</div>
+      </div>
+    </div>
+
+    <div id="htmlPanel" class="tab-panel">
+      <div class="card output-card">
+        <div class="actions" style="margin-top:0;margin-bottom:12px">
+          <button class="secondary" id="copyHtml" type="button">Copy HTML</button>
+          <button class="primary" id="downloadHtml" type="button">Download HTML</button>
+        </div>
+        <pre id="htmlOutput"></pre>
+      </div>
+    </div>
+
+    <div id="promptPanel" class="tab-panel">
+      <div class="card output-card">
+        <div class="actions" style="margin-top:0;margin-bottom:12px">
+          <button class="secondary" id="copyPrompt" type="button">Copy Build Prompt</button>
+        </div>
+        <pre id="promptOutput"></pre>
+      </div>
+    </div>
+
+    <div id="rawPanel" class="tab-panel">
+      <div class="card output-card">
+        <pre id="rawOutput"></pre>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">CAPTIVATE AI • Website Builder Assistant</div>
+</div>
+
+<script>
+const API_URL = "https://captivate-ai-api.sirwhitethepolymath.workers.dev";
+
+const $ = id => document.getElementById(id);
+
+function clean(value){
+  return value == null ? "" : String(value).trim();
+}
+
+function escapeHtml(value){
+  return clean(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function asArray(value){
+  if(Array.isArray(value)) return value;
+  if(value == null || value === "") return [];
+  if(typeof value === "string"){
+    return value.split(/\n|,/).map(x=>x.trim()).filter(Boolean);
+  }
+  return [value];
+}
+
+function safeJsonStringify(value){
+  try{return JSON.stringify(value,null,2)}catch{return String(value)}
+}
+
+/*
+  The v7.6 Website Builder returns a structured object.
+  This frontend deliberately extracts the fields instead of doing:
+      element.textContent = data.result;
+  which is what caused "[object Object]".
+*/
+function unwrapResponse(data){
+  if(!data || typeof data !== "object") return data;
+  if(data.output && typeof data.output === "object") return data.output;
+  if(data.website && typeof data.website === "object") return data.website;
+  if(data.result && typeof data.result === "object") return data.result;
+  return data;
+}
+
+function getText(data, keys){
+  for(const key of keys){
+    const value = data?.[key];
+    if(typeof value === "string" && value.trim()) return value.trim();
+  }
+  return "";
+}
+
+function renderList(container, value){
+  const items = asArray(value);
+  if(!items.length){
+    container.innerHTML = '<div class="empty">No information returned.</div>';
+    return;
+  }
+
+  container.innerHTML = "<ul class=\"list\">" + items.map(item=>{
+    if(typeof item === "string") return "<li>"+escapeHtml(item)+"</li>";
+    if(item && typeof item === "object"){
+      const title = item.title || item.name || item.label || "";
+      const desc = item.description || item.details || item.content || "";
+      return "<li><strong>"+escapeHtml(title)+"</strong>"+(desc ? ": "+escapeHtml(desc) : "")+"</li>";
+    }
+    return "<li>"+escapeHtml(item)+"</li>";
+  }).join("") + "</ul>";
+}
+
+function renderPlan(data){
+  const root = unwrapResponse(data);
+
+  const project = data?.project || root?.project || {};
+  const website = data?.website || root?.website || root || {};
+
+  const title =
+    getText(project,["name","title"]) ||
+    getText(website,["name","title","projectName"]) ||
+    "Website Blueprint";
+
+  $("projectTitle").textContent = title;
+
+  $("resultMeta").textContent =
+    "CAPTIVATE AI • " +
+    (data?.model || "@cf/qwen/qwen2.5-coder-32b-instruct") +
+    (data?.version ? " • v"+data.version : "");
+
+  const overview =
+    getText(website,["overview","summary","description"]) ||
+    getText(project,["description","summary"]) ||
+    getText(data,["text"]) ||
+    "Website plan generated successfully.";
+
+  $("overview").textContent = overview;
+
+  const pages =
+    website.pages ||
+    root?.pages ||
+    project.pages ||
+    [];
+
+  renderList($("pagesOutput"), pages);
+
+  const features =
+    website.features ||
+    root?.features ||
+    project.features ||
+    [];
+
+  renderList($("featuresOutput"), features);
+
+  const structure =
+    website.structure ||
+    website.sections ||
+    website.recommendedStructure ||
+    root?.structure ||
+    root?.sections ||
+    [];
+
+  renderList($("structureOutput"), structure);
+
+  const notes =
+    website.notes ||
+    website.recommendations ||
+    root?.notes ||
+    root?.recommendations ||
+    [];
+
+  renderList($("notesOutput"), notes);
+
+  const html =
+    getText(data,["htmlStarter","starterHtml"]) ||
+    getText(website,["htmlStarter","starterHtml","html"]) ||
+    getText(root,["htmlStarter","starterHtml","html"]);
+
+  const buildPrompt =
+    getText(data,["buildPrompt"]) ||
+    getText(website,["buildPrompt"]) ||
+    getText(root,["buildPrompt"]);
+
+  $("htmlOutput").textContent = html || "<!-- No HTML starter was returned. -->";
+  $("promptOutput").textContent = buildPrompt || "No build prompt was returned.";
+
+  $("rawOutput").textContent = safeJsonStringify(data);
+}
+
+async function copyText(text, button){
+  if(!text) return;
+  try{
+    await navigator.clipboard.writeText(text);
+    const old = button.textContent;
+    button.textContent = "Copied ✓";
+    setTimeout(()=>button.textContent=old,1400);
+  }catch{
+    alert("Copy failed. Please select and copy the text manually.");
+  }
+}
+
+function downloadText(filename,text,type){
+  const blob = new Blob([text],{type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function setStatus(message,type=""){
+  $("status").textContent = message;
+  $("status").className = "status show " + type;
+}
+
+function setLoading(loading){
+  const btn = $("generateBtn");
+  btn.disabled = loading;
+  btn.innerHTML = loading
+    ? '<span class="spinner"></span> Generating...'
+    : "Generate with CAPTIVATE AI";
+}
+
+$("builderForm").addEventListener("submit", async event=>{
+  event.preventDefault();
+
+  const idea = clean($("idea").value);
+  if(!idea){
+    setStatus("Please describe the website or business idea first.","error");
+    return;
+  }
+
+  const payload = {
+    type: "website-builder",
+
+    /*
+      topic is included for compatibility with the generic CAPTIVATE
+      API validation in versions where Website Builder is checked before
+      its specialized route. The dedicated backend still uses idea.
+    */
+    topic: idea,
+
+    idea,
+    targetAudience: clean($("audience").value),
+    websiteType: clean($("websiteType").value),
+    style: clean($("style").value),
+    pages: clean($("pages").value),
+    features: clean($("features").value),
+    brand: clean($("brand").value),
+    brandDirection: clean($("brand").value),
+    extra: clean($("extra").value),
+    extraInstructions: clean($("extra").value)
+  };
+
+  setLoading(true);
+  setStatus("CAPTIVATE AI is designing your website...");
+
+  try{
+    const response = await fetch(API_URL,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(payload)
+    });
+
+    const rawText = await response.text();
+
+    let data;
+    try{
+      data = JSON.parse(rawText);
+    }catch{
+      throw new Error(
+        "The API returned a non-JSON response. HTTP "+response.status+
+        ". Response: "+rawText.slice(0,500)
+      );
+    }
+
+    if(!response.ok || data?.success === false){
+      const message =
+        data?.error ||
+        data?.message ||
+        data?.details ||
+        ("Website Builder request failed with HTTP "+response.status);
+      throw new Error(message);
+    }
+
+    renderPlan(data);
+    $("results").classList.add("show");
+    $("results").scrollIntoView({behavior:"smooth",block:"start"});
+    setStatus("Completed successfully. Your website blueprint is ready.","success");
+  }catch(error){
+    console.error(error);
+    setStatus(
+      "Website Builder error: " + (error?.message || "Unknown error"),
+      "error"
+    );
+  }finally{
+    setLoading(false);
+  }
+});
+
+$("clearBtn").addEventListener("click",()=>{
+  $("builderForm").reset();
+  $("brand").value = "Purple, white and black";
+  $("results").classList.remove("show");
+  $("status").className = "status";
+  $("status").textContent = "";
+});
+
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(x=>x.classList.remove("active"));
+
+    tab.classList.add("active");
+    $(tab.dataset.tab+"Panel").classList.add("active");
+  });
+});
+
+$("copyHtml").addEventListener("click",()=>{
+  copyText($("htmlOutput").textContent,$("copyHtml"));
+});
+
+$("copyPrompt").addEventListener("click",()=>{
+  copyText($("promptOutput").textContent,$("copyPrompt"));
+});
+
+$("downloadHtml").addEventListener("click",()=>{
+  const html = $("htmlOutput").textContent.trim();
+  if(!html || html.startsWith("<!-- No HTML")){
+    alert("No HTML starter was returned.");
+    return;
+  }
+  downloadText(
+    "captivate-website-starter.html",
+    html,
+    "text/html;charset=utf-8"
+  );
+});
+</script>
+</body>
+</html>
