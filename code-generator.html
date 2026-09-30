@@ -1,5 +1,104 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Code Generation Assistant — CAPTIVATE AI</title><link rel="icon" href="favicon.png"><link rel="stylesheet" href="style.css"></head><body><main class="app-shell"><section class="section"><a class="back-link" href="captivate.html">← Back to CAPTIVATE AI</a><div class="section-header"><div><span class="coming-badge">CAPTIVATE AI</span><h1>Code Generation Assistant</h1><p>Generate, explain, debug and improve code safely.</p></div></div><div class="card tool-workspace"><label for="request">Your request</label><textarea id="request" rows="8" placeholder="Describe what you want CAPTIVATE AI to create..."></textarea><div class="form-row"><label for="platform">Platform / format</label><input id="platform" placeholder="Optional"></div><button id="run">Generate with CAPTIVATE AI</button><p id="status" role="status"></p><pre id="result" class="result-box"></pre></div></section></main><script>
-const API='https://captivate-ai-api.sirwhitethepolymath.workers.dev';
-const type='code-generator';
-document.getElementById('run').addEventListener('click',async()=>{const request=document.getElementById('request').value.trim();const platform=document.getElementById('platform').value.trim();const status=document.getElementById('status');const result=document.getElementById('result');if(!request){status.textContent='Please describe your request first.';return;}status.textContent='Working...';result.textContent='';try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,topic:request,platform})});const data=await r.json();if(!r.ok||data.success===false)throw new Error(data.error||'Request failed');result.textContent=data.output||data.result||data.response||JSON.stringify(data,null,2);status.textContent='Completed.';}catch(e){status.textContent='Error: '+e.message;}});
-</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b12">
+<title>CAPTIVATE AI — Code Generation Assistant</title>
+<style>
+:root{--bg:#080b12;--side:#0d111a;--card:#111827;--card2:#0b1220;--border:#273244;--text:#f8fafc;--muted:#94a3b8;--p:#8b5cf6;--p2:#a78bfa;--ok:#22c55e}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.app{display:flex;min-height:100vh}
+aside{width:245px;position:fixed;inset:0 auto 0 0;background:var(--side);border-right:1px solid var(--border);padding:22px 15px;overflow:auto}.logo{font-weight:900;font-size:20px}.logo span{color:var(--p2)}.tag{color:var(--muted);font-size:12px;margin:4px 0 25px}.navtitle{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin:18px 10px 7px}.nav a{display:block;text-decoration:none;color:#cbd5e1;padding:10px 11px;border-radius:9px;margin:3px 0;font-size:13px}.nav a:hover,.nav a.active{background:#171d2b;color:#fff}.nav a.active{border-left:3px solid var(--p);padding-left:8px}.back{border-top:1px solid var(--border);margin-top:22px;padding-top:17px}.back a{color:var(--p2);font-size:12px;text-decoration:none}
+main{margin-left:245px;width:calc(100% - 245px);padding:28px;max-width:1500px}.top{display:flex;justify-content:space-between;align-items:center;gap:10px}.badge{background:#1b1430;border:1px solid #4c3b79;color:#c4b5fd;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:800}.status{font-size:11px;color:var(--muted)}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:5px}
+h1{font-size:31px;margin:13px 0 6px}.sub{color:var(--muted);max-width:850px;line-height:1.55;font-size:14px;margin-bottom:22px}.grid{display:grid;grid-template-columns:410px minmax(0,1fr);gap:18px;align-items:start}.card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px}.card h2{font-size:17px;margin:0 0 5px}.help{color:var(--muted);font-size:12px;line-height:1.5;margin:0 0 14px}
+label{display:block;color:#cbd5e1;font-size:11px;font-weight:750;margin:13px 0 6px}input,textarea,select{width:100%;background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:10px 11px;outline:none;font:inherit}input:focus,textarea:focus,select:focus{border-color:var(--p)}textarea{min-height:85px;resize:vertical;line-height:1.45}.code{font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;min-height:150px}.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.btn{border:0;border-radius:9px;padding:10px 13px;font-weight:800;font-size:12px}.primary{background:var(--p);color:#fff}.secondary{background:#1e293b;color:#e2e8f0;border:1px solid var(--border)}.btn:disabled{opacity:.55}
+.tabs{display:flex;gap:5px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:14px}.tab{background:transparent;color:var(--muted);border:1px solid transparent;padding:7px 9px;border-radius:7px;font-size:11px}.tab.active{background:#1b1430;border-color:#4c3b79;color:#c4b5fd}.panel{display:none}.panel.active{display:block}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.kpi{background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:10px}.kpi small{display:block;color:var(--muted);font-size:10px;margin-bottom:4px}.kpi b{font-size:12px;word-break:break-word}.section{margin:15px 0}.section h3{color:#ddd6fe;font-size:13px;margin:0 0 7px}.block{background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:11px;color:#dbe4f0;white-space:pre-wrap;font-size:12px;line-height:1.55}.block ul{margin:0;padding-left:18px}.file{border:1px solid var(--border);border-radius:9px;overflow:hidden;margin:9px 0;background:var(--card2)}.filehead{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;border-bottom:1px solid var(--border)}.filehead b{font-size:11px;color:#ddd6fe;word-break:break-all}.filehead span{font-size:10px;color:var(--muted)}pre{margin:0;padding:12px;overflow:auto;max-height:570px;background:#070b12;color:#e2e8f0;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}.notice{margin-top:10px;padding:10px 11px;border-radius:8px;border:1px solid var(--border);font-size:11px;line-height:1.45;color:#cbd5e1}.error{background:#29151a;border-color:#67242c;color:#fecaca}.success{background:#102119;border-color:#1f5b3a;color:#bbf7d0}.empty{min-height:420px;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:12px}.empty strong{display:block;color:#e2e8f0;font-size:17px;margin-bottom:6px}.spin{display:inline-block;width:12px;height:12px;border:2px solid #ffffff55;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px}@keyframes spin{to{transform:rotate(360deg)}}footer{text-align:center;color:#64748b;font-size:10px;margin-top:18px}
+@media(max-width:900px){aside{position:static;width:100%;height:auto;border:0;border-bottom:1px solid var(--border)}.app{display:block}main{margin:0;width:100%;padding:17px}.grid{grid-template-columns:1fr}.nav{display:flex;overflow:auto;gap:4px}.navtitle{display:none}.nav a{white-space:nowrap}.back{display:none}h1{font-size:25px}}
+@media(max-width:600px){.row,.kpis{grid-template-columns:1fr}.card{padding:14px}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="logo">CAPTIVATE <span>AI</span></div><div class="tag">Your AI workspace to create, build & grow.</div>
+  <nav class="nav">
+    <div class="navtitle">Workspace</div>
+    <a href="index.html">Dashboard</a><a href="caption.html">Caption Generator</a><a href="image-generator.html">AI Image Generator</a>
+    <a href="website-builder.html">Website Builder</a><a href="app-builder.html">App Builder</a><a class="active" href="code-generator.html">Code Generation Assistant</a>
+    <a href="business-tool-builder.html">Business Tool Builder</a>
+  </nav>
+  <div class="back"><a href="index.html">← Back to CAPTIVATE AI</a></div>
+</aside>
+<main>
+  <div class="top"><span class="badge">⚡ CODE GENERATION ASSISTANT · v7.8</span><span class="status"><span class="dot"></span>Cloudflare Workers AI</span></div>
+  <h1>Build, debug & improve code with AI</h1>
+  <div class="sub">Describe what you want to build, paste existing code or an error, and CAPTIVATE AI returns a structured development response with files, code, fixes, dependencies, testing, deployment and security guidance.</div>
+  <div class="grid">
+    <section class="card">
+      <h2>Code Request</h2><p class="help">Give the assistant enough context to produce useful, runnable output.</p>
+      <label for="request">What do you want to build or fix?</label>
+      <textarea id="request" placeholder="Example: Build a responsive pricing section for a SaaS landing page with HTML, CSS and JavaScript."></textarea>
+      <div class="row">
+        <div><label for="task">Task</label><select id="task"><option value="generate">Generate new code</option><option value="debug">Debug / fix code</option><option value="refactor">Refactor code</option><option value="explain">Explain code</option><option value="optimize">Optimize code</option><option value="convert">Convert code</option><option value="review">Review code</option></select></div>
+        <div><label for="language">Language</label><input id="language" value="HTML" placeholder="JavaScript, Python, HTML..."></div>
+      </div>
+      <div class="row">
+        <div><label for="framework">Framework / Library</label><input id="framework" placeholder="React, Next.js, Node.js, none..."></div>
+        <div><label for="runtime">Runtime</label><input id="runtime" placeholder="Browser, Node.js, Cloudflare Workers..."></div>
+      </div>
+      <label for="code">Existing Code</label><textarea id="code" class="code" placeholder="Paste code here if debugging, refactoring, reviewing or converting."></textarea>
+      <label for="error">Error / Problem</label><textarea id="error" placeholder="Paste the exact error message or describe what is not working."></textarea>
+      <label for="files">Files / Project Context</label><textarea id="files" placeholder="Example: index.html, style.css, app.js. Describe relevant files, APIs, constraints or folder structure."></textarea>
+      <label for="requirements">Requirements</label><textarea id="requirements" placeholder="Example: mobile-first, accessible, no external backend, use purple/white branding, keep existing API contract."></textarea>
+      <div class="actions"><button class="btn primary" id="generate">⚡ Generate Code</button><button class="btn secondary" id="clear">Clear</button></div>
+      <div id="message"></div>
+    </section>
+    <section class="card">
+      <div class="tabs">
+        <button class="tab active" data-tab="overview">Overview</button><button class="tab" data-tab="files">Files & Code</button>
+        <button class="tab" data-tab="diagnosis">Diagnosis & Fixes</button><button class="tab" data-tab="setup">Dependencies & Setup</button>
+        <button class="tab" data-tab="testing">Testing</button><button class="tab" data-tab="deployment">Deployment</button>
+        <button class="tab" data-tab="security">Security</button><button class="tab" data-tab="raw">Raw Response</button>
+      </div>
+      <div id="output"><div class="empty"><div><strong>Your code workspace is ready.</strong>Enter a request on the left and generate a structured coding response.</div></div></div>
+    </section>
+  </div>
+  <footer>CAPTIVATE AI · Code Generation Assistant · Cloudflare Workers AI</footer>
+</main>
+</div>
+<script>
+const API_URL="https://captivate-ai-api.sirwhitethepolymath.workers.dev";
+let last=null;
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+function txt(v){if(v==null)return"";if(typeof v==="string")return v;if(Array.isArray(v))return v.map(txt).filter(Boolean).join("\n");if(typeof v==="object")return v.text||v.content||v.message||JSON.stringify(v,null,2);return String(v)}
+function arr(v){let a=Array.isArray(v)?v:(v?[v]:[]);return a.length?"<div class='block'><ul>"+a.map(x=>"<li>"+esc(txt(x))+"</li>").join("")+"</ul></div>":"<div class='block'>None provided.</div>"}
+function sec(title,v){let s=txt(v);return s?"<div class='section'><h3>"+esc(title)+"</h3><div class='block'>"+esc(s)+"</div></div>":""}
+function normalize(d){let r=d?.output||d?.result||d||{};return{task:r.task||d.task,language:r.language||d.language,framework:r.framework||d.framework,summary:r.summary||d.summary||d.text,assumptions:r.assumptions||d.assumptions,files:r.files||d.files,code:r.code||d.code,explanation:r.explanation||d.explanation,diagnosis:r.diagnosis||d.diagnosis,fixes:r.fixes||d.fixes,dependencies:r.dependencies||d.dependencies,setup:r.setup||d.setup,testing:r.testing||d.testing,deployment:r.deployment||d.deployment,security:r.security||d.security,optimization:r.optimization||d.optimization,nextSteps:r.nextSteps||d.nextSteps}}
+function render(d){
+$("output").innerHTML=
+"<div id='p-overview' class='panel active'><div class='kpis'><div class='kpi'><small>Task</small><b>"+esc(d.task||"—")+"</b></div><div class='kpi'><small>Language</small><b>"+esc(d.language||"—")+"</b></div><div class='kpi'><small>Framework</small><b>"+esc(d.framework||"—")+"</b></div></div>"+
+sec("Summary",d.summary)+sec("Explanation",d.explanation)+"<div class='section'><h3>Assumptions</h3>"+arr(d.assumptions)+"</div>"+sec("Optimization",d.optimization)+"<div class='section'><h3>Next Steps</h3>"+arr(d.nextSteps)+"</div></div>"+
+"<div id='p-files' class='panel'><div class='actions' style='margin-top:0'><button class='btn secondary' id='copy'>Copy Main Code</button><button class='btn secondary' id='download'>Download Code</button></div>"+
+(d.files?.length?d.files.map((f,i)=>{let n=typeof f==="string"?"file-"+(i+1):(f.path||f.filename||f.name||"file-"+(i+1)),c=typeof f==="string"?f:(f.code||f.content||"");return"<div class='file'><div class='filehead'><b>"+esc(n)+"</b><span>"+esc(typeof f==="object"?(f.language||""):"")+"</span></div><pre>"+esc(c)+"</pre></div>"}).join(""):"<div class='section'><h3>Generated Code</h3><pre>"+esc(d.code||"// No code returned.")+"</pre></div>")+
+(d.files?.length&&d.code?"<div class='section'><h3>Main Code</h3><pre>"+esc(d.code)+"</pre></div>":"")+"</div>"+
+"<div id='p-diagnosis' class='panel'>"+sec("Diagnosis",d.diagnosis)+"<div class='section'><h3>Fixes</h3>"+arr(d.fixes)+"</div></div>"+
+"<div id='p-setup' class='panel'><div class='section'><h3>Dependencies</h3>"+arr(d.dependencies)+"</div>"+sec("Setup",d.setup)+"</div>"+
+"<div id='p-testing' class='panel'>"+sec("Testing Plan",d.testing)+"</div><div id='p-deployment' class='panel'>"+sec("Deployment",d.deployment)+"</div><div id='p-security' class='panel'>"+sec("Security",d.security)+"</div>"+
+"<div id='p-raw' class='panel'><pre>"+esc(JSON.stringify(last,null,2))+"</pre></div>";
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("p-"+b.dataset.tab).classList.add("active")});
+if($("copy"))$("copy").onclick=async()=>{await navigator.clipboard.writeText(d.code||"");msg("Main code copied.","success")};
+if($("download"))$("download").onclick=()=>{let c=d.code||((d.files||[]).map(f=>typeof f==="string"?f:"/* "+(f.path||f.filename||f.name||"file")+" */\n"+(f.code||f.content||"")).join("\n\n"));let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([c],{type:"text/plain"}));a.download="captivate-generated-code.txt";a.click()};
+}
+function msg(s,c){$("message").innerHTML=s?"<div class='notice "+(c||"")+"'>"+s+"</div>":""}
+async function generate(){
+let request=$("request").value.trim();if(!request){msg("Please describe what you want to build or fix.","error");return}
+let b=$("generate");b.disabled=true;b.innerHTML="<span class='spin'></span>Generating...";msg("CAPTIVATE AI is generating your structured coding response...");
+let payload={type:"code-generator",topic:request,request,task:$("task").value,language:$("language").value.trim(),framework:$("framework").value.trim(),runtime:$("runtime").value.trim(),code:$("code").value,error:$("error").value,files:$("files").value,requirements:$("requirements").value,extraInstructions:$("requirements").value};
+try{let r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}),raw=await r.text(),d;try{d=JSON.parse(raw)}catch(e){throw Error("Server returned non-JSON response (HTTP "+r.status+").")}if(!r.ok||d.success===false)throw Error(d.error||d.message||"Request failed with HTTP "+r.status);last=d;render(normalize(d));msg("Code Generation Assistant completed successfully.","success");document.querySelector("[data-tab=overview]").click()}catch(e){$("output").innerHTML="<div class='notice error'><b>Generation failed.</b><br><br>"+esc(e.message)+"</div>";msg("Check that your deployed Worker is the v7.8 Code Generation Assistant backend.","error")}finally{b.disabled=false;b.innerHTML="⚡ Generate Code"}}
+function clearAll(){["request","framework","runtime","code","error","files","requirements"].forEach(id=>$(id).value="");$("language").value="HTML";$("task").value="generate";$("output").innerHTML="<div class='empty'><div><strong>Your code workspace is ready.</strong>Enter a request on the left and generate a structured coding response.</div></div>";msg("")}
+$("generate").onclick=generate;$("clear").onclick=clearAll;$("request").onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter")generate()};
+</script>
+</body>
+</html>
