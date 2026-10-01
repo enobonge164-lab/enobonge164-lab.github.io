@@ -1,5 +1,566 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Game Idea & Story Generator — CAPTIVATE AI</title><link rel="icon" href="favicon.png"><link rel="stylesheet" href="style.css"></head><body><main class="app-shell"><section class="section"><a class="back-link" href="captivate.html">← Back to CAPTIVATE AI</a><div class="section-header"><div><span class="coming-badge">CAPTIVATE AI</span><h1>Game Idea & Story Generator</h1><p>Create game concepts, characters, worlds and missions.</p></div></div><div class="card tool-workspace"><label for="request">Your request</label><textarea id="request" rows="8" placeholder="Describe what you want CAPTIVATE AI to create..."></textarea><div class="form-row"><label for="platform">Platform / format</label><input id="platform" placeholder="Optional"></div><button id="run">Generate with CAPTIVATE AI</button><p id="status" role="status"></p><pre id="result" class="result-box"></pre></div></section></main><script>
-const API='https://captivate-ai-api.sirwhitethepolymath.workers.dev';
-const type='game-story-generator';
-document.getElementById('run').addEventListener('click',async()=>{const request=document.getElementById('request').value.trim();const platform=document.getElementById('platform').value.trim();const status=document.getElementById('status');const result=document.getElementById('result');if(!request){status.textContent='Please describe your request first.';return;}status.textContent='Working...';result.textContent='';try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,topic:request,platform})});const data=await r.json();if(!r.ok||data.success===false)throw new Error(data.error||'Request failed');result.textContent=data.output||data.result||data.response||JSON.stringify(data,null,2);status.textContent='Completed.';}catch(e){status.textContent='Error: '+e.message;}});
-</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAPTIVATE AI — Game Idea & Story Generator</title>
+<style>
+:root{
+  --bg:#080b12;
+  --panel:#0f1522;
+  --card:#111827;
+  --border:#263047;
+  --text:#f4f5f7;
+  --muted:#9ca7ba;
+  --primary:#8b5cf6;
+  --primary2:#a78bfa;
+  --success:#22c55e;
+  --danger:#ef4444;
+  --shadow:0 18px 55px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  background:linear-gradient(135deg,#080b12 0%,#0b1020 55%,#100b1b 100%);
+  color:var(--text);
+  min-height:100vh;
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:1250px;margin:auto;padding:22px}
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;
+  margin-bottom:20px;padding:18px 20px;border:1px solid var(--border);
+  background:rgba(15,21,34,.88);border-radius:18px;box-shadow:var(--shadow);
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{
+  width:46px;height:46px;border-radius:14px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--primary),#5b21b6);font-weight:900;font-size:20px;
+}
+.brand h1{font-size:19px;margin:0}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.badge{padding:8px 11px;border:1px solid #4c2b87;border-radius:999px;color:#d8c9ff;font-size:12px}
+.layout{display:grid;grid-template-columns:340px 1fr;gap:18px}
+.panel,.section{
+  background:rgba(15,21,34,.92);border:1px solid var(--border);
+  border-radius:18px;box-shadow:var(--shadow);
+}
+.panel{padding:18px;position:sticky;top:18px;height:max-content}
+.panel h2{font-size:16px;margin:0 0 4px}.panel .sub{font-size:12px;color:var(--muted);margin:0 0 18px}
+.field{margin-bottom:13px}
+label{display:block;font-size:12px;font-weight:700;color:#d7dbea;margin-bottom:7px}
+input,textarea,select{
+  width:100%;background:#0a0f1a;color:var(--text);border:1px solid #29344b;
+  border-radius:11px;padding:11px 12px;outline:none;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(139,92,246,.13)}
+textarea{resize:vertical;min-height:82px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+.btn{
+  border:1px solid #35415b;background:#121a2a;color:#fff;border-radius:11px;
+  padding:11px 12px;font-weight:750;
+}
+.btn.primary{background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-color:#8b5cf6}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.status{
+  margin-top:13px;padding:10px 12px;border-radius:10px;background:#0a0f1a;
+  border:1px solid #273148;color:var(--muted);font-size:12px;line-height:1.5;
+}
+.status.success{border-color:#1e6337;color:#9ae6b4}
+.status.error{border-color:#6b2525;color:#fecaca}
+.content{min-width:0}
+.hero{
+  padding:22px;margin-bottom:18px;border:1px solid var(--border);border-radius:18px;
+  background:radial-gradient(circle at 80% 10%,rgba(139,92,246,.18),transparent 34%),rgba(15,21,34,.9);
+}
+.hero .eyebrow{color:var(--primary2);font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.hero h2{font-size:27px;margin:7px 0}.hero p{color:var(--muted);margin:0;line-height:1.6}
+.empty{padding:55px 22px;text-align:center;color:var(--muted)}
+.empty .icon{font-size:42px;margin-bottom:8px}
+.tabs{
+  display:flex;gap:8px;overflow:auto;padding:5px;margin-bottom:14px;
+  scrollbar-width:thin;
+}
+.tab{
+  white-space:nowrap;border:1px solid var(--border);background:#0e1522;color:#aeb7c8;
+  padding:9px 12px;border-radius:10px;font-weight:700;font-size:12px;
+}
+.tab.active{background:rgba(139,92,246,.16);border-color:#7141c4;color:#ddd2ff}
+.tabpanel{display:none}.tabpanel.active{display:block}
+.section{padding:18px;margin-bottom:14px}
+.section h3{margin:0 0 12px;font-size:17px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.info{
+  background:#0b111d;border:1px solid #222d42;border-radius:12px;padding:13px;
+}
+.info .k{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#7f8aa0;font-weight:800;margin-bottom:5px}
+.info .v{font-size:14px;line-height:1.5;white-space:pre-wrap}
+.summary{line-height:1.7;color:#d7dbea}
+.list{display:grid;gap:9px;margin:0;padding:0;list-style:none}
+.list li{
+  background:#0b111d;border:1px solid #222d42;border-radius:11px;padding:11px 12px;
+  line-height:1.55;color:#d8ddea;
+}
+.list li::before{content:"✦";color:var(--primary2);font-weight:900;margin-right:8px}
+.item{
+  background:#0b111d;border:1px solid #222d42;border-radius:13px;padding:14px;margin-bottom:10px;
+}
+.item:last-child{margin-bottom:0}
+.item h4{margin:0 0 7px;color:#e9e3ff;font-size:14px}
+.item p{margin:0;color:#d0d7e5;line-height:1.55;white-space:pre-wrap}
+.item .mini{margin-top:7px;color:var(--muted);font-size:12px}
+.raw{
+  width:100%;min-height:430px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:12px;line-height:1.5;background:#070b12;
+}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.hidden{display:none!important}
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .panel{position:static}
+}
+@media(max-width:600px){
+  .app{padding:12px}.topbar{padding:14px}.badge{display:none}
+  .grid2{grid-template-columns:1fr}
+  .hero h2{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">C</div>
+      <div>
+        <h1>CAPTIVATE AI</h1>
+        <p>Game Idea & Story Generator</p>
+      </div>
+    </div>
+    <div class="badge">GAME STORY GENERATOR • v8.1</div>
+  </header>
+
+  <div class="layout">
+    <aside class="panel">
+      <h2>Create a Game Concept</h2>
+      <p class="sub">Turn an idea into a structured game world, story, gameplay plan and development roadmap.</p>
+
+      <div class="field">
+        <label for="idea">Game Idea *</label>
+        <textarea id="idea" placeholder="Example: An open-world African cyberpunk adventure where players protect a futuristic coastal city."></textarea>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" placeholder="Optional">
+        </div>
+        <div class="field">
+          <label for="genre">Genre</label>
+          <input id="genre" placeholder="Action RPG">
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="platform">Platform</label>
+          <input id="platform" placeholder="Mobile / PC">
+        </div>
+        <div class="field">
+          <label for="mode">Mode</label>
+          <input id="mode" placeholder="Single-player">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="audience">Target Audience</label>
+        <input id="audience" placeholder="Young gamers, casual players...">
+      </div>
+
+      <div class="field">
+        <label for="setting">Setting</label>
+        <input id="setting" placeholder="Future Lagos / fictional African city">
+      </div>
+
+      <div class="field">
+        <label for="characters">Characters</label>
+        <textarea id="characters" placeholder="Describe any characters you already have."></textarea>
+      </div>
+
+      <div class="field">
+        <label for="mechanics">Gameplay / Mechanics</label>
+        <textarea id="mechanics" placeholder="Combat, crafting, exploration, quests..."></textarea>
+      </div>
+
+      <div class="field">
+        <label for="style">Art Style</label>
+        <input id="style" placeholder="Cinematic realistic / stylized 3D">
+      </div>
+
+      <div class="field">
+        <label for="inspiration">Inspiration</label>
+        <input id="inspiration" placeholder="Games, films, stories, cultures...">
+      </div>
+
+      <div class="field">
+        <label for="monetization">Monetization</label>
+        <input id="monetization" placeholder="Premium / Free-to-play / Ads">
+      </div>
+
+      <div class="field">
+        <label for="extra">Extra Instructions</label>
+        <textarea id="extra" placeholder="Anything else you want the generator to consider."></textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="generateBtn">✨ Generate</button>
+        <button class="btn" id="clearBtn">Clear</button>
+      </div>
+
+      <div id="status" class="status">Ready. Enter a game idea and generate your concept.</div>
+    </aside>
+
+    <main class="content">
+      <section class="hero">
+        <div class="eyebrow">CAPTIVATE AI • Gaming</div>
+        <h2>Game Idea & Story Generator</h2>
+        <p>Generate a complete game concept without losing the structure of the AI response. Every section below is rendered from the v8.1 structured output.</p>
+      </section>
+
+      <div id="emptyState" class="section empty">
+        <div class="icon">🎮</div>
+        <strong>Your generated game will appear here.</strong>
+        <p>Start with a simple idea. CAPTIVATE AI will expand it into concept, world, characters, story, gameplay and development planning.</p>
+      </div>
+
+      <div id="resultArea" class="hidden">
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-tab="overview">Overview</button>
+          <button class="tab" data-tab="concept">Concept</button>
+          <button class="tab" data-tab="world">World</button>
+          <button class="tab" data-tab="characters">Characters</button>
+          <button class="tab" data-tab="story">Story</button>
+          <button class="tab" data-tab="gameplay">Gameplay</button>
+          <button class="tab" data-tab="visual">Visual</button>
+          <button class="tab" data-tab="audio">Audio</button>
+          <button class="tab" data-tab="development">Development</button>
+          <button class="tab" data-tab="testing">Testing</button>
+          <button class="tab" data-tab="raw">Raw</button>
+        </div>
+
+        <div id="overview" class="tabpanel active"></div>
+        <div id="concept" class="tabpanel"></div>
+        <div id="world" class="tabpanel"></div>
+        <div id="characters" class="tabpanel"></div>
+        <div id="story" class="tabpanel"></div>
+        <div id="gameplay" class="tabpanel"></div>
+        <div id="visual" class="tabpanel"></div>
+        <div id="audio" class="tabpanel"></div>
+        <div id="development" class="tabpanel"></div>
+        <div id="testing" class="tabpanel"></div>
+        <div id="raw" class="tabpanel"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://captivate-ai-api.sirwhitethepolymath.workers.dev";
+
+const $ = id => document.getElementById(id);
+
+function safeText(value, fallback = "") {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  try { return JSON.stringify(value, null, 2); } catch { return fallback; }
+}
+
+function esc(value) {
+  return safeText(value)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function firstDefined(...values) {
+  return values.find(v => v !== undefined && v !== null && v !== "");
+}
+
+function arrayify(value) {
+  if (Array.isArray(value)) return value;
+  if (value === null || value === undefined || value === "") return [];
+  return [value];
+}
+
+function renderList(value, empty = "No details provided.") {
+  const arr = arrayify(value);
+  if (!arr.length) return `<div class="info"><div class="v">${esc(empty)}</div></div>`;
+  return `<ul class="list">${arr.map(x => `<li>${esc(safeText(x))}</li>`).join("")}</ul>`;
+}
+
+function renderObjectItems(value, titleKeys = ["name","title","type","role","character","mission"]) {
+  const arr = arrayify(value);
+  if (!arr.length) return `<div class="info"><div class="v">No structured items provided.</div></div>`;
+  return arr.map((item, index) => {
+    if (typeof item !== "object" || item === null) {
+      return `<div class="item"><h4>Item ${index + 1}</h4><p>${esc(item)}</p></div>`;
+    }
+    let title = "";
+    for (const key of titleKeys) {
+      if (item[key] !== undefined && item[key] !== null && item[key] !== "") {
+        title = safeText(item[key]);
+        break;
+      }
+    }
+    if (!title) title = `Item ${index + 1}`;
+    const fields = Object.entries(item)
+      .filter(([k]) => k !== "name" && k !== "title" && k !== "type" && k !== "role" && k !== "character" && k !== "mission")
+      .map(([k,v]) => `<div class="mini"><strong>${esc(k)}:</strong> ${esc(safeText(v))}</div>`)
+      .join("");
+    return `<div class="item"><h4>${esc(title)}</h4>${fields || `<p>${esc(safeText(item))}</p>`}</div>`;
+  }).join("");
+}
+
+function infoCard(label, value) {
+  return `<div class="info"><div class="k">${esc(label)}</div><div class="v">${esc(safeText(value, "Not specified"))}</div></div>`;
+}
+
+function section(title, body) {
+  return `<section class="section"><h3>${esc(title)}</h3>${body}</section>`;
+}
+
+function normalizeResponse(data) {
+  let output = firstDefined(data?.output, data?.gameStory, data?.result, data);
+  if (typeof output === "string") {
+    const cleaned = output.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```$/,"").trim();
+    try { output = JSON.parse(cleaned); } catch {}
+  }
+  return output && typeof output === "object" ? output : {};
+}
+
+function renderResult(data) {
+  const r = normalizeResponse(data);
+  const p = r.project || {};
+  const c = r.gameConcept || {};
+  const w = r.world || {};
+  const s = r.story || {};
+  const g = r.gameplay || {};
+  const v = r.visualDirection || {};
+  const a = r.audioDirection || {};
+
+  $("overview").innerHTML =
+    section("Game Overview",
+      `<div class="grid2">
+        ${infoCard("Title", firstDefined(p.title, data.title, "Untitled Game"))}
+        ${infoCard("Genre", firstDefined(p.genre, data.genre, "Not specified"))}
+        ${infoCard("Platform", firstDefined(p.platform, data.platform, "Not specified"))}
+        ${infoCard("Audience", firstDefined(p.audience, data.audience, "Not specified"))}
+        ${infoCard("Mode", firstDefined(p.mode, data.mode, "Not specified"))}
+      </div>
+      <div style="margin-top:12px">${infoCard("Summary", firstDefined(p.summary, r.summary, "No summary provided."))}</div>`
+    );
+
+  $("concept").innerHTML =
+    section("Game Concept",
+      `${infoCard("Premise", c.premise)}
+       ${infoCard("Core Hook", c.coreHook)}
+       ${infoCard("Player Fantasy", c.playerFantasy)}
+       <div style="margin-top:12px"><h3>Unique Selling Points</h3>${renderList(c.uniqueSellingPoints)}</div>`
+    );
+
+  $("world").innerHTML =
+    section("World & Lore",
+      `${infoCard("Setting", w.setting)}
+       ${infoCard("Lore", w.lore)}
+       <div style="margin-top:12px"><h3>Factions</h3>${renderList(w.factions)}</div>
+       <div style="margin-top:12px"><h3>Locations</h3>${renderList(w.locations)}</div>`
+    );
+
+  $("characters").innerHTML =
+    section("Characters", renderObjectItems(r.characters, ["name","character","role","title"]));
+
+  $("story").innerHTML =
+    section("Story",
+      `${infoCard("Opening", s.opening)}
+       ${infoCard("Main Conflict", s.mainConflict)}
+       <div style="margin-top:12px"><h3>Story Arc</h3>${renderObjectItems(s.storyArc, ["title","name","act","chapter"])}</div>
+       <div style="margin-top:12px"><h3>Missions</h3>${renderObjectItems(s.missions, ["title","name","mission","type"])}</div>
+       <div style="margin-top:12px"><h3>Endings</h3>${renderObjectItems(s.endings, ["title","name","type"])}</div>`
+    );
+
+  $("gameplay").innerHTML =
+    section("Gameplay",
+      `<h3>Core Loop</h3>${renderList(g.coreLoop)}
+       <div style="margin-top:12px"><h3>Mechanics</h3>${renderList(g.mechanics)}</div>
+       <div style="margin-top:12px"><h3>Progression</h3>${renderList(g.progression)}</div>
+       <div style="margin-top:12px"><h3>Challenges</h3>${renderList(g.challenges)}</div>`
+    );
+
+  $("visual").innerHTML =
+    section("Visual Direction",
+      `${infoCard("Art Style", v.artStyle)}
+       ${infoCard("Environment", v.environment)}
+       ${infoCard("Characters", v.characters)}
+       ${infoCard("UI", v.ui)}`
+    );
+
+  $("audio").innerHTML =
+    section("Audio Direction",
+      `${infoCard("Music", a.music)}
+       ${infoCard("Sound Design", a.soundDesign)}
+       ${infoCard("Voice", a.voice)}`
+    );
+
+  $("development").innerHTML =
+    section("Monetization", renderList(r.monetization)) +
+    section("Development Plan", renderObjectItems(r.developmentPlan, ["phase","title","name","stage"])) +
+    section("MVP", renderList(r.mvp)) +
+    section("Future Features", renderList(r.futureFeatures)) +
+    section("Next Steps", renderList(r.nextSteps));
+
+  $("testing").innerHTML =
+    section("Testing", renderList(r.testing)) +
+    section("Assumptions", renderList(r.assumptions));
+
+  $("raw").innerHTML =
+    section("Raw Response",
+      `<div class="toolbar">
+        <button class="btn" id="copyRaw">Copy JSON</button>
+        <button class="btn" id="downloadRaw">Download JSON</button>
+      </div>
+      <textarea id="rawText" class="raw" readonly>${esc(JSON.stringify(data, null, 2))}</textarea>`
+    );
+
+  $("copyRaw").onclick = async () => {
+    await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    $("status").textContent = "Raw JSON copied.";
+    $("status").className = "status success";
+  };
+
+  $("downloadRaw").onclick = () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "captivate-game-story.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  $("emptyState").classList.add("hidden");
+  $("resultArea").classList.remove("hidden");
+}
+
+function payloadFromForm() {
+  const idea = $("idea").value.trim();
+  const title = $("title").value.trim();
+  const genre = $("genre").value.trim();
+  const platform = $("platform").value.trim();
+  const audience = $("audience").value.trim();
+  const mode = $("mode").value.trim();
+  const setting = $("setting").value.trim();
+  const characters = $("characters").value.trim();
+  const mechanics = $("mechanics").value.trim();
+  const style = $("style").value.trim();
+  const inspiration = $("inspiration").value.trim();
+  const monetization = $("monetization").value.trim();
+  const extra = $("extra").value.trim();
+
+  return {
+    type: "game-story-generator",
+    topic: idea,
+    idea,
+    title,
+    genre,
+    platform,
+    audience,
+    targetAudience: audience,
+    mode,
+    setting,
+    characters,
+    mechanics,
+    gameplay: mechanics,
+    style,
+    artStyle: style,
+    inspiration,
+    monetization,
+    extra,
+    extraInstructions: extra
+  };
+}
+
+let lastPayload = null;
+
+async function generate() {
+  const payload = payloadFromForm();
+
+  if (!payload.idea) {
+    $("status").textContent = "Please enter a game idea first.";
+    $("status").className = "status error";
+    $("idea").focus();
+    return;
+  }
+
+  lastPayload = payload;
+  $("generateBtn").disabled = true;
+  $("generateBtn").textContent = "Generating...";
+  $("status").textContent = "CAPTIVATE AI is building your game concept...";
+  $("status").className = "status";
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+
+    const text = await response.text();
+    let data;
+    try { data = JSON.parse(text); }
+    catch {
+      throw new Error(`Server returned non-JSON response (${response.status}).`);
+    }
+
+    if (!response.ok || data.success === false || data.error) {
+      throw new Error(data.error || data.message || `Request failed with HTTP ${response.status}.`);
+    }
+
+    renderResult(data);
+
+    const version = data.version || "8.1";
+    $("status").textContent = `Completed • v${version} • Structured game story generated successfully.`;
+    $("status").className = "status success";
+  } catch (error) {
+    console.error(error);
+    $("status").textContent = `Error: ${error.message}`;
+    $("status").className = "status error";
+  } finally {
+    $("generateBtn").disabled = false;
+    $("generateBtn").textContent = "✨ Generate";
+  }
+}
+
+$("generateBtn").addEventListener("click", generate);
+
+$("clearBtn").addEventListener("click", () => {
+  document.querySelectorAll("input, textarea").forEach(el => el.value = "");
+  $("resultArea").classList.add("hidden");
+  $("emptyState").classList.remove("hidden");
+  $("status").textContent = "Ready. Enter a game idea and generate your concept.";
+  $("status").className = "status";
+  lastPayload = null;
+});
+
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tabpanel").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    $(tab.dataset.tab).classList.add("active");
+  });
+});
+</script>
+</body>
+</html>
