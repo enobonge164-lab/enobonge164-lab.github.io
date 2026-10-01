@@ -1,5 +1,90 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Business Tool Builder — CAPTIVATE AI</title><link rel="icon" href="favicon.png"><link rel="stylesheet" href="style.css"></head><body><main class="app-shell"><section class="section"><a class="back-link" href="captivate.html">← Back to CAPTIVATE AI</a><div class="section-header"><div><span class="coming-badge">CAPTIVATE AI</span><h1>Business Tool Builder</h1><p>Design practical tools for business workflows.</p></div></div><div class="card tool-workspace"><label for="request">Your request</label><textarea id="request" rows="8" placeholder="Describe what you want CAPTIVATE AI to create..."></textarea><div class="form-row"><label for="platform">Platform / format</label><input id="platform" placeholder="Optional"></div><button id="run">Generate with CAPTIVATE AI</button><p id="status" role="status"></p><pre id="result" class="result-box"></pre></div></section></main><script>
-const API='https://captivate-ai-api.sirwhitethepolymath.workers.dev';
-const type='business-tool-builder';
-document.getElementById('run').addEventListener('click',async()=>{const request=document.getElementById('request').value.trim();const platform=document.getElementById('platform').value.trim();const status=document.getElementById('status');const result=document.getElementById('result');if(!request){status.textContent='Please describe your request first.';return;}status.textContent='Working...';result.textContent='';try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,topic:request,platform})});const data=await r.json();if(!r.ok||data.success===false)throw new Error(data.error||'Request failed');result.textContent=data.output||data.result||data.response||JSON.stringify(data,null,2);status.textContent='Completed.';}catch(e){status.textContent='Error: '+e.message;}});
-</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAPTIVATE AI — Business Tool Builder</title>
+<style>
+:root{--bg:#080b12;--panel:#111827;--panel2:#0d111a;--border:#263044;--text:#f4f7fb;--muted:#9ca8bb;--primary:#8b5cf6;--primary2:#a78bfa;--ok:#34d399;--danger:#f87171}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer}
+.wrap{max-width:1200px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}.brand{font-weight:800;font-size:20px}.badge{color:var(--primary2);font-size:12px;border:1px solid var(--border);padding:7px 10px;border-radius:999px}
+h1{font-size:32px;margin:8px 0}.sub{color:var(--muted);margin:0 0 22px}.grid{display:grid;grid-template-columns:360px 1fr;gap:18px}.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:18px}.field{margin-bottom:13px}.field label{display:block;font-size:12px;font-weight:700;color:#cbd5e1;margin-bottom:6px}.field input,.field textarea,.field select{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 12px;outline:none}.field textarea{min-height:82px;resize:vertical}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--primary)}
+.actions{display:flex;gap:9px;flex-wrap:wrap}.primary{background:var(--primary);color:white;border:0;padding:12px 16px;border-radius:10px;font-weight:800}.secondary{background:transparent;color:var(--text);border:1px solid var(--border);padding:11px 14px;border-radius:10px}.primary:disabled{opacity:.55;cursor:not-allowed}.status{margin-top:12px;color:var(--muted);font-size:13px}.status.ok{color:var(--ok)}.status.err{color:var(--danger)}
+.tabs{display:flex;gap:7px;overflow:auto;margin-bottom:14px;padding-bottom:2px}.tab{white-space:nowrap;background:var(--panel2);border:1px solid var(--border);color:#cbd5e1;padding:9px 11px;border-radius:9px}.tab.active{background:rgba(139,92,246,.16);border-color:var(--primary);color:#fff}.content{min-height:520px}.section{margin-bottom:20px}.section h3{margin:0 0 8px;font-size:16px}.section p{color:#d4dbe6;line-height:1.6;white-space:pre-wrap}.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid var(--border);background:var(--panel2);padding:7px 9px;border-radius:8px;color:#dbe4f0}.list{display:grid;gap:9px}.item{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px}.item strong{display:block;margin-bottom:5px}.muted{color:var(--muted)}pre{white-space:pre-wrap;word-break:break-word;background:#070a10;border:1px solid var(--border);padding:14px;border-radius:10px;line-height:1.5;overflow:auto;max-height:600px}.empty{display:grid;place-items:center;min-height:420px;color:var(--muted);text-align:center}.spinner{display:inline-block;width:15px;height:15px;border:2px solid #ffffff55;border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:7px}@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.wrap{padding:14px}h1{font-size:26px}.content{min-height:400px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div class="brand">CAPTIVATE AI</div><div class="badge">BUSINESS TOOL BUILDER • v7.9</div></div>
+  <h1>Business Tool Builder</h1>
+  <p class="sub">Turn a business idea into a practical tool blueprint, workflows, data model, starter code and implementation plan.</p>
+
+  <div class="grid">
+    <aside class="card">
+      <div class="field"><label>Business Tool Idea *</label><textarea id="idea" placeholder="Example: A customer management and sales tracking tool for Nigerian SMEs"></textarea></div>
+      <div class="field"><label>Business Type</label><input id="businessType" placeholder="Small business / Agency / Retail"></div>
+      <div class="field"><label>Tool Type</label><input id="toolType" placeholder="CRM / Inventory / Sales / Finance"></div>
+      <div class="field"><label>Target Users</label><input id="users" placeholder="Nigerian SMEs, shop owners, sales teams"></div>
+      <div class="field"><label>Platform</label><select id="platform"><option>Web app</option><option>Mobile app</option><option>Web + mobile</option><option>Desktop app</option></select></div>
+      <div class="field"><label>Core Features</label><textarea id="features" placeholder="Customer records, sales, expenses, dashboard..."></textarea></div>
+      <div class="field"><label>Workflow / Process</label><textarea id="workflow" placeholder="Add customer → record sale → calculate profit → follow up"></textarea></div>
+      <div class="field"><label>Data / Records</label><textarea id="dataModel" placeholder="Customers, products, sales, expenses..."></textarea></div>
+      <div class="field"><label>Integrations</label><input id="integrations" placeholder="WhatsApp, email, payments"></div>
+      <div class="field"><label>Brand / Design</label><input id="brand" value="Purple and white, modern and mobile-first"></div>
+      <div class="field"><label>Extra Requirements</label><textarea id="extra" placeholder="Security, roles, reports, notifications, etc."></textarea></div>
+      <div class="actions"><button class="primary" id="generate">Build Business Tool</button><button class="secondary" id="clear">Clear</button></div>
+      <div id="status" class="status">Ready.</div>
+    </aside>
+
+    <main class="card">
+      <div class="tabs" id="tabs"></div>
+      <div id="content" class="content"><div class="empty"><div><h2>Business Tool Blueprint</h2><p>Enter your idea and generate the structured result.</p></div></div></div>
+    </main>
+  </div>
+</div>
+<script>
+const API_URL='https://captivate-ai-api.sirwhitethepolymath.workers.dev';
+let lastResponse=null;
+let output={};
+const tabs=[['overview','Overview'],['features','Features'],['workflows','Workflows'],['data','Data & Logic'],['screens','Screens'],['code','Starter Code'],['plan','Build Plan'],['testing','Testing'],['deployment','Deployment'],['security','Security'],['raw','Raw Response']];
+const tabsEl=document.getElementById('tabs');
+const content=document.getElementById('content');
+const statusEl=document.getElementById('status');
+let active='overview';
+tabsEl.innerHTML=tabs.map(([id,label])=>`<button class="tab" data-tab="${id}">${label}</button>`).join('');
+tabsEl.addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;active=b.dataset.tab;renderTabs();render();});
+function renderTabs(){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===active));}
+function text(v,f=''){if(v==null)return f;if(typeof v==='string')return v;if(typeof v==='number'||typeof v==='boolean')return String(v);return JSON.stringify(v,null,2)}
+function arr(v){if(Array.isArray(v))return v;if(v==null)return[];return [v]}
+function list(v){const a=arr(v);if(!a.length)return '<p class="muted">No information returned.</p>';return `<div class="list">${a.map((x,i)=>{if(typeof x==='object'&&x!==null){const title=x.name||x.title||x.step||x.label||`Item ${i+1}`;const body=Object.entries(x).filter(([k])=>k!=='name'&&k!=='title'&&k!=='step'&&k!=='label').map(([k,val])=>`<div><b>${esc(k)}:</b> ${esc(text(val))}</div>`).join('');return `<div class="item"><strong>${esc(text(title))}</strong>${body}</div>`}return `<div class="item">${esc(text(x))}</div>`}).join('')}</div>`}
+function esc(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function section(title,body){return `<div class="section"><h3>${esc(title)}</h3>${body}</div>`}
+function getCode(){return output.starterCode||output.code||''}
+function render(){renderTabs();if(!lastResponse){return}const p=output.project||{};let html='';
+ if(active==='overview')html=section('Project',`<p><b>Name:</b> ${esc(text(p.name,'Untitled Business Tool'))}\n<b>Business Type:</b> ${esc(text(p.businessType))}\n<b>Tool Type:</b> ${esc(text(p.toolType))}\n<b>Target Audience:</b> ${esc(text(p.targetAudience))}\n<b>Platform:</b> ${esc(text(p.platform))}</p>`)+section('Summary',`<p>${esc(text(output.summary||lastResponse.text,'No summary returned.'))}</p>`);
+ if(active==='features')html=section('Features',list(output.features));
+ if(active==='workflows')html=section('Workflows',list(output.workflows||output.userFlows));
+ if(active==='data')html=section('Data Model',list(output.dataModel||output.database))+section('Business Logic',list(output.businessLogic||output.logic));
+ if(active==='screens')html=section('Screens',list(output.screens));
+ if(active==='code')html=section('Starter Code',`<div class="actions"><button class="secondary" onclick="copyCode()">Copy Code</button><button class="secondary" onclick="downloadCode()">Download Code</button></div><pre id="codeBlock">${esc(getCode()||'No starter code returned.')}</pre>`);
+ if(active==='plan')html=section('Implementation Plan',list(output.implementationPlan||output.buildPlan))+section('Next Steps',list(output.nextSteps));
+ if(active==='testing')html=section('Testing',list(output.testing));
+ if(active==='deployment')html=section('Deployment',list(output.deployment));
+ if(active==='security')html=section('Security',list(output.security))+section('Assumptions',list(output.assumptions));
+ if(active==='raw')html=`<div class="actions"><button class="secondary" onclick="copyRaw()">Copy Raw JSON</button></div><pre>${esc(JSON.stringify(lastResponse,null,2))}</pre>`;
+ content.innerHTML=html;
+}
+function normalize(data){let o=data&&typeof data.output==='object'?data.output:null;if(!o&&data&&typeof data.businessTool==='object')o=data.businessTool;if(!o&&data&&typeof data.result==='object')o=data.result;if(!o)o=data||{};return o}
+async function generate(){const idea=document.getElementById('idea').value.trim();if(!idea){statusEl.className='status err';statusEl.textContent='Enter a business tool idea first.';return}
+ const btn=document.getElementById('generate');btn.disabled=true;statusEl.className='status';statusEl.innerHTML='<span class="spinner"></span>Building your business tool blueprint...';
+ const payload={type:'business-tool-builder',topic:idea,idea,businessType:document.getElementById('businessType').value.trim(),toolType:document.getElementById('toolType').value.trim(),targetAudience:document.getElementById('users').value.trim(),users:document.getElementById('users').value.trim(),platform:document.getElementById('platform').value,features:document.getElementById('features').value.trim(),workflow:document.getElementById('workflow').value.trim(),data:document.getElementById('dataModel').value.trim(),dataModel:document.getElementById('dataModel').value.trim(),integrations:document.getElementById('integrations').value.trim(),brand:document.getElementById('brand').value.trim(),extra:document.getElementById('extra').value.trim(),extraInstructions:document.getElementById('extra').value.trim()};
+ try{const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await res.json();lastResponse=data;if(!res.ok||data.success===false)throw new Error(data.message||data.error||`HTTP ${res.status}`);output=normalize(data);active='overview';render();statusEl.className='status ok';statusEl.textContent='Completed successfully.'}catch(err){statusEl.className='status err';statusEl.textContent='Error: '+err.message;content.innerHTML='<div class="empty"><div><h2>Generation failed</h2><p>'+esc(err.message)+'</p></div></div>'}finally{btn.disabled=false}}
+function copyCode(){navigator.clipboard.writeText(getCode()).then(()=>statusEl.textContent='Starter code copied.').catch(()=>alert('Copy failed.'))}
+function copyRaw(){navigator.clipboard.writeText(JSON.stringify(lastResponse,null,2)).then(()=>statusEl.textContent='Raw response copied.').catch(()=>alert('Copy failed.'))}
+function downloadCode(){const blob=new Blob([getCode()||''],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='captivate-business-tool-starter-code.txt';a.click();URL.revokeObjectURL(a.href)}
+document.getElementById('generate').addEventListener('click',generate);document.getElementById('clear').addEventListener('click',()=>{document.querySelectorAll('input,textarea').forEach(e=>{if(e.id!=='brand')e.value=''});lastResponse=null;output={};active='overview';statusEl.className='status';statusEl.textContent='Ready.';content.innerHTML='<div class="empty"><div><h2>Business Tool Blueprint</h2><p>Enter your idea and generate the structured result.</p></div></div>';renderTabs()});
+renderTabs();
+</script>
+</body>
+</html>
