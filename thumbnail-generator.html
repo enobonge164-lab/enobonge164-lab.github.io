@@ -1,5 +1,90 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Thumbnail Generator — CAPTIVATE AI</title><link rel="icon" href="favicon.png"><link rel="stylesheet" href="style.css"></head><body><main class="app-shell"><section class="section"><a class="back-link" href="captivate.html">← Back to CAPTIVATE AI</a><div class="section-header"><div><span class="coming-badge">CAPTIVATE AI</span><h1>Thumbnail Generator</h1><p>Create high-converting thumbnail concepts, text and layouts.</p></div></div><div class="card tool-workspace"><label for="request">Your request</label><textarea id="request" rows="8" placeholder="Describe what you want CAPTIVATE AI to create..."></textarea><div class="form-row"><label for="platform">Platform / format</label><input id="platform" placeholder="Optional"></div><button id="run">Generate with CAPTIVATE AI</button><p id="status" role="status"></p><pre id="result" class="result-box"></pre></div></section></main><script>
-const API='https://captivate-ai-api.sirwhitethepolymath.workers.dev';
-const type='thumbnail-generator';
-document.getElementById('run').addEventListener('click',async()=>{const request=document.getElementById('request').value.trim();const platform=document.getElementById('platform').value.trim();const status=document.getElementById('status');const result=document.getElementById('result');if(!request){status.textContent='Please describe your request first.';return;}status.textContent='Working...';result.textContent='';try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,topic:request,platform})});const data=await r.json();if(!r.ok||data.success===false)throw new Error(data.error||'Request failed');result.textContent=data.output||data.result||data.response||JSON.stringify(data,null,2);status.textContent='Completed.';}catch(e){status.textContent='Error: '+e.message;}});
-</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAPTIVATE AI — Thumbnail Generator</title>
+<style>
+:root{--bg:#080b12;--panel:#111827;--panel2:#0d111a;--border:#263044;--text:#f8fafc;--muted:#94a3b8;--primary:#8b5cf6;--primary2:#a78bfa;--danger:#ef4444;--success:#22c55e}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif} .wrap{max-width:1050px;margin:auto;padding:24px}.brand{display:flex;align-items:center;gap:12px;margin-bottom:24px}.logo{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,var(--primary),#4c1d95);display:grid;place-items:center;font-weight:900}.brand h1{font-size:22px;margin:0}.brand p{margin:3px 0 0;color:var(--muted);font-size:13px}.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:18px;box-shadow:0 10px 30px #0003}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.full{grid-column:1/-1}label{display:block;font-size:13px;font-weight:700;margin-bottom:7px}input,select,textarea{width:100%;border:1px solid var(--border);background:#0a0f18;color:var(--text);border-radius:11px;padding:12px;font:inherit;outline:none}textarea{min-height:105px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:var(--primary)}button{border:0;border-radius:11px;padding:12px 16px;font-weight:800;cursor:pointer;color:white;background:var(--primary)}button:hover{filter:brightness(1.08)}button.secondary{background:#20283a}button:disabled{opacity:.55;cursor:not-allowed}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.status{display:none;margin-top:14px;padding:12px;border-radius:10px;background:#0b1320;color:var(--muted);border:1px solid var(--border)}.status.show{display:block}.status.success{border-color:#14532d;color:#bbf7d0}.status.error{border-color:#7f1d1d;color:#fecaca}.result{display:none}.result.show{display:block}.hero{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}.preview{background:#070a10;border:1px solid var(--border);border-radius:14px;overflow:hidden;min-height:180px;display:grid;place-items:center}.preview img{display:block;width:100%;height:auto}.empty{padding:30px;text-align:center;color:var(--muted)}h2{margin:0 0 14px;font-size:18px}.pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#24154c;color:#ddd6fe;font-size:11px;font-weight:800;margin-bottom:10px}.meta{color:var(--muted);font-size:13px;line-height:1.6}.json{white-space:pre-wrap;background:#080b12;border:1px solid var(--border);border-radius:12px;padding:14px;max-height:360px;overflow:auto;font-size:12px;color:#cbd5e1}.hidden{display:none}@media(max-width:760px){.grid,.hero{grid-template-columns:1fr}.wrap{padding:14px}.card{padding:15px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><div class="logo">CA</div><div><h1>CAPTIVATE AI — Thumbnail Generator</h1><p>Create attention-grabbing thumbnails with the existing Cloudflare image-generation engine.</p></div></div>
+
+  <div class="card">
+    <span class="pill">CONTENT STUDIO</span>
+    <h2>Thumbnail Brief</h2>
+    <div class="grid">
+      <div><label for="title">Video Title / Topic *</label><input id="title" placeholder="e.g. 10 AI Tools That Can Change Your Business"></div>
+      <div><label for="platform">Platform</label><select id="platform"><option>YouTube</option><option>TikTok</option><option>Facebook</option><option>Instagram</option><option>LinkedIn</option><option>Other</option></select></div>
+      <div><label for="style">Thumbnail Style</label><select id="style"><option>High-CTR YouTube thumbnail</option><option>Professional business</option><option>Tech / futuristic</option><option>Gaming</option><option>Educational</option><option>News / commentary</option><option>Minimal premium</option><option>Cinematic</option></select></div>
+      <div><label for="mood">Mood</label><select id="mood"><option>Bold and exciting</option><option>Professional</option><option>Curious / mysterious</option><option>Urgent</option><option>Luxury / premium</option><option>Energetic</option><option>Serious</option></select></div>
+      <div><label for="subject">Main Subject</label><input id="subject" placeholder="Person, product, laptop, AI robot, business scene..."></div>
+      <div><label for="text">Thumbnail Text</label><input id="text" placeholder="Short text, e.g. 10 AI TOOLS"></div>
+      <div><label for="aspect">Aspect Ratio</label><select id="aspect"><option value="16:9">16:9 — YouTube</option><option value="1:1">1:1 — Square</option><option value="4:5">4:5 — Social</option><option value="9:16">9:16 — Vertical</option></select></div>
+      <div><label for="branding">Branding</label><input id="branding" value="CAPTIVATE AI — purple and white"></div>
+      <div class="full"><label for="details">Additional Instructions</label><textarea id="details" placeholder="Describe composition, background, emotion, objects, visual emphasis, etc."></textarea></div>
+    </div>
+    <div class="actions"><button id="generate">Generate Thumbnail</button><button class="secondary" id="clear" type="button">Clear</button></div>
+    <div id="status" class="status"></div>
+  </div>
+
+  <div id="result" class="card result">
+    <div class="hero">
+      <div>
+        <span class="pill">GENERATED THUMBNAIL</span>
+        <div id="preview" class="preview"><div class="empty">Your thumbnail will appear here.</div></div>
+        <div class="actions"><button id="download">Download Image</button><button class="secondary" id="open">Open Full Size</button><button class="secondary" id="copy">Copy Image Data</button></div>
+      </div>
+      <div>
+        <h2>Generation Details</h2>
+        <div id="meta" class="meta"></div>
+      </div>
+    </div>
+    <div style="margin-top:20px"><h2>Prompt Used</h2><div id="prompt" class="json"></div></div>
+    <div style="margin-top:20px"><h2>Raw Response</h2><div id="raw" class="json"></div></div>
+  </div>
+</div>
+<script>
+const API_URL='https://captivate-ai-api.sirwhitethepolymath.workers.dev';
+const $=id=>document.getElementById(id);
+let imageData=''; let lastData=null;
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function findImage(v){
+  if(typeof v==='string'){
+    const m=v.match(/data:image\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=]+/); if(m)return m[0];
+    if(/^data:image\//i.test(v))return v;
+    if(v.length>200 && /^[A-Za-z0-9+/=\s]+$/.test(v))return 'data:image/jpeg;base64,'+v.replace(/\s/g,'');
+  }
+  if(v&&typeof v==='object')for(const x of Object.values(v)){const r=findImage(x);if(r)return r;} return '';
+}
+function showStatus(msg,type=''){const s=$('status');s.textContent=msg;s.className='status show '+type;}
+function buildPrompt(){
+ const title=$('title').value.trim(), platform=$('platform').value, style=$('style').value, mood=$('mood').value, subject=$('subject').value.trim(), txt=$('text').value.trim(), aspect=$('aspect').value, brand=$('branding').value.trim(), details=$('details').value.trim();
+ return `Create a professional ${platform} thumbnail in ${aspect} aspect ratio. Topic/video title: ${title}. Thumbnail style: ${style}. Mood: ${mood}. Main subject: ${subject||'a visually compelling subject relevant to the topic'}. Thumbnail text: ${txt||'Use minimal or no text if exact text rendering would be unreliable'}. Branding: ${brand||'none'}. Additional instructions: ${details||'Use a strong focal point, clear visual hierarchy, high contrast, cinematic lighting, clean composition, and mobile-friendly readability.'}. The design should look polished, modern, attention-grabbing, and suitable for a professional creator brand. Avoid clutter, distorted faces, unreadable text, watermarks, and unnecessary small details.`;
+}
+async function generate(){
+ const title=$('title').value.trim(); if(!title){showStatus('Please enter a video title or topic.','error');return;}
+ $('generate').disabled=true; $('result').classList.remove('show'); showStatus('Generating thumbnail with CAPTIVATE AI...');
+ const prompt=buildPrompt();
+ try{
+   const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'image-generator',prompt,steps:4})});
+   const data=await res.json(); lastData=data; imageData=findImage(data);
+   if(!res.ok||data.success===false)throw new Error(data.error||data.message||'Thumbnail generation failed.');
+   if(!imageData)throw new Error('The AI response was received, but no image data was found.');
+   $('preview').innerHTML='<img id="generated" alt="Generated thumbnail">'; $('generated').src=imageData;
+   $('meta').innerHTML=`<b>Status:</b> ${esc(data.state||'Completed')}<br><b>Version:</b> ${esc(data.version||'—')}<br><b>Model:</b> ${esc(data.model||'Cloudflare Workers AI')}<br><b>Provider:</b> ${esc(data.provider||'Cloudflare Workers AI')}<br><b>Aspect:</b> ${esc($('aspect').value)}`;
+   $('prompt').textContent=prompt; $('raw').textContent=JSON.stringify(data,null,2); $('result').classList.add('show'); showStatus('Thumbnail generated successfully.','success');
+ }catch(e){showStatus(e.message||'Something went wrong.','error');}
+ finally{$('generate').disabled=false;}
+}
+$('generate').onclick=generate;
+$('clear').onclick=()=>{['title','subject','text','details'].forEach(id=>$(id).value='');$('branding').value='CAPTIVATE AI — purple and white';$('result').classList.remove('show');$('status').className='status';imageData='';lastData=null;};
+$('download').onclick=()=>{if(!imageData)return;const a=document.createElement('a');a.href=imageData;a.download='captivate-ai-thumbnail.jpg';a.click();};
+$('open').onclick=()=>{if(imageData)window.open(imageData,'_blank');};
+$('copy').onclick=async()=>{if(!imageData)return;try{await navigator.clipboard.writeText(imageData);showStatus('Image data copied.','success');}catch{showStatus('Copy is blocked by this browser. Use Download Image instead.','error');}};
+</script>
+</body>
+</html>
