@@ -454,7 +454,311 @@ Rules:
 `
 };
 
+/* =========================================================
+   CAPTIVATE AI API — v8.3
+   DEDICATED THUMBNAIL GENERATOR
+   ========================================================= */
 
+const API_VERSION = "8.3";
+
+const MODELS = {
+  IMAGE: "@cf/black-forest-labs/flux-1-schnell"
+};
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Content-Type": "application/json; charset=UTF-8"
+};
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: CORS_HEADERS
+  });
+}
+
+function text(value, fallback = "") {
+  if (value === undefined || value === null) return fallback;
+  return typeof value === "string" ? value.trim() : JSON.stringify(value);
+}
+
+function clamp(value, min, max, fallback) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, Math.round(n)));
+}
+
+function clean(value, max = 500) {
+  return text(value).slice(0, max);
+}
+
+function buildThumbnailPrompt(req) {
+  const platform = req.platform || "YouTube";
+  const style = req.style || "high-CTR professional thumbnail";
+  const mood = req.mood || "bold and exciting";
+  const subject = req.subject || "a compelling central subject";
+  const title = req.title || "AI and Technology";
+  const thumbText = req.thumbnailText || "";
+  const branding = req.branding || "CAPTIVATE AI purple and white";
+  const ratio = req.aspectRatio || "16:9";
+
+  return `
+Create a professional ${platform} thumbnail in ${ratio} composition.
+
+VIDEO/TOPIC:
+${title}
+
+MAIN SUBJECT:
+${subject}
+
+VISUAL STYLE:
+${style}
+
+MOOD:
+${mood}
+
+BRANDING:
+${branding}
+
+THUMBNAIL TEXT REQUEST:
+${thumbText || "No mandatory text; prioritize visual storytelling."}
+
+ADDITIONAL DIRECTION:
+${req.additionalInstructions || "Make the subject immediately understandable at small mobile size."}
+
+DESIGN REQUIREMENTS:
+- One clear dominant focal point.
+- Strong foreground/background separation.
+- High visual contrast and clean composition.
+- Professional creator-grade thumbnail aesthetic.
+- Make the subject large and instantly recognizable.
+- Use cinematic lighting and depth.
+- Avoid clutter, tiny objects, unnecessary background details, watermarks, logos that were not requested, borders, and random people.
+- Leave intentional negative space where requested text could be placed.
+- Optimize the composition for a small mobile screen.
+- The requested thumbnail text is a design instruction only; do not rely on the model for perfectly legible typography. If text appears, keep it short, large, bold, and clean.
+- No explicit, hateful, or unsafe imagery.
+- Do not copy a specific existing creator's thumbnail; create an original composition.
+
+IMPORTANT:
+Produce a finished thumbnail image, not a poster, webpage, screenshot, mockup, or UI.
+`;
+}
+
+function extractImage(result) {
+  if (!result) return null;
+
+  if (typeof result === "string") {
+    if (result.startsWith("data:image/")) return result;
+    if (/^[A-Za-z0-9+/=\s]+$/.test(result) && result.length > 1000) {
+      return `data:image/jpeg;base64,${result.replace(/\s/g, "")}`;
+    }
+  }
+
+  if (typeof result === "object") {
+    const candidates = [
+      result.image,
+      result.image_base64,
+      result.base64,
+      result.data,
+      result.output
+    ];
+
+    for (const item of candidates) {
+      if (typeof item === "string") {
+        if (item.startsWith("data:image/")) return item;
+        if (item.length > 1000) {
+          return `data:image/jpeg;base64,${item.replace(/\s/g, "")}`;
+        }
+      }
+    }
+
+    if (result.image && typeof result.image === "object") {
+      return extractImage(result.image);
+    }
+  }
+
+  return null;
+}
+
+function imageModelError(error) {
+  const message = error?.message || String(error);
+
+  if (/4009|internal server error/i.test(message)) {
+    return "Thumbnail image model returned a Cloudflare model error. The request reached Workers AI, but the image service did not complete it.";
+  }
+
+  if (/2002|binding|AI binding/i.test(message)) {
+    return "Cloudflare Workers AI binding is not configured. Confirm that the Worker has an AI binding named AI.";
+  }
+
+  if (/limit|quota|neuron|billing/i.test(message)) {
+    return "Cloudflare Workers AI usage or billing limit was reached. Check the Workers AI usage/billing status.";
+  }
+
+  return message;
+}
+
+async function generateThumbnail(env, req) {
+  const prompt = buildThumbnailPrompt(req);
+
+  const result = await env.AI.run(MODELS.IMAGE, {
+    prompt,
+    steps: clamp(req.steps, 1, 8, 4),
+    seed: req.seed === "" || req.seed === undefined ? undefined : Number(req.seed)
+  });
+
+  const image = extractImage(result);
+
+  if (!image) {
+    throw new Error("Image generation completed but no image data was returned.");
+  }
+
+  return {
+    image,
+    prompt,
+    steps: clamp(req.steps, 1, 8, 4),
+    seed: req.seed === "" || req.seed === undefined ? null : Number(req.seed)
+  };
+}
+
+function thumbnailRequest(body) {
+  return {
+    title: clean(body.title || body.videoTitle || body.topic, 300),
+    platform: clean(body.platform, 80),
+    style: clean(body.style || body.thumbnailStyle, 160),
+    mood: clean(body.mood, 120),
+    subject: clean(body.subject || body.mainSubject, 500),
+    thumbnailText: clean(body.thumbnailText || body.textOverlay, 120),
+    branding: clean(body.branding || body.brand, 180),
+    aspectRatio: clean(body.aspectRatio || body.ratio, 30),
+    additionalInstructions: clean(
+      body.additionalInstructions || body.instructions || body.extra,
+      1000
+    ),
+    steps: body.steps,
+    seed: body.seed
+  };
+}
+
+export default {
+  async fetch(request, env) {
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: CORS_HEADERS
+      });
+    }
+
+    if (request.method === "GET") {
+      return json({
+        success: true,
+        status: "online",
+        version: API_VERSION,
+        service: "CAPTIVATE AI Dedicated Thumbnail Generator",
+        aiBinding: !!env.AI,
+        model: MODELS.IMAGE,
+        provider: "cloudflare-workers-ai",
+        billingPath: "standard-workers-ai",
+        capabilities: {
+          thumbnailGenerator: true,
+          imageGeneration: true,
+          platformOptimization: true,
+          brandingPrompting: true
+        }
+      });
+    }
+
+    if (request.method !== "POST") {
+      return json({
+        success: false,
+        version: API_VERSION,
+        error: "Method not allowed."
+      }, 405);
+    }
+
+    if (!env.AI) {
+      return json({
+        success: false,
+        version: API_VERSION,
+        type: "thumbnail-generator",
+        state: "Failed",
+        error: "Cloudflare Workers AI binding (env.AI) is not configured."
+      }, 500);
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({
+        success: false,
+        version: API_VERSION,
+        error: "Invalid JSON request."
+      }, 400);
+    }
+
+    const type = body.type || body.tool;
+
+    if (type !== "thumbnail-generator") {
+      return json({
+        success: false,
+        version: API_VERSION,
+        error: 'Unsupported tool type. Use "thumbnail-generator".'
+      }, 400);
+    }
+
+    const req = thumbnailRequest(body);
+
+    if (!req.title) {
+      return json({
+        success: false,
+        version: API_VERSION,
+        type: "thumbnail-generator",
+        error: "Please provide a video title, topic, or thumbnail subject."
+      }, 400);
+    }
+
+    try {
+      const generated = await generateThumbnail(env, req);
+
+      return json({
+        success: true,
+        version: API_VERSION,
+        type: "thumbnail-generator",
+        provider: "cloudflare-workers-ai",
+        billingPath: "standard-workers-ai",
+        model: MODELS.IMAGE,
+        state: "Completed",
+        title: req.title,
+        platform: req.platform || "YouTube",
+        aspectRatio: req.aspectRatio || "16:9",
+        style: req.style || "high-CTR professional thumbnail",
+        mood: req.mood || "bold and exciting",
+        thumbnailText: req.thumbnailText,
+        branding: req.branding,
+        steps: generated.steps,
+        seed: generated.seed,
+        prompt: generated.prompt,
+        image: generated.image
+      });
+    } catch (error) {
+      return json({
+        success: false,
+        version: API_VERSION,
+        type: "thumbnail-generator",
+        provider: "cloudflare-workers-ai",
+        billingPath: "standard-workers-ai",
+        model: MODELS.IMAGE,
+        state: "Failed",
+        error: imageModelError(error)
+      }, 500);
+    }
+  }
+};
+     
 
 /* =========================================================
    BUSINESS TOOL BUILDER ASSISTANT
