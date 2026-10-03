@@ -1,6 +1,6 @@
 /* =========================================================
    CAPTIVATE AI API
-   Version 7.8
+   Version 8.3
    Stable Core Engine + App Builder + Code Generation Assistant
 ========================================================= */
 
