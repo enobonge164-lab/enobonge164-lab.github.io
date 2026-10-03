@@ -861,7 +861,321 @@ async function generateBusinessToolBuilder(env, body) {
   };
 }
 
+/* =========================================================
+   CAPTIVATE AI API — v8.2
+   GAMING TOOLS ENGINE
+   ========================================================= */
 
+const API_VERSION = "8.2";
+
+const MODELS = {
+  TEXT: "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+};
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Content-Type": "application/json; charset=UTF-8"
+};
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), { status, headers: CORS_HEADERS });
+}
+
+function text(value, fallback = "") {
+  if (value === undefined || value === null) return fallback;
+  return typeof value === "string" ? value : JSON.stringify(value);
+}
+
+function array(value) {
+  if (Array.isArray(value)) return value;
+  if (value === undefined || value === null || value === "") return [];
+  return [value];
+}
+
+function normalizeStringArray(value) {
+  return array(value).map(item => {
+    if (typeof item === "string") return item;
+    if (item === null || item === undefined) return "";
+    return JSON.stringify(item);
+  }).filter(Boolean);
+}
+
+async function runAI(env, systemPrompt, userPrompt, maxTokens = 5000) {
+  const prompt =
+    `SYSTEM INSTRUCTIONS:\n${systemPrompt}\n\n` +
+    `USER REQUEST:\n${userPrompt}\n\n` +
+    `IMPORTANT: Return ONLY valid JSON. Do not use markdown fences. ` +
+    `Follow the requested schema exactly.`;
+
+  return await env.AI.run(MODELS.TEXT, {
+    prompt,
+    max_tokens: maxTokens,
+    temperature: 0.35,
+    top_p: 0.9
+  });
+}
+
+function parseAIJson(result) {
+  let raw = result?.response ?? result?.output ?? result;
+
+  if (typeof raw !== "string") return raw;
+
+  raw = raw.trim()
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/```\s*$/i, "")
+    .trim();
+
+  try {
+    return JSON.parse(raw);
+  } catch (_) {
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      try { return JSON.parse(raw.slice(start, end + 1)); } catch (_) {}
+    }
+    return { raw };
+  }
+}
+
+function normalizeGamingToolResult(value) {
+  const r = value && typeof value === "object" ? value : {};
+
+  return {
+    title: text(r.title, "Gaming Tool"),
+    toolType: text(r.toolType, "Custom Gaming Tool"),
+    summary: text(r.summary, ""),
+    quickActions: normalizeStringArray(r.quickActions),
+    recommendations: normalizeStringArray(r.recommendations),
+    steps: normalizeStringArray(r.steps),
+    settings: Array.isArray(r.settings) ? r.settings : [],
+    loadout: Array.isArray(r.loadout) ? r.loadout : [],
+    practice: Array.isArray(r.practice) ? r.practice : [],
+    checklist: normalizeStringArray(r.checklist),
+    troubleshooting: Array.isArray(r.troubleshooting) ? r.troubleshooting : [],
+    notes: normalizeStringArray(r.notes),
+    nextSteps: normalizeStringArray(r.nextSteps),
+    assumptions: normalizeStringArray(r.assumptions)
+  };
+}
+
+function fallbackGamingTool(request) {
+  return {
+    title: text(request.title, "Gaming Tool"),
+    toolType: text(request.toolType, "Custom Gaming Tool"),
+    summary: "The AI response could not be converted into the requested structured format.",
+    quickActions: [],
+    recommendations: [],
+    steps: [],
+    settings: [],
+    loadout: [],
+    practice: [],
+    checklist: [],
+    troubleshooting: [],
+    notes: [],
+    nextSteps: ["Try again with a specific game, mode, skill level, and goal."],
+    assumptions: []
+  };
+}
+
+function gamingRequestFromBody(body) {
+  return {
+    title: text(body.title),
+    game: text(body.game || body.gameTitle || body.topic || body.idea),
+    toolType: text(body.toolType || body.tool || body.category, "Strategy Planner"),
+    platform: text(body.platform),
+    genre: text(body.genre),
+    mode: text(body.mode),
+    skillLevel: text(body.skillLevel || body.level),
+    goal: text(body.goal || body.objective || body.request),
+    character: text(body.character || body.role),
+    playstyle: text(body.playstyle),
+    loadout: text(body.loadout),
+    settings: text(body.settings),
+    issue: text(body.issue || body.problem),
+    preferences: text(body.preferences),
+    extra: text(body.extra || body.extraInstructions)
+  };
+}
+
+function buildGamingInstruction(request) {
+  return `
+You are CAPTIVATE AI Gaming Tools, a practical gaming assistant and gaming-tool designer.
+
+Create specific, useful guidance for the requested game and tool.
+Do not invent exact mechanics, weapon statistics, character abilities, map facts, patches, or settings when the user has not supplied enough information. Put uncertain information in assumptions.
+
+Supported tool types include:
+- Strategy Planner
+- Aim/Skill Trainer
+- Loadout Builder
+- Settings Optimizer
+- Beginner Coach
+- Rank/Progression Planner
+- Troubleshooting Assistant
+- Challenge Generator
+- Gaming Session Planner
+- Custom Gaming Tool
+
+Return EXACTLY this JSON structure:
+{
+  "title": "",
+  "toolType": "",
+  "summary": "",
+  "quickActions": [],
+  "recommendations": [],
+  "steps": [],
+  "settings": [
+    {"name":"","value":"","reason":""}
+  ],
+  "loadout": [
+    {"slot":"","choice":"","reason":"","alternative":""}
+  ],
+  "practice": [
+    {"exercise":"","duration":"","goal":""}
+  ],
+  "checklist": [],
+  "troubleshooting": [
+    {"problem":"","cause":"","fix":""}
+  ],
+  "notes": [],
+  "nextSteps": [],
+  "assumptions": []
+}
+
+Rules:
+1. Return valid JSON only.
+2. Keep strings as strings and arrays as arrays.
+3. If a section is not relevant, return an empty array.
+4. Make recommendations actionable rather than generic.
+5. For a troubleshooting request, prioritize diagnosis and fixes.
+6. For a loadout request, explain why each choice fits the user's goal and provide alternatives where useful.
+7. For a settings request, distinguish game settings from device/platform settings.
+8. For training, provide measurable exercises and durations.
+9. For progression planning, provide milestones and practical next steps.
+10. Do not claim current patch/meta information unless supplied by the user.
+
+USER DATA
+Game: ${request.game}
+Tool Type: ${request.toolType}
+Platform: ${request.platform}
+Genre: ${request.genre}
+Mode: ${request.mode}
+Skill Level: ${request.skillLevel}
+Goal: ${request.goal}
+Character/Role: ${request.character}
+Playstyle: ${request.playstyle}
+Current Loadout: ${request.loadout}
+Current Settings: ${request.settings}
+Problem: ${request.issue}
+Preferences: ${request.preferences}
+Extra Instructions: ${request.extra}
+`;
+}
+
+async function generateGamingTools(env, request) {
+  const aiResult = await runAI(
+    env,
+    "You are an expert gaming coach and gaming-tool designer. Produce accurate, practical, structured JSON.",
+    buildGamingInstruction(request),
+    5000
+  );
+
+  const parsed = parseAIJson(aiResult);
+  const normalized = normalizeGamingToolResult(parsed);
+
+  if (!normalized.summary && !normalized.recommendations.length && !normalized.steps.length) {
+    return fallbackGamingTool(request);
+  }
+
+  return normalized;
+}
+
+export default {
+  async fetch(request, env) {
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
+
+    if (request.method === "GET") {
+      return json({
+        success: true,
+        status: "online",
+        version: API_VERSION,
+        service: "CAPTIVATE AI Gaming Tools",
+        aiBinding: !!env.AI,
+        model: MODELS.TEXT,
+        billingPath: "standard-workers-ai",
+        capabilities: { gamingTools: true }
+      });
+    }
+
+    if (request.method !== "POST") {
+      return json({ success: false, error: "Method not allowed." }, 405);
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch (_) {
+      return json({ success: false, error: "Invalid JSON request." }, 400);
+    }
+
+    const type = body.type || body.tool;
+
+    if (type !== "gaming-tools") {
+      return json({
+        success: false,
+        version: API_VERSION,
+        error: `Unsupported tool type. Use "gaming-tools".`
+      }, 400);
+    }
+
+    if (!env.AI) {
+      return json({
+        success: false,
+        version: API_VERSION,
+        error: "Cloudflare Workers AI binding (env.AI) is not configured."
+      }, 500);
+    }
+
+    const requestData = gamingRequestFromBody(body);
+
+    if (!requestData.game) {
+      return json({
+        success: false,
+        version: API_VERSION,
+        error: "Please provide a game name or game idea."
+      }, 400);
+    }
+
+    try {
+      const tool = await generateGamingTools(env, requestData);
+
+      return json({
+        success: true,
+        version: API_VERSION,
+        type: "gaming-tools",
+        provider: "cloudflare-workers-ai",
+        billingPath: "standard-workers-ai",
+        state: "Completed",
+        game: requestData.game,
+        tool
+      });
+    } catch (error) {
+      return json({
+        success: false,
+        version: API_VERSION,
+        type: "gaming-tools",
+        state: "Failed",
+        error: error?.message || String(error)
+      }, 500);
+    }
+  }
+};
+   
 /* =========================================================
    GAMING ASSISTANT
    v8.0 dedicated structured backend
