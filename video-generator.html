@@ -1,5 +1,119 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>AI Video Generator — CAPTIVATE AI</title><link rel="icon" href="favicon.png"><link rel="stylesheet" href="style.css"></head><body><main class="app-shell"><section class="section"><a class="back-link" href="captivate.html">← Back to CAPTIVATE AI</a><div class="section-header"><div><span class="coming-badge">CAPTIVATE AI</span><h1>AI Video Generator</h1><p>Turn ideas, scripts and scenes into video-production plans.</p></div></div><div class="card tool-workspace"><label for="request">Your request</label><textarea id="request" rows="8" placeholder="Describe what you want CAPTIVATE AI to create..."></textarea><div class="form-row"><label for="platform">Platform / format</label><input id="platform" placeholder="Optional"></div><button id="run">Generate with CAPTIVATE AI</button><p id="status" role="status"></p><pre id="result" class="result-box"></pre></div></section></main><script>
-const API='https://captivate-ai-api.sirwhitethepolymath.workers.dev';
-const type='video-generator';
-document.getElementById('run').addEventListener('click',async()=>{const request=document.getElementById('request').value.trim();const platform=document.getElementById('platform').value.trim();const status=document.getElementById('status');const result=document.getElementById('result');if(!request){status.textContent='Please describe your request first.';return;}status.textContent='Working...';result.textContent='';try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,topic:request,platform})});const data=await r.json();if(!r.ok||data.success===false)throw new Error(data.error||'Request failed');result.textContent=data.output||data.result||data.response||JSON.stringify(data,null,2);status.textContent='Completed.';}catch(e){status.textContent='Error: '+e.message;}});
-</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAPTIVATE AI — Video Generator</title>
+<style>
+:root{--bg:#080b12;--card:#111827;--card2:#0d111a;--text:#f8fafc;--muted:#94a3b8;--primary:#8b5cf6;--primary2:#a78bfa;--border:#263044;--danger:#ef4444}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+.container{width:min(1100px,94%);margin:auto;padding:28px 0 50px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.brand{font-weight:800;color:var(--primary2)}.back{color:#cbd5e1;text-decoration:none}h1{font-size:clamp(28px,5vw,46px);margin:8px 0}.lead{color:var(--muted);line-height:1.6}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px}.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px}
+label{display:block;font-weight:700;margin:14px 0 7px}textarea,input,select{width:100%;background:#080b12;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px;font:inherit}
+textarea{min-height:210px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.check{display:flex;align-items:center;gap:9px;color:#cbd5e1}.check input{width:auto}
+button{border:0;border-radius:11px;padding:13px 18px;background:var(--primary);color:white;font-weight:800;cursor:pointer}button.secondary{background:#1e293b}button:disabled{opacity:.55}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.status{margin-top:16px;padding:12px;border-radius:10px;background:#0d111a;color:#cbd5e1;white-space:pre-wrap}.status.error{border:1px solid var(--danger);color:#fecaca}
+video{width:100%;max-height:560px;background:#000;border-radius:14px;margin-top:12px}.meta{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+.meta div{background:#0d111a;border-radius:10px;padding:10px;color:#cbd5e1}.small{font-size:13px;color:var(--muted)}.hidden{display:none!important}
+pre{white-space:pre-wrap;word-break:break-word;background:#080b12;border-radius:12px;padding:14px;overflow:auto;color:#cbd5e1}
+@media(max-width:760px){.grid,.row{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="top"><div class="brand">CAPTIVATE AI</div><a class="back" href="index.html">← Back to Workspace</a></div>
+<h1>🎬 AI Video Generator</h1>
+<p class="lead">Generate video from a prompt and view the structured Worker response without the <b>[object Object]</b> problem.</p>
+
+<div class="grid">
+<section class="card">
+<h2>Video Request</h2>
+<label for="prompt">Prompt / Scene Description</label>
+<textarea id="prompt" placeholder="Example: Cinematic drone shot over a futuristic Nigerian city at sunset, realistic motion, smooth camera movement."></textarea>
+
+<div class="row">
+<div><label for="duration">Duration</label><select id="duration"><option value="5">5 seconds</option><option value="8">8 seconds</option><option value="10">10 seconds</option><option value="16">16 seconds</option></select></div>
+<div><label for="resolution">Quality</label><select id="resolution"><option value="720p">720p</option><option value="540p">540p</option><option value="1080p">1080p</option></select></div>
+</div>
+<div class="row">
+<div><label for="aspectRatio">Aspect Ratio</label><select id="aspectRatio"><option value="16:9">16:9 — YouTube</option><option value="9:16">9:16 — Shorts / TikTok / Reels</option><option value="1:1">1:1 — Square</option><option value="4:3">4:3</option><option value="3:4">3:4</option></select></div>
+<div><label for="platform">Platform</label><select id="platform"><option>YouTube</option><option>YouTube Shorts</option><option>TikTok</option><option>Instagram Reels</option><option>Facebook</option><option>General</option></select></div>
+</div>
+<label class="check"><input type="checkbox" id="audio" checked> Generate synchronized audio when supported</label>
+<div class="actions"><button id="generateBtn">🎬 Generate Video</button><button class="secondary" id="clearBtn" type="button">Clear</button></div>
+<div id="status" class="status">Ready.</div>
+</section>
+
+<section class="card">
+<h2>Generated Video</h2>
+<div id="empty">Your generated video will appear here.</div>
+<video id="video" class="hidden" controls playsinline></video>
+<div id="videoActions" class="actions hidden">
+<a id="downloadLink" download="captivate-ai-video.mp4"><button type="button">⬇ Download Video</button></a>
+<button class="secondary" id="fullscreenBtn" type="button">⛶ Fullscreen</button>
+</div>
+<div id="meta" class="meta hidden"></div>
+<details id="rawBox" class="hidden" style="margin-top:15px"><summary>Technical response</summary><pre id="raw"></pre></details>
+</section>
+</div>
+</div>
+
+<script>
+const API_URL="https://captivate-ai-api.sirwhitethepolymath.workers.dev";
+const $=id=>document.getElementById(id);
+
+function setStatus(message,error=false){$("status").textContent=message;$("status").className="status"+(error?" error":"");}
+function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+
+function findVideo(value,depth=0){
+ if(depth>6||value==null)return null;
+ if(typeof value==="string"){
+  const s=value.trim();
+  if(s.startsWith("data:video/")||s.startsWith("blob:")||/^https?:\/\//i.test(s)||s.startsWith("/"))return s;
+  return null;
+ }
+ if(typeof value!=="object")return null;
+ const priority=["video","videoUrl","videoURL","url","downloadUrl","downloadURL","output","result","data"];
+ for(const key of priority)if(key in value){const found=findVideo(value[key],depth+1);if(found)return found;}
+ for(const val of Object.values(value)){const found=findVideo(val,depth+1);if(found)return found;}
+ return null;
+}
+
+function resetOutput(){
+ $("video").pause();$("video").removeAttribute("src");$("video").load();$("video").classList.add("hidden");
+ $("videoActions").classList.add("hidden");$("empty").classList.remove("hidden");$("meta").classList.add("hidden");
+ $("rawBox").classList.add("hidden");$("raw").textContent="";
+}
+
+function showMetadata(data){
+ const rows=[["State",data.state||data.status||"Completed"],["Model",data.model||"—"],["Provider",data.provider||"—"],["Duration",data.duration?data.duration+" sec":"—"],["Resolution",data.resolution||"—"],["Aspect Ratio",data.aspectRatio||"—"],["Audio",data.audio===true?"Enabled":data.audio===false?"Disabled":"—"]];
+ $("meta").innerHTML=rows.map(([k,v])=>"<div><b>"+escapeHtml(k)+"</b><br><span class='small'>"+escapeHtml(v)+"</span></div>").join("");
+ $("meta").classList.remove("hidden");
+}
+
+async function generateVideo(){
+ const prompt=$("prompt").value.trim();
+ if(!prompt){setStatus("Please enter a video prompt or scene description.",true);$("prompt").focus();return;}
+ const btn=$("generateBtn");btn.disabled=true;resetOutput();setStatus("Generating video… Please wait.");
+ const payload={type:"video-generator",prompt,duration:Number($("duration").value),resolution:$("resolution").value,aspectRatio:$("aspectRatio").value,audio:$("audio").checked,platform:$("platform").value};
+ try{
+  const response=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+  const rawText=await response.text();let data;
+  try{data=JSON.parse(rawText)}catch{throw new Error("Worker returned non-JSON: "+rawText.slice(0,500));}
+  $("raw").textContent=JSON.stringify(data,null,2);$("rawBox").classList.remove("hidden");
+  if(!response.ok||data.success===false)throw new Error(data.error||data.message||"Video generation failed.");
+  const video=findVideo(data);
+  if(!video)throw new Error("Worker responded, but no playable video URL was found. Open Technical response below.");
+  $("video").src=video;$("video").classList.remove("hidden");$("empty").classList.add("hidden");$("videoActions").classList.remove("hidden");
+  $("downloadLink").href=video;$("downloadLink").download="captivate-ai-video-"+Date.now()+".mp4";showMetadata(data);setStatus("✅ Video generated successfully.");
+ }catch(error){console.error(error);setStatus("❌ "+(error.message||String(error)),true);}
+ finally{btn.disabled=false;}
+}
+
+$("generateBtn").addEventListener("click",generateVideo);
+$("clearBtn").addEventListener("click",()=>{$("prompt").value="";resetOutput();setStatus("Ready.");});
+$("fullscreenBtn").addEventListener("click",()=>{const v=$("video");if(v.requestFullscreen)v.requestFullscreen();else if(v.webkitEnterFullscreen)v.webkitEnterFullscreen();});
+</script>
+</body>
+</html>
