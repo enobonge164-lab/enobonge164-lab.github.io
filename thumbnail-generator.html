@@ -70,7 +70,13 @@ async function generate(){
  $('generate').disabled=true; $('result').classList.remove('show'); showStatus('Generating thumbnail with CAPTIVATE AI...');
  const prompt=buildPrompt();
  try{
-   const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'image-generator',prompt,steps:4})});
+   const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+  type:'thumbnail-generator',
+  prompt,
+  title,
+  style:$('style').value,
+  steps:4
+})
    const data=await res.json(); lastData=data; imageData=findImage(data);
    if(!res.ok||data.success===false)throw new Error(data.error||data.message||'Thumbnail generation failed.');
    if(!imageData)throw new Error('The AI response was received, but no image data was found.');
