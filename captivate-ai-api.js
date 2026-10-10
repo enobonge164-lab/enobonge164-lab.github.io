@@ -1,10 +1,10 @@
 /* =========================================================
    CAPTIVATE AI API
-   Version 8.3
+   Version 8.4
    Stable Core Engine + App Builder + Code Generation Assistant
 ========================================================= */
 
-const API_VERSION = "8.1";
+const API_VERSION = "8.4";
 
 /*
    v7.5 changes the image engine to the Cloudflare-hosted
@@ -36,10 +36,15 @@ const MODELS = {
 };
 
 const VIDEO_CONFIG = {
-  enabled: false,
-  provider: "not-configured",
-  model: null,
-  reason: "Video generation requires a separately configured video provider. v7.5 never silently routes video requests to a third-party model or AI Gateway Unified Billing."
+  enabled: true,
+  provider: "cloudflare-ai-third-party",
+  model: "vidu/q3-pro",
+  fallbackModel: "vidu/q3-turbo",
+  maxDurationSeconds: 16,
+  resolutions: ["540p", "720p", "1080p"],
+  aspectRatios: ["16:9", "9:16", "3:4", "4:3", "1:1"],
+  audio: true,
+  note: "Video generation uses Cloudflare's third-party Vidu model through the Workers AI model catalog. Your Cloudflare account must have the required third-party/unified billing access enabled."
 };
 
 const STANDARD_MODEL = MODELS.TEXT;
@@ -91,7 +96,7 @@ const SUPPORTED_TOOLS = [
 
 const NEW_TOOL_PROMPTS = {
   "image-generator": "Create a detailed image-generation brief with subject, composition, style, lighting, camera, aspect ratio and negative prompt.",
-  "video-generator": "Create a production-ready video plan with scenes, shots, narration, motion, duration and aspect ratio. Do not claim to render video.",
+  "video-generator": "Create a concise visual prompt for a generated video. Preserve the requested subject, action, camera movement, environment, lighting, mood and platform aspect ratio.",
   "voice-studio": "Create a narration script and voice-direction brief including tone, pacing, pronunciation and pauses. Do not claim to synthesize audio.",
   "thumbnail-generator": "Create three thumbnail concepts with headline text, visual composition, contrast, subject placement and safe-area guidance.",
   "website-builder": `You are CAPTIVATE AI Website Builder Assistant, a senior product designer, UX architect, SEO specialist and frontend engineer.
@@ -454,316 +459,6 @@ Rules:
 `
 };
 
-/* =========================================================
-   CAPTIVATE AI API — v8.3
-   DEDICATED THUMBNAIL GENERATOR
-   ========================================================= */
-
-const API_VERSION = "8.3";
-
-const MODELS = {
-  IMAGE: "@cf/black-forest-labs/flux-1-schnell"
-};
-
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Content-Type": "application/json; charset=UTF-8"
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: CORS_HEADERS
-  });
-}
-
-function text(value, fallback = "") {
-  if (value === undefined || value === null) return fallback;
-  return typeof value === "string" ? value.trim() : JSON.stringify(value);
-}
-
-function clamp(value, min, max, fallback) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.max(min, Math.min(max, Math.round(n)));
-}
-
-function clean(value, max = 500) {
-  return text(value).slice(0, max);
-}
-
-function buildThumbnailPrompt(req) {
-  const platform = req.platform || "YouTube";
-  const style = req.style || "high-CTR professional thumbnail";
-  const mood = req.mood || "bold and exciting";
-  const subject = req.subject || "a compelling central subject";
-  const title = req.title || "AI and Technology";
-  const thumbText = req.thumbnailText || "";
-  const branding = req.branding || "CAPTIVATE AI purple and white";
-  const ratio = req.aspectRatio || "16:9";
-
-  return `
-Create a professional ${platform} thumbnail in ${ratio} composition.
-
-VIDEO/TOPIC:
-${title}
-
-MAIN SUBJECT:
-${subject}
-
-VISUAL STYLE:
-${style}
-
-MOOD:
-${mood}
-
-BRANDING:
-${branding}
-
-THUMBNAIL TEXT REQUEST:
-${thumbText || "No mandatory text; prioritize visual storytelling."}
-
-ADDITIONAL DIRECTION:
-${req.additionalInstructions || "Make the subject immediately understandable at small mobile size."}
-
-DESIGN REQUIREMENTS:
-- One clear dominant focal point.
-- Strong foreground/background separation.
-- High visual contrast and clean composition.
-- Professional creator-grade thumbnail aesthetic.
-- Make the subject large and instantly recognizable.
-- Use cinematic lighting and depth.
-- Avoid clutter, tiny objects, unnecessary background details, watermarks, logos that were not requested, borders, and random people.
-- Leave intentional negative space where requested text could be placed.
-- Optimize the composition for a small mobile screen.
-- The requested thumbnail text is a design instruction only; do not rely on the model for perfectly legible typography. If text appears, keep it short, large, bold, and clean.
-- No explicit, hateful, or unsafe imagery.
-- Do not copy a specific existing creator's thumbnail; create an original composition.
-
-IMPORTANT:
-Produce a finished thumbnail image, not a poster, webpage, screenshot, mockup, or UI.
-`;
-}
-
-function extractImage(result) {
-  if (!result) return null;
-
-  if (typeof result === "string") {
-    if (result.startsWith("data:image/")) return result;
-    if (/^[A-Za-z0-9+/=\s]+$/.test(result) && result.length > 1000) {
-      return `data:image/jpeg;base64,${result.replace(/\s/g, "")}`;
-    }
-  }
-
-  if (typeof result === "object") {
-    const candidates = [
-      result.image,
-      result.image_base64,
-      result.base64,
-      result.data,
-      result.output
-    ];
-
-    for (const item of candidates) {
-      if (typeof item === "string") {
-        if (item.startsWith("data:image/")) return item;
-        if (item.length > 1000) {
-          return `data:image/jpeg;base64,${item.replace(/\s/g, "")}`;
-        }
-      }
-    }
-
-    if (result.image && typeof result.image === "object") {
-      return extractImage(result.image);
-    }
-  }
-
-  return null;
-}
-
-function imageModelError(error) {
-  const message = error?.message || String(error);
-
-  if (/4009|internal server error/i.test(message)) {
-    return "Thumbnail image model returned a Cloudflare model error. The request reached Workers AI, but the image service did not complete it.";
-  }
-
-  if (/2002|binding|AI binding/i.test(message)) {
-    return "Cloudflare Workers AI binding is not configured. Confirm that the Worker has an AI binding named AI.";
-  }
-
-  if (/limit|quota|neuron|billing/i.test(message)) {
-    return "Cloudflare Workers AI usage or billing limit was reached. Check the Workers AI usage/billing status.";
-  }
-
-  return message;
-}
-
-async function generateThumbnail(env, req) {
-  const prompt = buildThumbnailPrompt(req);
-
-  const result = await env.AI.run(MODELS.IMAGE, {
-    prompt,
-    steps: clamp(req.steps, 1, 8, 4),
-    seed: req.seed === "" || req.seed === undefined ? undefined : Number(req.seed)
-  });
-
-  const image = extractImage(result);
-
-  if (!image) {
-    throw new Error("Image generation completed but no image data was returned.");
-  }
-
-  return {
-    image,
-    prompt,
-    steps: clamp(req.steps, 1, 8, 4),
-    seed: req.seed === "" || req.seed === undefined ? null : Number(req.seed)
-  };
-}
-
-function thumbnailRequest(body) {
-  return {
-    title: clean(body.title || body.videoTitle || body.topic, 300),
-    platform: clean(body.platform, 80),
-    style: clean(body.style || body.thumbnailStyle, 160),
-    mood: clean(body.mood, 120),
-    subject: clean(body.subject || body.mainSubject, 500),
-    thumbnailText: clean(body.thumbnailText || body.textOverlay, 120),
-    branding: clean(body.branding || body.brand, 180),
-    aspectRatio: clean(body.aspectRatio || body.ratio, 30),
-    additionalInstructions: clean(
-      body.additionalInstructions || body.instructions || body.extra,
-      1000
-    ),
-    steps: body.steps,
-    seed: body.seed
-  };
-}
-
-export default {
-  async fetch(request, env) {
-    if (request.method === "OPTIONS") {
-      return new Response(null, {
-        status: 204,
-        headers: CORS_HEADERS
-      });
-    }
-
-    if (request.method === "GET") {
-      return json({
-        success: true,
-        status: "online",
-        version: API_VERSION,
-        service: "CAPTIVATE AI Dedicated Thumbnail Generator",
-        aiBinding: !!env.AI,
-        model: MODELS.IMAGE,
-        provider: "cloudflare-workers-ai",
-        billingPath: "standard-workers-ai",
-        capabilities: {
-          thumbnailGenerator: true,
-          imageGeneration: true,
-          platformOptimization: true,
-          brandingPrompting: true
-        }
-      });
-    }
-
-    if (request.method !== "POST") {
-      return json({
-        success: false,
-        version: API_VERSION,
-        error: "Method not allowed."
-      }, 405);
-    }
-
-    if (!env.AI) {
-      return json({
-        success: false,
-        version: API_VERSION,
-        type: "thumbnail-generator",
-        state: "Failed",
-        error: "Cloudflare Workers AI binding (env.AI) is not configured."
-      }, 500);
-    }
-
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return json({
-        success: false,
-        version: API_VERSION,
-        error: "Invalid JSON request."
-      }, 400);
-    }
-
-    const type = body.type || body.tool;
-
-    if (type !== "thumbnail-generator") {
-      return json({
-        success: false,
-        version: API_VERSION,
-        error: 'Unsupported tool type. Use "thumbnail-generator".'
-      }, 400);
-    }
-
-    const req = thumbnailRequest(body);
-
-    if (!req.title) {
-      return json({
-        success: false,
-        version: API_VERSION,
-        type: "thumbnail-generator",
-        error: "Please provide a video title, topic, or thumbnail subject."
-      }, 400);
-    }
-
-    try {
-      const generated = await generateThumbnail(env, req);
-
-      return json({
-        success: true,
-        version: API_VERSION,
-        type: "thumbnail-generator",
-        provider: "cloudflare-workers-ai",
-        billingPath: "standard-workers-ai",
-        model: MODELS.IMAGE,
-        state: "Completed",
-        title: req.title,
-        platform: req.platform || "YouTube",
-        aspectRatio: req.aspectRatio || "16:9",
-        style: req.style || "high-CTR professional thumbnail",
-        mood: req.mood || "bold and exciting",
-        thumbnailText: req.thumbnailText,
-        branding: req.branding,
-        steps: generated.steps,
-        seed: generated.seed,
-        prompt: generated.prompt,
-        image: generated.image
-      });
-    } catch (error) {
-      return json({
-        success: false,
-        version: API_VERSION,
-        type: "thumbnail-generator",
-        provider: "cloudflare-workers-ai",
-        billingPath: "standard-workers-ai",
-        model: MODELS.IMAGE,
-        state: "Failed",
-        error: imageModelError(error)
-      }, 500);
-    }
-  }
-};
-     
-
-/* =========================================================
-   BUSINESS TOOL BUILDER ASSISTANT
-   v7.9 dedicated structured backend
-========================================================= */
 
 function normalizeStringArray(value) {
   if (Array.isArray(value)) {
@@ -1170,22 +865,6 @@ async function generateBusinessToolBuilder(env, body) {
    GAMING TOOLS ENGINE
    ========================================================= */
 
-const API_VERSION = "8.2";
-
-const MODELS = {
-  TEXT: "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
-};
-
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Content-Type": "application/json; charset=UTF-8"
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: CORS_HEADERS });
-}
 
 function text(value, fallback = "") {
   if (value === undefined || value === null) return fallback;
@@ -1196,29 +875,6 @@ function array(value) {
   if (Array.isArray(value)) return value;
   if (value === undefined || value === null || value === "") return [];
   return [value];
-}
-
-function normalizeStringArray(value) {
-  return array(value).map(item => {
-    if (typeof item === "string") return item;
-    if (item === null || item === undefined) return "";
-    return JSON.stringify(item);
-  }).filter(Boolean);
-}
-
-async function runAI(env, systemPrompt, userPrompt, maxTokens = 5000) {
-  const prompt =
-    `SYSTEM INSTRUCTIONS:\n${systemPrompt}\n\n` +
-    `USER REQUEST:\n${userPrompt}\n\n` +
-    `IMPORTANT: Return ONLY valid JSON. Do not use markdown fences. ` +
-    `Follow the requested schema exactly.`;
-
-  return await env.AI.run(MODELS.TEXT, {
-    prompt,
-    max_tokens: maxTokens,
-    temperature: 0.35,
-    top_p: 0.9
-  });
 }
 
 function parseAIJson(result) {
@@ -1284,7 +940,7 @@ function fallbackGamingTool(request) {
   };
 }
 
-function gamingRequestFromBody(body) {
+function gamingToolsRequestFromBody(body) {
   return {
     title: text(body.title),
     game: text(body.game || body.gameTitle || body.topic || body.idea),
@@ -1304,7 +960,7 @@ function gamingRequestFromBody(body) {
   };
 }
 
-function buildGamingInstruction(request) {
+function buildGamingToolsInstruction(request) {
   return `
 You are CAPTIVATE AI Gaming Tools, a practical gaming assistant and gaming-tool designer.
 
@@ -1383,7 +1039,7 @@ async function generateGamingTools(env, request) {
   const aiResult = await runAI(
     env,
     "You are an expert gaming coach and gaming-tool designer. Produce accurate, practical, structured JSON.",
-    buildGamingInstruction(request),
+    buildGamingToolsInstruction(request),
     5000
   );
 
@@ -1397,93 +1053,6 @@ async function generateGamingTools(env, request) {
   return normalized;
 }
 
-export default {
-  async fetch(request, env) {
-    if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
-    }
-
-    if (request.method === "GET") {
-      return json({
-        success: true,
-        status: "online",
-        version: API_VERSION,
-        service: "CAPTIVATE AI Gaming Tools",
-        aiBinding: !!env.AI,
-        model: MODELS.TEXT,
-        billingPath: "standard-workers-ai",
-        capabilities: { gamingTools: true }
-      });
-    }
-
-    if (request.method !== "POST") {
-      return json({ success: false, error: "Method not allowed." }, 405);
-    }
-
-    let body;
-    try {
-      body = await request.json();
-    } catch (_) {
-      return json({ success: false, error: "Invalid JSON request." }, 400);
-    }
-
-    const type = body.type || body.tool;
-
-    if (type !== "gaming-tools") {
-      return json({
-        success: false,
-        version: API_VERSION,
-        error: `Unsupported tool type. Use "gaming-tools".`
-      }, 400);
-    }
-
-    if (!env.AI) {
-      return json({
-        success: false,
-        version: API_VERSION,
-        error: "Cloudflare Workers AI binding (env.AI) is not configured."
-      }, 500);
-    }
-
-    const requestData = gamingRequestFromBody(body);
-
-    if (!requestData.game) {
-      return json({
-        success: false,
-        version: API_VERSION,
-        error: "Please provide a game name or game idea."
-      }, 400);
-    }
-
-    try {
-      const tool = await generateGamingTools(env, requestData);
-
-      return json({
-        success: true,
-        version: API_VERSION,
-        type: "gaming-tools",
-        provider: "cloudflare-workers-ai",
-        billingPath: "standard-workers-ai",
-        state: "Completed",
-        game: requestData.game,
-        tool
-      });
-    } catch (error) {
-      return json({
-        success: false,
-        version: API_VERSION,
-        type: "gaming-tools",
-        state: "Failed",
-        error: error?.message || String(error)
-      }, 500);
-    }
-  }
-};
-   
-/* =========================================================
-   GAMING ASSISTANT
-   v8.0 dedicated structured backend
-========================================================= */
 
 function normalizeGamingArray(value, limit = 20) {
   if (!Array.isArray(value)) return [];
@@ -2770,16 +2339,203 @@ async function generateVoice(env, body) {
   };
 }
 
-function videoUnavailableResponse() {
+function normalizeVideoDuration(value, fallback = 5) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(16, Math.max(1, Math.round(n)));
+}
+
+function normalizeVideoResolution(value) {
+  const allowed = new Set(["540p", "720p", "1080p"]);
+  const candidate = String(value || "720p").toLowerCase();
+  return allowed.has(candidate) ? candidate : "720p";
+}
+
+function normalizeVideoAspectRatio(value) {
+  const allowed = new Set(["16:9", "9:16", "3:4", "4:3", "1:1"]);
+  const candidate = String(value || "16:9");
+  return allowed.has(candidate) ? candidate : "16:9";
+}
+
+function normalizeVideoModel(value) {
+  const candidate = String(value || "").toLowerCase().trim();
+
+  if (
+    candidate === "vidu/q3-pro" ||
+    candidate === "q3-pro" ||
+    candidate === "pro"
+  ) {
+    return "vidu/q3-pro";
+  }
+
+  if (
+    candidate === "vidu/q3-turbo" ||
+    candidate === "q3-turbo" ||
+    candidate === "turbo"
+  ) {
+    return "vidu/q3-turbo";
+  }
+
+  return VIDEO_CONFIG.model;
+}
+
+function extractVideoUrl(response) {
+  if (!response) return "";
+
+  if (typeof response.video === "string") {
+    return response.video;
+  }
+
+  if (response.result && typeof response.result.video === "string") {
+    return response.result.video;
+  }
+
+  if (
+    response.result &&
+    response.result.result &&
+    typeof response.result.result.video === "string"
+  ) {
+    return response.result.result.video;
+  }
+
+  return "";
+}
+
+async function generateVideo(env, body) {
+  const rawPrompt = cleanText(
+    body.prompt ||
+    body.videoPrompt ||
+    body.visualPrompt ||
+    body.topic ||
+    body.text ||
+    body.script ||
+    body.request,
+    5000
+  );
+
+  if (!rawPrompt) {
+    throw new Error(
+      "Video prompt or script is required."
+    );
+  }
+
+  const model = normalizeVideoModel(body.model);
+
+  const duration = normalizeVideoDuration(
+    body.duration,
+    5
+  );
+
+  const resolution = normalizeVideoResolution(
+    body.resolution
+  );
+
+  const aspectRatio = normalizeVideoAspectRatio(
+    body.aspectRatio ||
+    body.aspect_ratio
+  );
+
+  const audio =
+    body.audio === false ||
+    body.generateAudio === false ||
+    body.generate_audio === false
+      ? false
+      : true;
+
+  /*
+    Vidu Q3 supports:
+    - text-to-video
+    - image-to-video
+    - start/end-frame video
+    - synchronized audio
+    - 1-16 second clips
+    - 540p/720p/1080p
+    - 16:9, 9:16, 3:4, 4:3 and 1:1 for text-to-video
+  */
+
+  const input = {
+    prompt: rawPrompt,
+    duration,
+    resolution,
+    audio,
+    aspect_ratio: aspectRatio
+  };
+
+  const startImage = cleanText(
+    body.startImage ||
+    body.start_image ||
+    body.image ||
+    body.imageUrl ||
+    body.image_url,
+    2000000
+  );
+
+  const endImage = cleanText(
+    body.endImage ||
+    body.end_image ||
+    body.endImageUrl ||
+    body.end_image_url,
+    2000000
+  );
+
+  if (startImage) {
+    input.start_image = startImage;
+  }
+
+  if (endImage) {
+    if (!startImage) {
+      throw new Error(
+        "endImage requires startImage."
+      );
+    }
+
+    input.end_image = endImage;
+  }
+
+  let response;
+
+  try {
+    response = await env.AI.run(
+      model,
+      input
+    );
+  } catch (error) {
+    const message =
+      error?.message ||
+      String(error || "Video generation failed.");
+
+    throw new Error(
+      `Video model request failed: ${message}. ` +
+      `This video model is a Cloudflare third-party model and may require the appropriate Unified Billing/third-party model access on your Cloudflare account.`
+    );
+  }
+
+  const video = extractVideoUrl(response);
+
+  if (!video) {
+    throw new Error(
+      "The video model completed without returning a video URL."
+    );
+  }
+
   return {
-    success: false,
+    success: true,
     version: API_VERSION,
     type: "video-generator",
-    code: "VIDEO_PROVIDER_REQUIRED",
+    state: response?.state || "Completed",
+    model,
     provider: VIDEO_CONFIG.provider,
-    model: VIDEO_CONFIG.model,
-    available: false,
-    message: VIDEO_CONFIG.reason
+    billingPath: "cloudflare-third-party-model-catalog",
+    prompt: rawPrompt,
+    duration,
+    resolution,
+    aspectRatio,
+    audio,
+    video,
+    expiresNote:
+      model === "vidu/q3-pro" || model === "vidu/q3-turbo"
+        ? "The returned video URL is provider-hosted. Download the video promptly if the provider URL is temporary."
+        : null
   };
 }
 
@@ -2797,7 +2553,9 @@ function mediaErrorResponse(type, error, status = 502) {
       model:
         type === "voice-studio"
           ? MODELS.VOICE
-          : MODELS.IMAGE,
+          : type === "video-generator"
+            ? VIDEO_CONFIG.model
+            : MODELS.IMAGE,
       billingPath: "standard-workers-ai",
       hint:
         type === "image-generator" || type === "thumbnail-generator"
@@ -2836,7 +2594,8 @@ function isCodeTool(type) {
 function normalizeStoryArray(value, fallback = []) {
   if (!Array.isArray(value)) return fallback;
   return value
-    .map(item => cleanText(item, 1600)    .filter(Boolean);
+    .map(item => cleanText(item, 1600))
+    .filter(Boolean);
 }
 
 function normalizeStoryObjectArray(value, fallback = []) {
@@ -3074,6 +2833,7 @@ async function generateGameStoryGenerator(env, body) {
    WORKER
 ========================================================= */
 
+
 export default {
 
   async fetch(request, env) {
@@ -3150,8 +2910,14 @@ export default {
             vision: { available: true, model: MODELS.VISION },
             video: {
               available: VIDEO_CONFIG.enabled,
+              provider: VIDEO_CONFIG.provider,
               model: VIDEO_CONFIG.model,
-              reason: VIDEO_CONFIG.reason
+              fallbackModel: VIDEO_CONFIG.fallbackModel,
+              maxDurationSeconds: VIDEO_CONFIG.maxDurationSeconds,
+              resolutions: VIDEO_CONFIG.resolutions,
+              aspectRatios: VIDEO_CONFIG.aspectRatios,
+              audio: VIDEO_CONFIG.audio,
+              note: VIDEO_CONFIG.note
             }
           }
 
@@ -3315,6 +3081,20 @@ export default {
         }
       }
 
+      if (type === "gaming-tools") {
+        try {
+          const request = gamingToolsRequestFromBody(body);
+          return jsonResponse(await generateGamingTools(env, request));
+        } catch (error) {
+          console.error("CAPTIVATE gaming-tools error:", error);
+          return errorResponse(
+            error?.message || "Gaming Tools failed.",
+            502,
+            { type, model: MODELS.TEXT }
+          );
+        }
+      }
+
       if (type === "business-tool-builder") {
   try {
     return jsonResponse(
@@ -3357,7 +3137,22 @@ if (type === "website-builder") {
       }
 
       if (type === "video-generator") {
-        return jsonResponse(videoUnavailableResponse(), 503);
+        try {
+          return jsonResponse(
+            await generateVideo(env, body)
+          );
+        } catch (error) {
+          console.error(
+            "CAPTIVATE video-generator error:",
+            error
+          );
+
+          return mediaErrorResponse(
+            type,
+            error,
+            502
+          );
+        }
       }
 
       if (type === "voice-studio") {
