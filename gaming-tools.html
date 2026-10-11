@@ -227,6 +227,8 @@ $('generate').addEventListener('click', async () => {
   const payload = {
     type: 'gaming-tools',
     game,
+    topic: game,
+prompt: `${game} — ${val('goal') || val('toolType') || 'Create a useful gaming tool'}`,
     toolType: value('toolType'),
     platform: value('platform'),
     mode: value('mode'),
