@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>CAPTIVATE AI — AI Workspace</title>
+<meta name="description" content="CAPTIVATE AI workspace with 20 linked AI tools for content, building, and gaming.">
 
 <link rel="icon" type="image/png" href="favicon.png">
 
@@ -515,6 +516,23 @@ button{
         display:none;
     }
 }
+
+.tool-status{position:absolute;top:13px;right:12px;font-size:9px;font-weight:700;letter-spacing:.35px;padding:5px 7px;border-radius:20px;background:#172033;color:#cbd5e1}
+.tool-status.ready{background:rgba(34,197,94,.13);color:#86efac;border:1px solid rgba(34,197,94,.25)}
+.tool-status.billing{background:rgba(245,158,11,.13);color:#fcd34d;border:1px solid rgba(245,158,11,.25)}
+.tool-card h3{padding-right:4px}
+.top-actions{align-items:center}
+#themeButton[aria-pressed="true"]{background:#ede9fe;color:#171226}
+@media(max-width:500px){.tool-status{font-size:8px;max-width:115px;white-space:normal;text-align:center}}
+
+
+body.light-theme{--bg:#f5f7fb;--sidebar:#ffffff;--card:#ffffff;--card-hover:#f0edff;--border:#dbe1ea;--text:#111827;--muted:#526176;--shadow:0 18px 50px rgba(15,23,42,.08);color:var(--text)}
+body.light-theme .topbar{background:rgba(245,247,251,.9)}
+body.light-theme .nav a{color:#334155}
+body.light-theme .hero{background:radial-gradient(circle at 85% 20%,rgba(139,92,246,.16),transparent 35%),linear-gradient(135deg,#fff,#f1edff)}
+body.light-theme .secondary-btn,body.light-theme .top-button{background:#fff;color:#334155}
+body.light-theme .feature{background:linear-gradient(145deg,#fff,#f7f8fc)}
+
 </style>
 </head>
 
@@ -667,6 +685,11 @@ button{
 
         </section>
 
+<div class="feature-grid" style="margin:0 0 24px">
+  <div class="feature"><h3>20 Core Tools</h3><p>9 AI Toolkit · 4 Content Studio · 4 AI Builder · 3 Gaming</p></div>
+  <div class="feature"><h3>Connected Pages</h3><p>Cards open their matching HTML page in this GitHub Pages repository.</p></div>
+  <div class="feature"><h3>Billing Status</h3><p>AI Video Generator: waiting for billing. Other tools may still depend on their provider configuration.</p></div>
+</div>
 
         <!-- ================= AI TOOLKIT ================= -->
 
@@ -785,66 +808,12 @@ button{
         <!-- ================= CONTENT STUDIO ================= -->
 
         <section class="section" id="content-studio">
-
-            <div class="section-header">
-
-                <div>
-                    <h2>🎬 Content Studio</h2>
-                    <p>
-                        The next generation of CAPTIVATE content creation.
-                    </p>
-                </div>
-
-            </div>
-
-
-            <div class="tool-grid">
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">COMING SOON</span>
-                    <div class="tool-icon">🖼️</div>
-                    <h3>AI Image Generator</h3>
-                    <p>
-                        Create realistic images, product photography,
-                        marketing visuals and creative assets.
-                    </p>
-                </div>
-
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">COMING SOON</span>
-                    <div class="tool-icon">🎥</div>
-                    <h3>AI Video Generator</h3>
-                    <p>
-                        Turn ideas and scripts into platform-ready
-                        video content.
-                    </p>
-                </div>
-
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">COMING SOON</span>
-                    <div class="tool-icon">🎙️</div>
-                    <h3>AI Voice Studio</h3>
-                    <p>
-                        Create natural AI narration for videos,
-                        advertisements and content.
-                    </p>
-                </div>
-
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">COMING SOON</span>
-                    <div class="tool-icon">🖼️</div>
-                    <h3>Thumbnail Generator</h3>
-                    <p>
-                        Create attention-grabbing thumbnails for
-                        YouTube and other platforms.
-                    </p>
-                </div>
-
-            </div>
-
+<div class="tool-grid">
+<a class="tool-card" href="image-generator.html"><span class="tool-status ready">OPEN TOOL</span><div class="tool-icon">🖼️</div><h3>AI Image Generator</h3><p>Generate AI images and creative visuals from a text prompt.</p><span class="tool-arrow">Open tool →</span></a>
+<a class="tool-card" href="video-generator.html"><span class="tool-status billing">WAITING FOR BILLING</span><div class="tool-icon">🎥</div><h3>AI Video Generator</h3><p>Create a video workflow from a prompt or script. Video clip generation is currently waiting for billing.</p><span class="tool-arrow">Open tool →</span></a>
+<a class="tool-card" href="voice-studio.html"><span class="tool-status ready">OPEN TOOL</span><div class="tool-icon">🎙️</div><h3>AI Voice Studio</h3><p>Generate AI narration and listen to or download the audio.</p><span class="tool-arrow">Open tool →</span></a>
+<a class="tool-card" href="thumbnail-generator.html"><span class="tool-status ready">OPEN TOOL</span><div class="tool-icon">🎨</div><h3>Thumbnail Generator</h3><p>Generate a thumbnail image for YouTube and other content.</p><span class="tool-arrow">Open tool →</span></a>
+</div>
         </section>
 
 
@@ -852,86 +821,24 @@ button{
 
         <section class="section" id="business-ai">
 
-            <div class="section-header">
-
-                <div>
-                    <h2>🏢 Business AI</h2>
-                    <p>
-                        AI agents designed to help businesses work and grow.
-                    </p>
-                </div>
-
-            </div>
-
-
-            <div class="tool-grid">
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">PLANNED</span>
-                    <div class="tool-icon">🤖</div>
-                    <h3>Customer Support Agent</h3>
-                    <p>
-                        Help businesses answer customer questions
-                        and manage support workflows.
-                    </p>
-                </div>
-
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">PLANNED</span>
-                    <div class="tool-icon">💬</div>
-                    <h3>WhatsApp Business Assistant</h3>
-                    <p>
-                        AI assistance for customer conversations,
-                        sales and follow-ups.
-                    </p>
-                </div>
-
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">PLANNED</span>
-                    <div class="tool-icon">🎯</div>
-                    <h3>Lead Generation Agent</h3>
-                    <p>
-                        Help businesses discover and qualify
-                        potential customers.
-                    </p>
-                </div>
-
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">PLANNED</span>
-                    <div class="tool-icon">💰</div>
-                    <h3>AI Sales Assistant</h3>
-                    <p>
-                        Assist with prospects, product questions,
-                        objections and follow-ups.
-                    </p>
-                </div>
-
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">PLANNED</span>
-                    <div class="tool-icon">📊</div>
-                    <h3>AI Business Analyst</h3>
-                    <p>
-                        Turn business information and data into
-                        useful insights.
-                    </p>
-                </div>
-
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">PLANNED</span>
-                    <div class="tool-icon">🔎</div>
-                    <h3>AI Research Agent</h3>
-                    <p>
-                        Research topics and turn findings into
-                        structured reports.
-                    </p>
-                </div>
-
-            </div>
+<div class="feature-grid">
+  <div class="feature">
+    <div class="feature-icon">🏢</div>
+    <h3>Business AI expansion</h3>
+    <p>Dedicated customer-support, sales, WhatsApp, and analytics agents are future expansion ideas—not part of the current 20-tool set.</p>
+  </div>
+  <div class="feature">
+    <div class="feature-icon">⚙️</div>
+    <h3>Workflow Automation</h3>
+    <p>Open the existing automation workspace to explore workflow-building functionality.</p>
+    <p style="margin-top:14px"><a class="primary-btn" href="automation.html">Open Automation</a></p>
+  </div>
+  <div class="feature">
+    <div class="feature-icon">🧭</div>
+    <h3>Honest tool status</h3>
+    <p>Tool cards open their matching pages. A working page does not guarantee that every provider-backed feature is available; the video generator is labelled as waiting for billing.</p>
+  </div>
+</div>
 
         </section>
 
@@ -941,170 +848,45 @@ button{
 
         <section class="section" id="automation">
 
-            <div class="section-header">
-
-                <div>
-                    <h2>⚙️ Automation</h2>
-                    <p>
-                        Move from generating answers to getting work done.
-                    </p>
-                </div>
-
-            </div>
-
-
-            <div class="feature-grid">
-
-                <div class="feature">
-                    <div class="feature-icon">⚙️</div>
-                    <h3>Workflow Automation</h3>
-                    <p>
-                        Build multi-step workflows that connect
-                        AI with repetitive business tasks.
-                    </p>
-                </div>
-
-                <div class="feature">
-                    <div class="feature-icon">🤖</div>
-                    <h3>AI Agent Builder</h3>
-                    <p>
-                        Create specialized agents that can follow
-                        instructions and complete defined workflows.
-                    </p>
-                </div>
-
-                <div class="feature">
-                    <div class="feature-icon">🔗</div>
-                    <h3>Integrations</h3>
-                    <p>
-                        Connect CAPTIVATE to external services and
-                        business systems as the platform grows.
-                    </p>
-                </div>
-
-            </div>
+<div class="tool-grid">
+  <a class="tool-card" href="automation.html">
+    <div class="tool-icon">⚙️</div><h3>Workflow Automation</h3>
+    <p>Open the existing workflow automation workspace.</p><span class="tool-arrow">Open workspace →</span>
+  </a>
+  <a class="tool-card" href="automation.html">
+    <div class="tool-icon">🤖</div><h3>Automation Builder</h3>
+    <p>Use the current automation page to inspect its available workflow controls.</p><span class="tool-arrow">Open workspace →</span>
+  </a>
+  <a class="tool-card" href="#settings">
+    <div class="tool-icon">🔗</div><h3>Integrations</h3>
+    <p>Integration management is not represented as a separate connected tool yet.</p><span class="tool-arrow">View notes →</span>
+  </a>
+</div>
 
         </section>
 
 
         <!-- ================= BUILDER ================= -->
 
+   
         <section class="section" id="builder">
-
-            <div class="section-header">
-
-                <div>
-                    <h2>💻 AI Builder</h2>
-                    <p>
-                        Turn ideas into digital products.
-                    </p>
-                </div>
-
-            </div>
-
-
-            <div class="tool-grid">
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">PLANNED</span>
-                    <div class="tool-icon">🌐</div>
-                    <h3>AI Website Builder</h3>
-                    <p>
-                        Describe a website and let CAPTIVATE
-                        help create it.
-                    </p>
-                </div>
-
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">PLANNED</span>
-                    <div class="tool-icon">📱</div>
-                    <h3>AI App Builder</h3>
-                    <p>
-                        Turn an application idea into a working
-                        project with AI assistance.
-                    </p>
-                </div>
-
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">PLANNED</span>
-                    <div class="tool-icon">🧩</div>
-                    <h3>AI Agent Builder</h3>
-                    <p>
-                        Build specialized AI agents for
-                        repeatable tasks.
-                    </p>
-                </div>
-
-            </div>
-
+<div class="tool-grid">
+<a class="tool-card" href="website-builder.html"><span class="tool-status ready">OPEN TOOL</span><div class="tool-icon">🌐</div><h3>Website Builder Assistant</h3><p>Plan a website, produce a starter structure, and get a build prompt.</p><span class="tool-arrow">Open tool →</span></a>
+<a class="tool-card" href="app-builder.html"><span class="tool-status ready">OPEN TOOL</span><div class="tool-icon">📱</div><h3>App Builder Assistant</h3><p>Turn an app idea into screens, flows, architecture, and a build plan.</p><span class="tool-arrow">Open tool →</span></a>
+<a class="tool-card" href="code-generator.html"><span class="tool-status ready">OPEN TOOL</span><div class="tool-icon">💻</div><h3>Code Generation Assistant</h3><p>Describe a coding task and get code-oriented help and testing guidance.</p><span class="tool-arrow">Open tool →</span></a>
+<a class="tool-card" href="business-tool-builder.html"><span class="tool-status ready">OPEN TOOL</span><div class="tool-icon">🧩</div><h3>Business Tool Builder</h3><p>Plan a practical digital tool for a business workflow.</p><span class="tool-arrow">Open tool →</span></a>
+</div>
         </section>
 
 
         <!-- ================= GAMING ================= -->
 
         <section class="section" id="gaming">
-
-            <div class="section-header">
-
-                <div>
-                    <h2>🎮 Gaming Hub</h2>
-                    <p>
-                        Play games and use AI to improve your gaming experience.
-                    </p>
-                </div>
-
-            </div>
-
-
-            <div class="tool-grid">
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">PLANNED</span>
-                    <div class="tool-icon">🕹️</div>
-                    <h3>Play Games</h3>
-                    <p>
-                        Play browser-based games, challenges,
-                        puzzles, trivia and AI-powered games.
-                    </p>
-                </div>
-
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">PLANNED</span>
-                    <div class="tool-icon">🤖</div>
-                    <h3>AI Gaming</h3>
-                    <p>
-                        Get strategies, guides, analysis and
-                        AI assistance while gaming.
-                    </p>
-                </div>
-
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">PLANNED</span>
-                    <div class="tool-icon">🏆</div>
-                    <h3>Challenges & Achievements</h3>
-                    <p>
-                        Earn scores, XP and achievements as the
-                        gaming system grows.
-                    </p>
-                </div>
-
-
-                <div class="tool-card coming">
-                    <span class="coming-badge">PLANNED</span>
-                    <div class="tool-icon">🎬</div>
-                    <h3>Gaming Creator</h3>
-                    <p>
-                        Turn gaming ideas and experiences into
-                        videos and social content.
-                    </p>
-                </div>
-
-            </div>
-
+<div class="tool-grid">
+<a class="tool-card" href="gaming-assistant.html"><span class="tool-status ready">OPEN TOOL</span><div class="tool-icon">🤖</div><h3>AI Gaming Assistant</h3><p>Get gaming strategy, guides, and contextual assistance.</p><span class="tool-arrow">Open tool →</span></a>
+<a class="tool-card" href="game-story-generator.html"><span class="tool-status ready">OPEN TOOL</span><div class="tool-icon">📖</div><h3>Game Idea & Story Generator</h3><p>Create game concepts, storylines, characters, and missions.</p><span class="tool-arrow">Open tool →</span></a>
+<a class="tool-card" href="gaming-tools.html"><span class="tool-status ready">TESTED WORKING</span><div class="tool-icon">🕹️</div><h3>Gaming Tools</h3><p>Generate structured gaming tools, settings, practice plans, and troubleshooting.</p><span class="tool-arrow">Open tool →</span></a>
+</div>
         </section>
 
 
@@ -1112,52 +894,11 @@ button{
 
         <section class="section" id="projects">
 
-            <div class="section-header">
-
-                <div>
-                    <h2>🧠 What Makes CAPTIVATE Different</h2>
-                    <p>
-                        The long-term platform vision.
-                    </p>
-                </div>
-
-            </div>
-
-
-            <div class="feature-grid">
-
-                <div class="feature">
-                    <div class="feature-icon">🧠</div>
-                    <h3>CAPTIVATE Brain</h3>
-                    <p>
-                        A shared intelligence layer that can
-                        eventually understand the user's projects,
-                        brand and business context.
-                    </p>
-                </div>
-
-
-                <div class="feature">
-                    <div class="feature-icon">🤖</div>
-                    <h3>Do-It-For-Me AI</h3>
-                    <p>
-                        Move beyond individual generators toward
-                        AI that can plan multi-step tasks.
-                    </p>
-                </div>
-
-
-                <div class="feature">
-                    <div class="feature-icon">🔀</div>
-                    <h3>AI Model Routing</h3>
-                    <p>
-                        Use specialized AI capabilities for
-                        different tasks instead of relying on
-                        one model for everything.
-                    </p>
-                </div>
-
-            </div>
+<div class="feature-grid">
+  <div class="feature"><div class="feature-icon">🧰</div><h3>AI Toolkit</h3><p>9 existing tools remain linked to their current pages.</p></div>
+  <div class="feature"><div class="feature-icon">🎬</div><h3>Content Studio</h3><p>Image, voice, and thumbnail pages are linked. Video clip generation is waiting for billing.</p></div>
+  <div class="feature"><div class="feature-icon">💻</div><h3>AI Builder + Gaming</h3><p>The four builder pages and three gaming pages are linked from this dashboard.</p></div>
+</div>
 
         </section>
 
@@ -1166,15 +907,12 @@ button{
 
         <section class="section" id="settings">
 
-            <div class="feature">
-                <div class="feature-icon">⚙️</div>
-                <h3>Settings</h3>
-                <p>
-                    Account settings, AI preferences, usage,
-                    credits, subscriptions and integrations will
-                    be added as the CAPTIVATE platform develops.
-                </p>
-            </div>
+<div class="feature">
+  <div class="feature-icon">⚙️</div>
+  <h3>Workspace Settings & Notes</h3>
+  <p>This dashboard currently runs as a static GitHub Pages site. It does not yet provide account login, subscription management, usage metering, or payment processing.</p>
+  <p style="margin-top:10px">Provider-dependent video generation is marked as waiting for billing. No purchase is required for this dashboard replacement.</p>
+</div>
 
         </section>
 
@@ -1278,20 +1016,19 @@ const themeButton =
     document.getElementById("themeButton");
 
 if(themeButton){
-
+    themeButton.setAttribute("aria-label", "Toggle light theme");
+    themeButton.setAttribute("aria-pressed", "false");
     themeButton.addEventListener("click", () => {
-
-        alert(
-            "CAPTIVATE AI theme controls will be expanded in the next UI upgrade."
-        );
-
+        const light = document.body.classList.toggle("light-theme");
+        themeButton.setAttribute("aria-pressed", String(light));
+        themeButton.textContent = light ? "☀️" : "🌙";
     });
-
 }
 
 </script>
 
 </body>
 </html>
+
 
         
