@@ -60,15 +60,19 @@ button:disabled{opacity:.55;cursor:not-allowed}
   </div>
 
   <section class="hero">
-    <span class="badge">GAMING TOOLS • v8.2</span>
+    <span class="badge">GAMING TOOLS • FIXED</span>
     <h1>Gaming Tools</h1>
     <p>Build practical gaming strategies, loadouts, settings, practice plans and troubleshooting guides.</p>
   </section>
 
   <section class="card">
     <div class="grid">
-      <div><label for="game">Game *</label><input id="game" placeholder="e.g. Call of Duty Mobile" required></div>
-      <div><label for="toolType">Tool Type</label>
+      <div>
+        <label for="game">Game *</label>
+        <input id="game" name="game" placeholder="e.g. Call of Duty Mobile" autocomplete="off" required>
+      </div>
+      <div>
+        <label for="toolType">Tool Type</label>
         <select id="toolType">
           <option>Strategy Planner</option>
           <option>Aim/Skill Trainer</option>
@@ -82,21 +86,53 @@ button:disabled{opacity:.55;cursor:not-allowed}
           <option>Custom Gaming Tool</option>
         </select>
       </div>
-      <div><label for="platform">Platform</label><input id="platform" placeholder="Mobile, PC, PlayStation, Xbox..."></div>
-      <div><label for="mode">Mode</label><input id="mode" placeholder="Ranked, Multiplayer, Battle Royale..."></div>
-      <div><label for="skillLevel">Skill Level</label>
+      <div>
+        <label for="platform">Platform</label>
+        <input id="platform" placeholder="Mobile, PC, PlayStation, Xbox...">
+      </div>
+      <div>
+        <label for="mode">Mode</label>
+        <input id="mode" placeholder="Ranked, Multiplayer, Battle Royale...">
+      </div>
+      <div>
+        <label for="skillLevel">Skill Level</label>
         <select id="skillLevel">
-          <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Competitive</option>
+          <option>Beginner</option>
+          <option>Intermediate</option>
+          <option>Advanced</option>
+          <option>Competitive</option>
         </select>
       </div>
-      <div><label for="character">Character / Role</label><input id="character" placeholder="Optional character, class or role"></div>
-      <div class="full"><label for="goal">Goal / Objective</label><textarea id="goal" placeholder="What do you want the gaming tool to help you achieve?"></textarea></div>
-      <div><label for="playstyle">Playstyle</label><input id="playstyle" placeholder="Aggressive, defensive, support, balanced..."></div>
-      <div><label for="loadout">Current Loadout</label><textarea id="loadout" placeholder="Weapons, perks, equipment, character setup..."></textarea></div>
-      <div><label for="settings">Current Settings</label><textarea id="settings" placeholder="Sensitivity, graphics, controls, keybinds..."></textarea></div>
-      <div><label for="issue">Problem / Challenge</label><textarea id="issue" placeholder="Describe what is going wrong, if any."></textarea></div>
-      <div class="full"><label for="extra">Extra Instructions</label><textarea id="extra" placeholder="Any specific preferences or constraints..."></textarea></div>
+      <div>
+        <label for="character">Character / Role</label>
+        <input id="character" placeholder="Optional character, class or role">
+      </div>
+      <div class="full">
+        <label for="goal">Goal / Objective</label>
+        <textarea id="goal" placeholder="What do you want the gaming tool to help you achieve?"></textarea>
+      </div>
+      <div>
+        <label for="playstyle">Playstyle</label>
+        <input id="playstyle" placeholder="Aggressive, defensive, support, balanced...">
+      </div>
+      <div>
+        <label for="loadout">Current Loadout</label>
+        <textarea id="loadout" placeholder="Weapons, perks, equipment, character setup..."></textarea>
+      </div>
+      <div>
+        <label for="settings">Current Settings</label>
+        <textarea id="settings" placeholder="Sensitivity, graphics, controls, keybinds..."></textarea>
+      </div>
+      <div>
+        <label for="issue">Problem / Challenge</label>
+        <textarea id="issue" placeholder="Describe what is going wrong, if any."></textarea>
+      </div>
+      <div class="full">
+        <label for="extra">Extra Instructions</label>
+        <textarea id="extra" placeholder="Any specific preferences or constraints..."></textarea>
+      </div>
     </div>
+
     <div class="actions">
       <button id="generate" type="button">🎮 Generate Gaming Tool</button>
       <button class="secondary" id="clear" type="button">Clear</button>
@@ -106,16 +142,22 @@ button:disabled{opacity:.55;cursor:not-allowed}
 
   <section id="results" class="card hidden">
     <div class="result-head">
-      <div><h2 id="resultTitle" class="result-title">Gaming Tool</h2><p id="resultSummary" class="summary"></p></div>
+      <div>
+        <h2 id="resultTitle" class="result-title">Gaming Tool</h2>
+        <p id="resultSummary" class="summary"></p>
+      </div>
       <span id="resultPill" class="pill">Completed</span>
     </div>
     <div id="dynamic"></div>
     <div class="section">
       <h3>Raw JSON</h3>
       <pre id="raw" class="raw"></pre>
-      <div class="actions"><button class="secondary" id="copy" type="button">Copy Raw JSON</button></div>
+      <div class="actions">
+        <button class="secondary" id="copy" type="button">Copy Raw JSON</button>
+      </div>
     </div>
   </section>
+
   <div class="footer">CAPTIVATE AI • Gaming Tools • Cloudflare Workers AI</div>
 </div>
 
@@ -125,19 +167,36 @@ button:disabled{opacity:.55;cursor:not-allowed}
 const API_URL = 'https://captivate-ai-api.sirwhitethepolymath.workers.dev';
 const $ = id => document.getElementById(id);
 
-function text(value) {
-  if (value === undefined || value === null) return '';
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
+function value(id) {
+  const element = $(id);
+  return element && typeof element.value === 'string'
+    ? element.value.trim()
+    : '';
+}
+
+function text(input) {
+  if (input === undefined || input === null) return '';
+  if (typeof input === 'string' ||
+      typeof input === 'number' ||
+      typeof input === 'boolean') {
+    return String(input);
+  }
   return '';
 }
 
-function arr(value) {
-  return Array.isArray(value) ? value : (value == null || value === '' ? [] : [value]);
+function arr(input) {
+  return Array.isArray(input)
+    ? input
+    : (input == null || input === '' ? [] : [input]);
 }
 
-function escapeHtml(value) {
-  return String(value ?? '').replace(/[&<>'"]/g, character => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+function escapeHtml(input) {
+  return String(input ?? '').replace(/[&<>'"]/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
   }[character]));
 }
 
@@ -154,14 +213,22 @@ function list(items) {
 }
 
 function objectCards(items, fields) {
-  const values = arr(items).filter(item => item && typeof item === 'object' && !Array.isArray(item));
-  if (!values.length) return '<div class="empty">No items returned.</div>';
+  const values = arr(items).filter(item =>
+    item && typeof item === 'object' && !Array.isArray(item)
+  );
+
+  if (!values.length) {
+    return '<div class="empty">No items returned.</div>';
+  }
 
   return `<div class="mini-grid">${values.map(object => {
     const content = fields.map(([key, label]) => {
-      const value = text(object[key]);
-      return value ? `<b>${escapeHtml(label)}</b><span>${escapeHtml(value)}</span>` : '';
+      const itemValue = text(object[key]);
+      return itemValue
+        ? `<b>${escapeHtml(label)}</b><span>${escapeHtml(itemValue)}</span>`
+        : '';
     }).join('');
+
     return `<div class="mini">${content || '<span>Details unavailable.</span>'}</div>`;
   }).join('')}</div>`;
 }
@@ -173,7 +240,7 @@ function normalizeTool(data) {
     try {
       tool = JSON.parse(tool);
     } catch {
-      return { title: 'Gaming Tool', summary: tool };
+      return {title: 'Gaming Tool', summary: tool};
     }
   }
 
@@ -184,56 +251,81 @@ function renderTool(data) {
   const tool = normalizeTool(data);
 
   $('resultTitle').textContent = text(tool.title) || 'Gaming Tool';
-  $('resultSummary').textContent = text(tool.summary) || 'Your structured gaming tool is ready.';
+  $('resultSummary').textContent =
+    text(tool.summary) || 'Your gaming tool response has arrived.';
 
   let html = '';
   html += section('Quick Actions', list(tool.quickActions));
   html += section('Recommendations', list(tool.recommendations));
   html += section('Steps', list(tool.steps));
-  html += section('Settings', objectCards(tool.settings, [['name','Setting'],['value','Value'],['reason','Reason']]));
-  html += section('Loadout', objectCards(tool.loadout, [['slot','Slot'],['choice','Choice'],['reason','Reason'],['alternative','Alternative']]));
-  html += section('Practice Plan', objectCards(tool.practice, [['exercise','Exercise'],['duration','Duration'],['goal','Goal']]));
-  html += section('Troubleshooting', objectCards(tool.troubleshooting, [['problem','Problem'],['cause','Cause'],['fix','Fix']]));
+  html += section('Settings', objectCards(tool.settings, [
+    ['name', 'Setting'],
+    ['value', 'Value'],
+    ['reason', 'Reason']
+  ]));
+  html += section('Loadout', objectCards(tool.loadout, [
+    ['slot', 'Slot'],
+    ['choice', 'Choice'],
+    ['reason', 'Reason'],
+    ['alternative', 'Alternative']
+  ]));
+  html += section('Practice Plan', objectCards(tool.practice, [
+    ['exercise', 'Exercise'],
+    ['duration', 'Duration'],
+    ['goal', 'Goal']
+  ]));
+  html += section('Troubleshooting', objectCards(tool.troubleshooting, [
+    ['problem', 'Problem'],
+    ['cause', 'Cause'],
+    ['fix', 'Fix']
+  ]));
   html += section('Checklist', list(tool.checklist));
   html += section('Next Steps', list(tool.nextSteps));
 
-  // Correctly close the section/list/map calls.
   const notes = arr(tool.notes);
-  const assumptions = arr(tool.assumptions).map(item => 'Assumption: ' + text(item));
+  const assumptions = arr(tool.assumptions)
+    .map(item => 'Assumption: ' + text(item));
+
   html += section('Notes & Assumptions', list([...notes, ...assumptions]));
 
-  $('dynamic').innerHTML = html || '<div class="empty">The AI returned no structured sections.</div>';
+  if (!html) {
+    html = '<div class="empty">The response did not contain structured sections. Check Raw JSON below.</div>';
+  }
 
-  const raw = JSON.stringify(data, null, 2);
-  $('raw').textContent = raw;
+  $('dynamic').innerHTML = html;
+  $('raw').textContent = JSON.stringify(data, null, 2);
   $('results').classList.remove('hidden');
-  return raw;
 }
 
-function value(id) {
-  return $(id).value.trim();
+function setStatus(message, kind = '') {
+  $('status').className = 'status' + (kind ? ' ' + kind : '');
+  $('status').textContent = message;
 }
 
 $('generate').addEventListener('click', async () => {
   const game = value('game');
 
   if (!game) {
-    $('status').className = 'status err';
-    $('status').textContent = 'Please enter a game name.';
+    setStatus('Please enter a game name.', 'err');
     $('game').focus();
     return;
   }
 
+  const goal = value('goal');
+  const toolType = value('toolType');
+
+  // Use the defined value() helper consistently.
   const payload = {
     type: 'gaming-tools',
-    game,
+    game: game,
     topic: game,
-prompt: `${game} — ${val('goal') || val('toolType') || 'Create a useful gaming tool'}`,
-    toolType: value('toolType'),
+    prompt: `${game} — ${goal || toolType || 'Create a useful gaming tool'}`,
+    request: `${toolType} for ${game}. ${goal}`.trim(),
+    toolType: toolType,
     platform: value('platform'),
     mode: value('mode'),
     skillLevel: value('skillLevel'),
-    goal: value('goal'),
+    goal: goal,
     character: value('character'),
     playstyle: value('playstyle'),
     loadout: value('loadout'),
@@ -242,54 +334,87 @@ prompt: `${game} — ${val('goal') || val('toolType') || 'Create a useful gaming
     extra: value('extra')
   };
 
-  $('generate').disabled = true;
-  $('status').className = 'status';
-  $('status').innerHTML = '<span class="loader"></span>Generating gaming tool...';
+  const button = $('generate');
+  button.disabled = true;
+  button.innerHTML = '<span class="loader"></span>Generating...';
+  setStatus('Sending your gaming request to CAPTIVATE AI...');
   $('results').classList.add('hidden');
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 90000);
 
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload),
+      signal: controller.signal
     });
 
-    const data = await response.json().catch(() => ({}));
+    const responseText = await response.text();
+    let data;
+
+    try {
+      data = responseText ? JSON.parse(responseText) : {};
+    } catch {
+      throw new Error(
+        `The API returned an unreadable response (HTTP ${response.status}).`
+      );
+    }
 
     if (!response.ok || data.success === false || data.error) {
-      throw new Error(data.error || data.message || `Request failed (${response.status}).`);
+      throw new Error(
+        data.error || data.message || `Request failed (HTTP ${response.status}).`
+      );
     }
 
     renderTool(data);
-    $('resultPill').textContent = `Completed • v${data.version || '8.2'}`;
-    $('status').className = 'status ok';
-    $('status').textContent = 'Gaming tool generated successfully.';
-    $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('resultPill').textContent = `Completed • v${data.version || 'API'}`;
+    setStatus('Gaming tool generated successfully.', 'ok');
+    $('results').scrollIntoView({behavior: 'smooth', block: 'start'});
   } catch (error) {
-    $('status').className = 'status err';
-    $('status').textContent = 'Error: ' + (error.message || 'Unable to generate the gaming tool.');
+    if (error.name === 'AbortError') {
+      setStatus(
+        'The request timed out after 90 seconds. The AI service may be slow or unavailable. Try again.',
+        'err'
+      );
+    } else {
+      setStatus('Error: ' + (error.message || 'Unable to generate the gaming tool.'), 'err');
+    }
   } finally {
-    $('generate').disabled = false;
+    clearTimeout(timeoutId);
+    button.disabled = false;
+    button.textContent = '🎮 Generate Gaming Tool';
   }
 });
 
 $('clear').addEventListener('click', () => {
-  document.querySelectorAll('input, textarea').forEach(element => element.value = '');
+  document.querySelectorAll('input, textarea').forEach(element => {
+    element.value = '';
+  });
+
   $('toolType').selectedIndex = 0;
   $('skillLevel').selectedIndex = 0;
   $('results').classList.add('hidden');
-  $('status').className = 'status';
-  $('status').textContent = 'Ready.';
+  $('raw').textContent = '';
+  $('dynamic').innerHTML = '';
+  setStatus('Ready.');
+  $('game').focus();
 });
 
 $('copy').addEventListener('click', async () => {
+  const button = $('copy');
+
   try {
     await navigator.clipboard.writeText($('raw').textContent);
-    $('copy').textContent = 'Copied ✓';
+    button.textContent = 'Copied ✓';
   } catch {
-    $('copy').textContent = 'Copy failed';
+    button.textContent = 'Copy failed — select and copy the JSON manually.';
   }
-  setTimeout(() => $('copy').textContent = 'Copy Raw JSON', 1500);
+
+  setTimeout(() => {
+    button.textContent = 'Copy Raw JSON';
+  }, 2000);
 });
 </script>
 </body>
