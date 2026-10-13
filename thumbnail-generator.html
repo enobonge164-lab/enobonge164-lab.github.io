@@ -77,17 +77,20 @@ async function composeThumbnail(src){
  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');
  const im=await loadImage(src);const scale=Math.max(w/im.width,h/im.height);const dw=im.width*scale,dh=im.height*scale;ctx.drawImage(im,(w-dw)/2,(h-dh)/2,dw,dh);
  // Add a dark gradient so exact overlaid typography remains legible.
- const grad=ctx.createLinearGradient(0,0,w,0);grad.addColorStop(0,'rgba(4,6,15,0.86)');grad.addColorStop(0.58,'rgba(4,6,15,0.38)');grad.addColorStop(1,'rgba(4,6,15,0.05)');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+ const grad=ctx.createLinearGradient(0,0,w*0.82,0);grad.addColorStop(0,'rgba(4,6,15,0.99)');grad.addColorStop(0.72,'rgba(4,6,15,0.96)');grad.addColorStop(1,'rgba(4,6,15,0.12)');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+ // Reserve a clean, nearly opaque typography zone. This masks any accidental pseudo-text
+ // the image model may have put in the background behind the real headline.
+ const panelW=Math.round(w*0.76);const panel=ctx.createLinearGradient(0,0,panelW,0);panel.addColorStop(0,'rgba(8,11,18,0.99)');panel.addColorStop(0.86,'rgba(17,24,39,0.97)');panel.addColorStop(1,'rgba(17,24,39,0.82)');ctx.fillStyle=panel;ctx.fillRect(0,0,panelW,h);
  const headline=$('text').value.trim();const title=$('title').value.trim();const brand=$('branding').value.trim();
  const pad=Math.round(w*0.055);const maxWidth=Math.round(w*0.66);let y=Math.round(h*0.18);
- if(headline){let size=Math.round(Math.min(w*0.105,h*0.19));let lines;do{ctx.font=`900 ${size}px Inter, Arial, sans-serif`;lines=wrapText(ctx,headline.toUpperCase(),maxWidth);if(lines.length<=3&&Math.max(...lines.map(t=>ctx.measureText(t).width))<=maxWidth)break;size-=4;}while(size>22);
+ if(headline){let size=Math.round(Math.min(w*0.105,h*0.19));let lines;do{ctx.font=`900 ${size}px Inter, Arial, sans-serif`;lines=wrapText(ctx,headline,maxWidth);if(lines.length<=3&&Math.max(...lines.map(t=>ctx.measureText(t).width))<=maxWidth)break;size-=4;}while(size>22);
   const lineH=Math.round(size*1.08);const total=lines.length*lineH; y=Math.max(Math.round(h*0.12),Math.round((h-total)/2));
   ctx.textAlign='left';ctx.textBaseline='top';ctx.lineJoin='round';ctx.lineWidth=Math.max(3,Math.round(size*0.055));ctx.strokeStyle='rgba(4,6,15,0.95)';ctx.fillStyle='#ffffff';
   lines.forEach((line,i)=>{ctx.strokeText(line,pad,y+i*lineH,maxWidth);ctx.fillText(line,pad,y+i*lineH,maxWidth);});
   // Purple accent bar anchors the text block in CAPTIVATE's brand palette.
   ctx.fillStyle='#8b5cf6';ctx.fillRect(pad,y-Math.round(size*0.22),Math.max(48,Math.round(size*0.85)),Math.max(5,Math.round(size*0.07)));
  }
- if(title&&(!headline||title.toUpperCase()!==headline.toUpperCase())){ctx.font=`700 ${Math.round(w*0.027)}px Inter, Arial, sans-serif`;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillStyle='rgba(255,255,255,0.92)';const titleLines=wrapText(ctx,title,Math.round(w*0.68)).slice(0,2);const lineH=Math.round(w*0.034);titleLines.forEach((line,i)=>ctx.fillText(line,pad,h-pad-(titleLines.length-1-i)*lineH,Math.round(w*0.68)));}
+ if(title&&(!headline||title.toLocaleUpperCase()!==headline.toLocaleUpperCase())){ctx.font=`700 ${Math.round(w*0.027)}px Inter, Arial, sans-serif`;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillStyle='rgba(255,255,255,0.92)';const titleLines=wrapText(ctx,title,Math.round(w*0.68)).slice(0,2);const lineH=Math.round(w*0.034);titleLines.forEach((line,i)=>ctx.fillText(line,pad,h-pad-(titleLines.length-1-i)*lineH,Math.round(w*0.68)));}
  if(brand){ctx.font=`800 ${Math.max(14,Math.round(w*0.018))}px Inter, Arial, sans-serif`;ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillStyle='#ddd6fe';ctx.fillText(brand,w-pad,h-pad,Math.round(w*0.45));}
  return canvas.toDataURL('image/png');
 }
@@ -102,8 +105,8 @@ async function generate(){
   if(!backgroundData)throw new Error('The AI response was received, but no image data was found.');
   showStatus('Background ready. Adding your exact text…');imageData=await composeThumbnail(backgroundData);
   $('preview').innerHTML='<img id="generated" alt="CAPTIVATE AI thumbnail with exact text overlay">';$('generated').src=imageData;
-  $('meta').innerHTML=`<b>Status:</b> ${esc(data.state||'Completed')}<br><b>Version:</b> ${esc(data.version||'—')}<br><b>Model:</b> ${esc(data.model||'Cloudflare Workers AI')}<br><b>Provider:</b> ${esc(data.provider||'Cloudflare Workers AI')}<br><b>Aspect:</b> ${esc($('aspect').value)}<br><b>Text rendering:</b> Exact overlay applied<br><b>Export:</b> PNG`;
-  $('prompt').textContent=prompt;$('raw').textContent=JSON.stringify(data,null,2);$('result').classList.add('show');showStatus('Thumbnail generated. Your headline and branding were added as real text, not drawn by the image model.','success');
+  $('meta').innerHTML=`<b>Status:</b> ${esc(data.state||'Completed')}<br><b>Version:</b> ${esc(data.version||'—')}<br><b>Model:</b> ${esc(data.model||'Cloudflare Workers AI')}<br><b>Provider:</b> ${esc(data.provider||'Cloudflare Workers AI')}<br><b>Aspect:</b> ${esc($('aspect').value)}<br><b>Text rendering:</b> Browser-rendered from your exact input<br><b>Export:</b> PNG`; 
+  $('prompt').textContent=prompt;$('raw').textContent=JSON.stringify(data,null,2);$('result').classList.add('show');showStatus('Thumbnail generated. Headline text is rendered directly from your input; the headline area is masked to hide AI-made pseudo-text.','success');
  }catch(e){showStatus(e.message||'Something went wrong.','error');}
  finally{$('generate').disabled=false;}
 }
