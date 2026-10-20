@@ -1,0 +1,606 @@
+
+/*
+CAPTIVATE AI — Website Builder Assistant v7.7
+Replace the supplied Website Builder Assistant section with this file's contents.
+Dependencies intentionally reused from your existing Worker:
+cleanText, runAI, NEW_TOOL_PROMPTS, MODELS, API_VERSION, extractText, cleanResult.
+This is the dedicated Website Builder section, NOT the entire main Worker.
+*/
+function extractJsonObject(text) {
+  const raw = String(text || "").trim();
+  if (!raw) return null;
+  const unfenced = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+  try { return JSON.parse(unfenced); } catch (_) {}
+  const start = unfenced.indexOf("{");
+  if (start < 0) return null;
+  let depth = 0, inString = false, escaped = false;
+  for (let i = start; i < unfenced.length; i++) {
+    const ch = unfenced[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') { inString = true; continue; }
+    if (ch === "{") depth++;
+    if (ch === "}") {
+      depth--;
+      if (depth === 0) {
+        try { return JSON.parse(unfenced.slice(start, i + 1)); }
+        catch (_) { return null; }
+      }
+    }
+  }
+  return null;
+}
+function normalizeWebsiteArray(value, fallback = []) {
+  if (!Array.isArray(value)) return fallback;
+  return value.map(item => cleanText(item, 1200)).filter(Boolean);
+}
+function normalizeWebsitePage(page, index) {
+  const item = page && typeof page === "object" ? page : {};
+  return {
+    name: cleanText(item.name || `Page ${index + 1}`, 120),
+    path: cleanText(item.path || (index === 0 ? "#home" : `#page-${index + 1}`), 120),
+    purpose: cleanText(item.purpose || "", 600),
+    sections: normalizeWebsiteArray(item.sections),
+    primaryCTA: cleanText(item.primaryCTA || item.cta || "", 200),
+    notes: cleanText(item.notes || "", 800)
+  };
+}
+function websiteRequestFromBody(body) {
+  return {
+    idea: cleanText(body.idea || body.topic || body.prompt, 2000),
+    targetAudience: cleanText(body.targetAudience || body.audience, 1200),
+    websiteType: cleanText(body.websiteType || body.siteType || "Business Website", 200),
+    style: cleanText(body.style || "Modern & Premium", 300),
+    pages: cleanText(body.pages || body.requestedPages, 3000),
+    features: cleanText(body.features || body.pagesFeatures || "", 5000),
+    brand: cleanText(body.brand || body.brandDirection || "", 2000),
+    extra: cleanText(body.extra || body.extraInstructions || "", 4000)
+  };
+}
+function websiteEscapeHtml(value) {
+  return String(value || "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  }[ch]));
+}
+function websiteInferName(idea) {
+  const text = String(idea || "").trim();
+  const match = text.match(/(?:called|named)\s+["“']?([^"”'\n,.]+)["”']?/i);
+  if (match && match[1]) return match[1].trim().slice(0, 100);
+  const first = text.split(/\n/)[0].trim();
+  return first.length <= 80 ? first : "My Business";
+}
+function websiteFallbackHtml(request) {
+  const name = websiteEscapeHtml(websiteInferName(request.idea));
+  const type = websiteEscapeHtml(request.websiteType || "Business Website");
+  const brief = websiteEscapeHtml(request.idea || "Explore our services and contact us.");
+  const details = websiteEscapeHtml(request.features || "Add your products or services here.");
+  const brandText = `${request.style || ""} ${request.brand || ""}`.toLowerCase();
+  const greenYellow = /green|yellow/.test(brandText);
+  const accent = greenYellow ? "#279447" : "#6d28d9";
+  const soft = greenYellow ? "#ffe16b" : "#ede9fe";
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="${name} — ${type}">
+<title>${name}</title>
+<style>
+:root{--accent:${accent};--soft:${soft};--ink:#172033;--muted:#5b6475;--paper:#fff;--surface:#f4f6fa}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;font:16px/1.6 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:var(--ink);overflow-wrap:anywhere}
+header{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid #e4e8ef;padding:14px max(18px,4vw);display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{font-weight:800;color:var(--accent);text-decoration:none}
+nav{display:flex;gap:14px;flex-wrap:wrap}
+nav a{color:inherit;text-decoration:none;font-weight:650}
+.hero{padding:clamp(50px,8vw,100px) max(20px,6vw);background:linear-gradient(130deg,var(--accent),#182033);color:#fff}
+.inner,.wrap{width:min(1080px,100%);margin:auto}
+.eyebrow{color:var(--soft);font-weight:800;text-transform:uppercase;letter-spacing:.12em}
+h1{font-size:clamp(2.2rem,7vw,4.5rem);line-height:1.08;margin:12px 0;max-width:900px}
+h2{font-size:clamp(1.7rem,4vw,2.6rem);line-height:1.2;margin-top:0}
+.hero p,.intro{max-width:720px;color:inherit}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.btn{display:inline-flex;justify-content:center;align-items:center;padding:12px 18px;border-radius:12px;background:var(--soft);color:#172033;text-decoration:none;font-weight:800;border:2px solid transparent;cursor:pointer;min-height:46px}
+.btn.alt{background:transparent;color:#fff;border-color:#fff}
+.section{padding:62px 18px}
+.section.alt{background:var(--surface)}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:24px}
+.card{border:1px solid #e1e6ee;border-radius:16px;background:#fff;padding:22px;min-width:0;box-shadow:0 8px 22px #1720330b}
+.field{display:grid;gap:6px;margin:0 0 14px}
+input,textarea{width:100%;min-width:0;border:1px solid #cbd2df;border-radius:10px;padding:12px;font:inherit}
+textarea{min-height:110px}
+footer{background:#111827;color:#fff;text-align:center;padding:28px 18px}
+.notice{background:var(--soft);padding:14px;border-radius:12px;color:#172033}
+:focus-visible{outline:3px solid #f59e0b;outline-offset:3px}
+@media(max-width:720px){
+header{align-items:flex-start;flex-direction:column}
+nav{gap:10px}
+.grid{grid-template-columns:1fr}
+.section{padding:44px 18px}
+.btn{width:100%}
+.actions{max-width:420px}
+}
+</style>
+</head>
+<body>
+<header>
+<a class="logo" href="#home">${name}</a>
+<nav aria-label="Main navigation">
+<a href="#home">Home</a>
+<a href="#about">About</a>
+<a href="#services">Services</a>
+<a href="#portfolio">Portfolio</a>
+<a href="#contact">Contact</a>
+</nav>
+</header>
+<main>
+<section class="hero" id="home">
+<div class="inner">
+<div class="eyebrow">${type}</div>
+<h1>Welcome to ${name}</h1>
+<p>${brief}</p>
+<div class="actions">
+<a class="btn" href="#contact">Get Started</a>
+<a class="btn alt" href="#services">Explore Services</a>
+</div>
+</div>
+</section>
+<section class="section" id="about">
+<div class="wrap">
+<h2>About ${name}</h2>
+<p class="muted">${brief}</p>
+<p>Replace this starter copy with your verified business story and details.</p>
+</div>
+</section>
+<section class="section alt" id="services">
+<div class="wrap">
+<h2>Products &amp; Services</h2>
+<p class="muted">${details}</p>
+<div class="grid">
+<article class="card"><h3>Featured offering</h3><p>Add a specific product or service description.</p></article>
+<article class="card"><h3>Quality and support</h3><p>Explain how you help customers.</p></article>
+<article class="card"><h3>Request information</h3><p>Invite visitors to ask a question or request a quote.</p></article>
+</div>
+</div>
+</section>
+<section class="section" id="portfolio">
+<div class="wrap">
+<h2>Featured Work</h2>
+<p class="muted">Replace these examples with real products, projects, or photos.</p>
+<div class="grid">
+<article class="card"><h3>Sample project one</h3><p>Project description goes here.</p></article>
+<article class="card"><h3>Sample project two</h3><p>Project description goes here.</p></article>
+<article class="card"><h3>Sample project three</h3><p>Project description goes here.</p></article>
+</div>
+</div>
+</section>
+<section class="section alt" id="contact">
+<div class="wrap">
+<h2>Contact Us</h2>
+<p class="muted">This demo form prepares an email; it does not store submissions on a server.</p>
+<form id="contact-form">
+<div class="field"><label for="visitor-name">Your name</label><input id="visitor-name" name="name" autocomplete="name" required></div>
+<div class="field"><label for="visitor-email">Email</label><input id="visitor-email" name="email" type="email" autocomplete="email" required></div>
+<div class="field"><label for="visitor-message">Message</label><textarea id="visitor-message" name="message" required></textarea></div>
+<button class="btn" type="submit">Prepare Email</button>
+<p id="status" role="status" aria-live="polite"></p>
+</form>
+<p class="notice">Before publishing, add a verified business email, phone number, and any real WhatsApp or booking integration.</p>
+</div>
+</section>
+</main>
+<footer>© <span id="year"></span> ${name}. Customise sample content before publishing.</footer>
+<script>
+document.getElementById('year').textContent=new Date().getFullYear();
+document.getElementById('contact-form').addEventListener('submit',function(e){
+e.preventDefault();
+const d=new FormData(this);
+const subject=encodeURIComponent('Website enquiry for ${name.replace(/'/g,"\\\\'")}');
+const body=encodeURIComponent('Name: '+d.get('name')+'\\nEmail: '+d.get('email')+'\\n\\nMessage:\\n'+d.get('message'));
+document.getElementById('status').textContent='Your email app should open. Review the message and press Send. This website has not sent or stored it.';
+window.location.href='mailto:?subject='+subject+'&body='+body;
+});
+</script>
+</body>
+</html>`;
+}
+function websiteMakeHtmlSafer(html, request) {
+  let out = String(html || "").trim();
+
+  if (!out || !/<html[\s>]/i.test(out) || !/<body[\s>]/i.test(out)) {
+    return websiteFallbackHtml(request);
+  }
+
+  // Remove linked CSS and JavaScript files that may be missing.
+  out = out.replace(
+    /<link\b(?=[^>]*\brel\s*=\s*["']?stylesheet)[^>]*>/gi,
+    ""
+  );
+
+  out = out.replace(
+    /<script\b(?=[^>]*\bsrc\s*=)[^>]*>\s*<\/script>/gi,
+    ""
+  );
+
+  // Convert common website routes to links within the downloaded page.
+  out = out.replace(
+    /href\s*=\s*(["'])\/(about|services|products|portfolio|contact|home)\/?\1/gi,
+    (_, q, p) =>
+      `href="#${p.toLowerCase() === "products" ? "services" : p.toLowerCase()}"`
+  );
+
+  out = out.replace(
+    /href\s*=\s*(["'])\/\1/gi,
+    'href="#home"'
+  );
+
+  // Replace missing local image files with visible placeholders.
+  out = out.replace(
+    /<img\b([^>]*?)\bsrc\s*=\s*(["'])(?!https?:|data:|blob:)[^"']+\2([^>]*)>/gi,
+    '<div class="image-placeholder" role="img" aria-label="Image placeholder">Add your image here</div>'
+  );
+
+  // Add responsive safety styles.
+  if (/<\/style>/i.test(out)) {
+    out = out.replace(
+      /<\/style>/i,
+      '.image-placeholder{min-height:120px;display:grid;place-items:center;padding:16px;background:#eef2f7;color:#475569;border:1px dashed #94a3b8;border-radius:12px;text-align:center}*,*::before,*::after{box-sizing:border-box}img,video,iframe{max-width:100%}body{overflow-wrap:anywhere}@media(max-width:640px){nav{flex-wrap:wrap}button,a{touch-action:manipulation}} </style>'
+    );
+  }
+
+  // Ensure mobile viewport metadata exists.
+  if (!/<meta[^>]+name=["']viewport["']/i.test(out)) {
+    out = out.replace(
+      /<head([^>]*)>/i,
+      '<head$1><meta name="viewport" content="width=device-width,initial-scale=1">'
+    );
+  }
+
+  const name = websiteInferName(request.idea);
+
+  if (name && name !== "My Business" && name.length <= 100) {
+    out = out.replace(/\[BUSINESS NAME\]/gi, websiteEscapeHtml(name));
+  }
+
+  return out;
+}
+function normalizeWebsiteResult(data, request) {
+  const source = data && typeof data === "object" ? data : {};
+  const project = source.project && typeof source.project === "object" ? source.project : {};
+  const architecture = source.architecture && typeof source.architecture === "object" ? source.architecture : {};
+  const seo = source.seo && typeof source.seo === "object" ? source.seo : {};
+  const accessibility = source.accessibility && typeof source.accessibility === "object" ? source.accessibility : {};
+  const security = source.security && typeof source.security === "object" ? source.security : {};
+  const dataModel = source.dataModel && typeof source.dataModel === "object" ? source.dataModel : {};
+
+  const pages = Array.isArray(source.pages)
+    ? source.pages.map(normalizeWebsitePage)
+    : [];
+
+  const normalized = {
+    project: {
+      name: cleanText(project.name || websiteInferName(request.idea), 200),
+      websiteType: cleanText(project.websiteType || request.websiteType || "Business Website", 100),
+      audience: cleanText(project.audience || request.targetAudience || "General audience", 500),
+      style: cleanText(project.style || request.style || "Modern & Premium", 150),
+      summary: cleanText(project.summary || "", 1200)
+    },
+
+    sitemap: normalizeWebsiteArray(source.sitemap || pages.map(p => p.path)),
+    pages,
+
+    architecture: {
+      stack: cleanText(architecture.stack || "Single-file HTML5 + embedded CSS + vanilla JavaScript", 500),
+      frontend: cleanText(architecture.frontend || "Responsive mobile-first frontend", 700),
+      backend: cleanText(architecture.backend || "Connect a backend for saved submissions, accounts, or payments", 1000),
+      hosting: cleanText(architecture.hosting || "Static hosting compatible", 500),
+      integrations: normalizeWebsiteArray(architecture.integrations)
+    },
+
+    components: normalizeWebsiteArray(source.components),
+    features: normalizeWebsiteArray(source.features),
+    mvpFeatures: normalizeWebsiteArray(source.mvpFeatures),
+    futureFeatures: normalizeWebsiteArray(source.futureFeatures),
+
+    dataModel: {
+      entities: normalizeWebsiteArray(dataModel.entities),
+      fields: normalizeWebsiteArray(dataModel.fields),
+      notes: cleanText(dataModel.notes || "", 1000)
+    },
+
+    forms: normalizeWebsiteArray(source.forms),
+    responsive: normalizeWebsiteArray(source.responsive),
+
+    seo: {
+      title: cleanText(seo.title || "", 160),
+      metaDescription: cleanText(seo.metaDescription || "", 320),
+      keywords: normalizeWebsiteArray(seo.keywords),
+      openGraph: normalizeWebsiteArray(seo.openGraph),
+      schema: normalizeWebsiteArray(seo.schema)
+    },
+
+    accessibility: normalizeWebsiteArray(accessibility.checklist || accessibility.items),
+    security: normalizeWebsiteArray(security.checklist || security.items),
+
+    starterHtml: String(source.starterHtml || source.htmlStarter || ""),
+    buildPrompt: cleanText(source.buildPrompt || "", 10000),
+    assumptions: normalizeWebsiteArray(source.assumptions),
+    nextSteps: normalizeWebsiteArray(source.nextSteps)
+  };
+
+  normalized.starterHtml = websiteMakeHtmlSafer(
+    normalized.starterHtml,
+    request
+  );
+
+  return normalized;
+}
+function websiteFallbackResult(request, reason) {
+  const name = websiteInferName(request.idea);
+  const type = request.websiteType || "Business Website";
+
+  return {
+    project: {
+      name,
+      websiteType: type,
+      audience: request.targetAudience || "General audience",
+      style: request.style || "Modern & Premium",
+      summary: `A ${type.toLowerCase()} for ${name}.`
+    },
+
+    sitemap: ["#home", "#about", "#services", "#portfolio", "#contact"],
+
+    pages: [
+      {
+        name: "Home",
+        path: "#home",
+        purpose: "Introduce the offer",
+        sections: ["Hero", "Services", "Portfolio", "CTA"],
+        primaryCTA: "Get Started",
+        notes: "Replace sample content."
+      },
+      {
+        name: "About",
+        path: "#about",
+        purpose: "Build trust",
+        sections: ["Story", "Mission"],
+        primaryCTA: "Contact Us",
+        notes: "Use verified facts."
+      },
+      {
+        name: "Services",
+        path: "#services",
+        purpose: "Explain the offer",
+        sections: ["Service cards", "CTA"],
+        primaryCTA: "Request a Quote",
+        notes: "Use real pricing only when supplied."
+      },
+      {
+        name: "Portfolio",
+        path: "#portfolio",
+        purpose: "Show work",
+        sections: ["Project cards"],
+        primaryCTA: "View Work",
+        notes: "Replace sample projects."
+      },
+      {
+        name: "Contact",
+        path: "#contact",
+        purpose: "Allow enquiries",
+        sections: ["Contact details", "Form"],
+        primaryCTA: "Prepare Email",
+        notes: "A backend is needed to store submissions."
+      }
+    ],
+
+    architecture: {
+      stack: "Single-file HTML5 + embedded CSS + vanilla JavaScript",
+      frontend: "Mobile-first responsive frontend",
+      backend: "Backend required for saved submissions or dynamic features",
+      hosting: "Static hosting compatible",
+      integrations: []
+    },
+
+    components: [
+      "Header",
+      "Navigation",
+      "Hero",
+      "Cards",
+      "CTA",
+      "Form",
+      "Footer"
+    ],
+
+    features: request.features ? [request.features] : [],
+
+    mvpFeatures: [
+      "Responsive layout",
+      "In-page navigation",
+      "Contact form demo",
+      "SEO metadata",
+      "Accessible controls"
+    ],
+
+    futureFeatures: [
+      "CMS",
+      "Analytics",
+      "Payments",
+      "Database-backed forms"
+    ],
+
+    dataModel: {
+      entities: ["Lead"],
+      fields: ["name", "email", "message", "createdAt"],
+      notes: "Store data only after a backend is connected."
+    },
+
+    forms: ["Contact form"],
+
+    responsive: [
+      "Mobile navigation",
+      "Fluid typography",
+      "Stacked cards",
+      "Touch-friendly controls"
+    ],
+
+    seo: {
+      title: name,
+      metaDescription: `Learn about ${name}.`,
+      keywords: [],
+      openGraph: ["og:title", "og:description"],
+      schema: ["Organization or LocalBusiness when applicable"]
+    },
+
+    accessibility: [
+      "Semantic headings",
+      "Keyboard navigation",
+      "Visible focus",
+      "Form labels",
+      "Alt text"
+    ],
+
+    security: [
+      "Validate inputs",
+      "Use HTTPS",
+      "Protect API keys",
+      "Rate-limit public forms"
+    ],
+
+    starterHtml: websiteFallbackHtml(request),
+
+    buildPrompt:
+      `Build a complete single-file responsive ${type} for ${name}. ` +
+      "Embed CSS and JavaScript. Use in-page links. Implement controls; " +
+      "label demos and backend requirements. Do not invent facts.",
+
+    assumptions: [reason],
+
+    nextSteps: [
+      "Review content",
+      "Replace sample text and images",
+      "Add real contact details",
+      "Connect backend if needed",
+      "Test on mobile"
+    ]
+  };
+}
+async function generateWebsiteBuilder(env, body) {
+  const request = websiteRequestFromBody(body);
+
+  if (!request.idea) {
+    throw new Error("Website idea is required.");
+  }
+
+  const instruction = `You generate a WEBSITE HTML FILE that users download and open directly in Chrome, including on Android. Return valid JSON with exactly these keys: project,sitemap,pages,architecture,components,features,mvpFeatures,futureFeatures,dataModel,forms,responsive,seo,accessibility,security,starterHtml,buildPrompt,assumptions,nextSteps. Each page object has name,path,purpose,sections,primaryCTA,notes.
+
+MANDATORY starterHtml requirements:
+- Provide a complete document from <!doctype html> through </html>.
+- Embed all CSS in <style> and all required JavaScript in inline <script>.
+- Do not link styles.css, app.js, other local files, CDNs, libraries, remote fonts, or remote images.
+- Use CSS placeholders or inline SVG for visuals.
+- Use only in-page links like #home and #contact, never server paths like /about.
+- Use the supplied business name consistently and never output [BUSINESS NAME] when a name is present.
+- Make all visible buttons work.
+- Do not show cart, booking, or payment controls unless implemented.
+- Forms validate fields and explicitly state if no backend saves data.
+- Never claim a submission was sent or stored when it was not.
+- Include mobile-first CSS and viewport metadata, accessible labels, visible focus, readable contrast, and no horizontal overflow at 320px.
+- Close all tags and ensure requested sections appear.
+- Do not use broken asset paths.
+- Keep starterHtml below 25000 characters.
+- Do not invent phone numbers, addresses, reviews, credentials, or working integrations.
+
+BRIEF:
+Idea=${request.idea};
+Audience=${request.targetAudience || "Not specified"};
+Type=${request.websiteType};
+Style=${request.style};
+Pages=${request.pages || "Not specified"};
+Features=${request.features || "Not specified"};
+Brand=${request.brand || "Not specified"};
+Extra=${request.extra || "Not specified"}.
+
+starterHtml is the complete standalone website, not an explanation. buildPrompt contains implementation, API, security, SEO, and acceptance criteria.`;
+
+  let normalized;
+
+  try {
+    const aiResponse = await runAI(
+      env,
+      NEW_TOOL_PROMPTS["website-builder"],
+      instruction,
+      8192,
+      MODELS.CODE
+    );
+
+    const raw = cleanResult(extractText(aiResponse));
+    const parsed = extractJsonObject(raw);
+
+    if (!parsed) {
+      normalized = websiteFallbackResult(
+        request,
+        "Model output was not valid JSON; a standalone fallback website was generated."
+      );
+    } else {
+      normalized = normalizeWebsiteResult(parsed, request);
+
+      if (
+        !normalized.starterHtml ||
+        !/<html[\s>]/i.test(normalized.starterHtml) ||
+        !/<body[\s>]/i.test(normalized.starterHtml)
+      ) {
+        normalized = websiteFallbackResult(
+          request,
+          "Model output did not contain a complete HTML document; a standalone fallback website was generated."
+        );
+      }
+    }
+  } catch (error) {
+    normalized = websiteFallbackResult(
+      request,
+      `Website model request failed; standalone fallback generated. ${
+        cleanText(error && error.message || "Unknown error", 250)
+      }`
+    );
+  }
+
+  const summary = [
+    `Website: ${normalized.project.name}`,
+    `Type: ${normalized.project.websiteType}`,
+    `Pages: ${
+      normalized.pages.map(p => `${p.name} (${p.path})`).join(", ") ||
+      "See HTML starter"
+    }`,
+    `Stack: ${normalized.architecture.stack}`,
+    `MVP: ${normalized.mvpFeatures.join("; ") || "Review generated HTML"}`,
+    `Next: ${
+      normalized.nextSteps.join("; ") ||
+      "Review and test the website."
+    }`
+  ].join("\n");
+
+  return {
+    success: true,
+    version: API_VERSION,
+    type: "website-builder",
+    model: MODELS.CODE,
+    provider: "cloudflare-workers-ai",
+    billingPath: "standard-workers-ai",
+    state: "Completed",
+    project: normalized.project,
+    website: normalized,
+    result: summary,
+    output: normalized,
+    text: summary,
+    htmlStarter: normalized.starterHtml,
+    buildPrompt: normalized.buildPrompt
+  };
+}
