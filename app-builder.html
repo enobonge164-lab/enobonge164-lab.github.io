@@ -34,7 +34,7 @@
 <div id="planPanel" class="panel"><div class="card output"><h3>Implementation Plan</h3><div id="implementationOutput"></div></div><div class="card output"><h3>Acceptance Criteria</h3><div id="acceptanceOutput"></div></div><div class="card output"><h3>Deployment</h3><div id="deploymentOutput"></div></div><div class="card output"><h3>Next Steps & Assumptions</h3><div id="nextOutput"></div></div></div>
 <div id="rawPanel" class="panel"><div class="card output"><pre id="rawOutput"></pre></div></div></section><div class="footer">CAPTIVATE AI • App Builder Assistant</div></div>
 <script>
-const API_URL="https://captivate-ai-api.sirwhitethepolymath.workers.dev",$=id=>document.getElementById(id),clean=v=>v==null?"":String(v).trim();
+const API_URL = "https://captivate-ai-backend-v2.sirwhitethepolymath.workers.dev";$=id=>document.getElementById(id),clean=v=>v==null?"":String(v).trim();
 function esc(v){return clean(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
 function arr(v){if(Array.isArray(v))return v;if(v==null||v==="")return [];if(typeof v==="string")return v.split(/\n|,/).map(x=>x.trim()).filter(Boolean);return [v]}
 function json(v){try{return JSON.stringify(v,null,2)}catch{return String(v)}}
