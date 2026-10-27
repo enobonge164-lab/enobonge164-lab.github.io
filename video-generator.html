@@ -28,7 +28,7 @@
 </div></div><div class="footer">CAPTIVATE AI · Video Studio · API endpoint configured for your current Worker</div></main>
 <script>
 window.addEventListener("error", function(e){ const el=document.getElementById("audioStatus"); if(el) { el.textContent="Page script error: "+(e.message||"unknown JavaScript error")+". Refresh the page; if it repeats, send this message."; el.className="status error"; } });
-const API_URL="https://captivate-ai-api.sirwhitethepolymath.workers.dev";const $=id=>document.getElementById(id);let sceneData=[];let lastVideoUrl="";let lastAudioUrl="";
+const API_URL = "https://captivate-ai-backend-v2.sirwhitethepolymath.workers.dev";const $=id=>document.getElementById(id);let sceneData=[];let lastVideoUrl="";let lastAudioUrl="";
 function status(msg,error=false){$('status').textContent=msg;$('status').className='status'+(error?' error':'')}function audioStatus(msg,error=false){$('audioStatus').textContent=msg;$('audioStatus').className='status'+(error?' error':'')}
 function safe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function downloadText(name,text,mime='text/plain;charset=utf-8'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
