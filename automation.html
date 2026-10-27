@@ -2510,7 +2510,7 @@ async function runAiAction(step, input, workflowName, stepNumber, totalSteps) {
         step.instructions || "Complete the requested task clearly and accurately."
     ].join("\n");
 
-    const response = await fetch(CAPTIVATE_AI_API, {
+    const response = await fetch(API_URL, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
