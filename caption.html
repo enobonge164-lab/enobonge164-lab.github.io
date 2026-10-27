@@ -144,31 +144,18 @@ async function generateCaption(){
     try{
 
         const response = await fetch(
-
-         "https://captivate-ai-backend-v2.sirwhitethepolymath.workers.dev";
-
-            {
-
-                method:"POST",
-
-                headers:{
-
-                    "Content-Type":
-                    "application/json"
-
-                },
-
-                body:JSON.stringify({
-
-                    topic:topic,
-
-                    platform:platform
-
-                })
-
-            }
-
-        );
+  "https://captivate-ai-backend-v2.sirwhitethepolymath.workers.dev",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      topic: topic,
+      platform: platform,
+    }),
+  }
+);
 
 
         /* Check server response */
