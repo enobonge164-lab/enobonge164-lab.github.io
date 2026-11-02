@@ -47,7 +47,7 @@ h1{font-size:clamp(34px,7vw,62px);line-height:1.02;margin:8px 0 14px}
 .builder{margin:28px 0 50px;padding:22px}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .field{display:flex;flex-direction:column;gap:7px}
-.field.full{grid-column:1/-1}
+.field.full{grid-column:1/-1}\n.color-control{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px}\n.color-control input[type=color]{height:49px;padding:5px;cursor:pointer}\n.hint{margin:0;color:var(--muted);font-size:13px}
 label{font-weight:700;color:#e8eaf0}
 input,select,textarea{
   width:100%;
@@ -196,10 +196,23 @@ pre{
           <textarea id="features" placeholder="Product catalog, WhatsApp button, contact form, testimonials, FAQ"></textarea>
         </div>
 
-        <div class="field">
+        <div class="field full">
           <label for="brand">Brand / Color Direction</label>
-          <input id="brand" value="Purple, white and black">
+          <input id="brand" value="Purple, white and black" placeholder="Describe the overall brand palette">
         </div>
+        <div class="field">
+          <label for="primaryColor">Primary colour</label>
+          <div class="color-control"><input id="primaryColor" type="color" value="#8b5cf6" aria-label="Choose primary colour"><input id="primaryHex" value="#8B5CF6" maxlength="7" aria-label="Primary colour HEX code"></div>
+        </div>
+        <div class="field">
+          <label for="secondaryColor">Secondary colour</label>
+          <div class="color-control"><input id="secondaryColor" type="color" value="#ffffff" aria-label="Choose secondary colour"><input id="secondaryHex" value="#FFFFFF" maxlength="7" aria-label="Secondary colour HEX code"></div>
+        </div>
+        <div class="field">
+          <label for="accentColor">Accent colour</label>
+          <div class="color-control"><input id="accentColor" type="color" value="#111827" aria-label="Choose accent colour"><input id="accentHex" value="#111827" maxlength="7" aria-label="Accent colour HEX code"></div>
+        </div>
+        <p class="hint full">These exact HEX colours are treated as design requirements and applied across the generated website.</p>
 
         <div class="field">
           <label for="extra">Extra Instructions</label>
@@ -470,6 +483,24 @@ function setLoading(loading){
     : "Generate with CAPTIVATE AI";
 }
 
+function setColour(name,value){
+  const picker=$(name+"Color"), hex=$(name+"Hex");
+  if(picker && hex){picker.value=value;hex.value=value.toUpperCase();}
+}
+["primary","secondary","accent"].forEach(name=>{
+  const picker=$(name+"Color"), hex=$(name+"Hex");
+  picker.addEventListener("input",()=>{hex.value=picker.value.toUpperCase();});
+  hex.addEventListener("input",()=>{
+    const value=hex.value.trim();
+    if(/^#[0-9a-fA-F]{6}$/.test(value)) picker.value=value;
+  });
+  hex.addEventListener("blur",()=>{
+    if(!/^#[0-9a-fA-F]{6}$/.test(hex.value.trim())){
+      hex.value=picker.value.toUpperCase();
+    }else hex.value=hex.value.trim().toUpperCase();
+  });
+});
+
 $("builderForm").addEventListener("submit", async event=>{
   event.preventDefault();
 
@@ -477,6 +508,13 @@ $("builderForm").addEventListener("submit", async event=>{
   if(!idea){
     setStatus("Please describe the website or business idea first.","error");
     return;
+  }
+
+  for(const id of ["primaryHex","secondaryHex","accentHex"]){
+    if(!/^#[0-9a-fA-F]{6}$/.test($(id).value.trim())){
+      setStatus("Please enter valid 6-digit HEX colours, for example #8B5CF6.","error");
+      return;
+    }
   }
 
   const payload = {
@@ -497,6 +535,9 @@ $("builderForm").addEventListener("submit", async event=>{
     features: clean($("features").value),
     brand: clean($("brand").value),
     brandDirection: clean($("brand").value),
+    primaryColor: clean($("primaryHex").value),
+    secondaryColor: clean($("secondaryHex").value),
+    accentColor: clean($("accentHex").value),
     extra: clean($("extra").value),
     extraInstructions: clean($("extra").value)
   };
@@ -552,6 +593,9 @@ $("builderForm").addEventListener("submit", async event=>{
 $("clearBtn").addEventListener("click",()=>{
   $("builderForm").reset();
   $("brand").value = "Purple, white and black";
+  setColour("primary", "#8B5CF6");
+  setColour("secondary", "#FFFFFF");
+  setColour("accent", "#111827");
   $("results").classList.remove("show");
   $("status").className = "status";
   $("status").textContent = "";
