@@ -1,4 +1,4 @@
-t<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -47,8 +47,11 @@ h1{font-size:clamp(34px,7vw,62px);line-height:1.02;margin:8px 0 14px}
 .builder{margin:28px 0 50px;padding:22px}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .field{display:flex;flex-direction:column;gap:7px}
-.field.full{grid-column:1/-1}\n.color-control{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px}\n.color-control input[type=color]{height:49px;padding:5px;cursor:pointer}\n.hint{margin:0;color:var(--muted);font-size:13px}
+.field.full{grid-column:1/-1}
 label{font-weight:700;color:#e8eaf0}
+.color-row{display:grid;grid-template-columns:64px 1fr;gap:9px}
+.color-row input[type=color]{height:48px;padding:5px;cursor:pointer}
+.color-row input[type=text],.color-row input:not([type=color]){min-width:0;text-transform:uppercase}
 input,select,textarea{
   width:100%;
   border:1px solid rgba(148,163,184,.2);
@@ -145,7 +148,7 @@ pre{
     <a class="back" href="index.html">← Back to CAPTIVATE AI</a>
     <div class="eyebrow">CAPTIVATE AI</div>
     <h1>AI Website Builder</h1>
-    <p class="hero-copy">Turn a business idea into a structured website plan, starter HTML and an implementation-ready build prompt.</p>
+    <p class="hero-copy">Turn a business idea into a structured website plan, a standalone HTML website you can open in Chrome, and an implementation-ready build prompt.</p>
   </header>
 
   <section class="card builder">
@@ -196,25 +199,24 @@ pre{
           <textarea id="features" placeholder="Product catalog, WhatsApp button, contact form, testimonials, FAQ"></textarea>
         </div>
 
-        <div class="field full">
-          <label for="brand">Brand / Color Direction</label>
-          <input id="brand" value="Purple, white and black" placeholder="Describe the overall brand palette">
-        </div>
         <div class="field">
-          <label for="primaryColor">Primary colour</label>
-          <div class="color-control"><input id="primaryColor" type="color" value="#8b5cf6" aria-label="Choose primary colour"><input id="primaryHex" value="#8B5CF6" maxlength="7" aria-label="Primary colour HEX code"></div>
+          <label for="brand">Brand / Color Direction</label>
+          <input id="brand" value="Purple, white and black">
+        </div>
+
+        <div class="field">
+          <label for="primaryColor">Primary brand colour</label>
+          <div class="color-row"><input id="primaryColor" type="color" value="#8B5CF6" aria-label="Primary brand colour"><input id="primaryHex" value="#8B5CF6" maxlength="7" aria-label="Primary colour HEX"></div>
         </div>
         <div class="field">
           <label for="secondaryColor">Secondary colour</label>
-          <div class="color-control"><input id="secondaryColor" type="color" value="#ffffff" aria-label="Choose secondary colour"><input id="secondaryHex" value="#FFFFFF" maxlength="7" aria-label="Secondary colour HEX code"></div>
+          <div class="color-row"><input id="secondaryColor" type="color" value="#FFFFFF" aria-label="Secondary colour"><input id="secondaryHex" value="#FFFFFF" maxlength="7" aria-label="Secondary colour HEX"></div>
         </div>
         <div class="field">
-          <label for="accentColor">Accent colour</label>
-          <div class="color-control"><input id="accentColor" type="color" value="#111827" aria-label="Choose accent colour"><input id="accentHex" value="#111827" maxlength="7" aria-label="Accent colour HEX code"></div>
+          <label for="accentColor">Accent / text colour</label>
+          <div class="color-row"><input id="accentColor" type="color" value="#111827" aria-label="Accent colour"><input id="accentHex" value="#111827" maxlength="7" aria-label="Accent colour HEX"></div>
         </div>
-        <p class="hint full">These exact HEX colours are treated as design requirements and applied across the generated website.</p>
-
-        <div class="field">
+        <div class="field full">
           <label for="extra">Extra Instructions</label>
           <input id="extra" placeholder="Mobile-first, professional, fast and accessible">
         </div>
@@ -263,6 +265,10 @@ pre{
         <div id="structureOutput" class="empty">No structure yet.</div>
       </div>
 
+      <div class="card output-card"><h3>Architecture & Hosting</h3><div id="architectureOutput" class="empty">No architecture yet.</div></div>
+      <div class="card output-card"><h3>SEO & Accessibility</h3><div id="seoOutput" class="empty">No SEO information yet.</div></div>
+      <div class="card output-card"><h3>Security & Data</h3><div id="securityOutput" class="empty">No security information yet.</div></div>
+      <div class="card output-card"><h3>Assumptions & Next Steps</h3><div id="nextOutput" class="empty">No next steps yet.</div></div>
       <div class="card output-card">
         <h3>Notes</h3>
         <div id="notesOutput" class="empty">No notes yet.</div>
@@ -430,6 +436,37 @@ function renderPlan(data){
 
   renderList($("notesOutput"), notes);
 
+  const architecture = website.architecture || root?.architecture || {};
+  const architectureItems = [
+    architecture.stack && "Stack: " + architecture.stack,
+    architecture.frontend && "Frontend: " + architecture.frontend,
+    architecture.backend && "Backend: " + architecture.backend,
+    architecture.hosting && "Hosting: " + architecture.hosting,
+    ...asArray(architecture.integrations).map(x => "Integration: " + x)
+  ].filter(Boolean);
+  renderList($("architectureOutput"), architectureItems);
+
+  const seo = website.seo || root?.seo || {};
+  renderList($("seoOutput"), [
+    seo.title && "SEO title: " + seo.title,
+    seo.metaDescription && "Meta description: " + seo.metaDescription,
+    ...asArray(seo.keywords).map(x => "Keyword: " + x),
+    ...asArray(website.accessibility || root?.accessibility).map(x => "Accessibility: " + x)
+  ].filter(Boolean));
+
+  const dataModel = website.dataModel || root?.dataModel || {};
+  renderList($("securityOutput"), [
+    ...asArray(website.security || root?.security).map(x => "Security: " + x),
+    ...asArray(dataModel.entities).map(x => "Data entity: " + x),
+    ...asArray(dataModel.fields).map(x => "Data field: " + x),
+    dataModel.notes || ""
+  ].filter(Boolean));
+
+  renderList($("nextOutput"), [
+    ...asArray(website.assumptions || root?.assumptions).map(x => "Assumption: " + x),
+    ...asArray(website.nextSteps || root?.nextSteps).map(x => "Next: " + x)
+  ]);
+
   const html =
     getText(data,["htmlStarter","starterHtml"]) ||
     getText(website,["htmlStarter","starterHtml","html"]) ||
@@ -483,23 +520,21 @@ function setLoading(loading){
     : "Generate with CAPTIVATE AI";
 }
 
-function setColour(name,value){
-  const picker=$(name+"Color"), hex=$(name+"Hex");
-  if(picker && hex){picker.value=value;hex.value=value.toUpperCase();}
-}
-["primary","secondary","accent"].forEach(name=>{
-  const picker=$(name+"Color"), hex=$(name+"Hex");
+function bindColorPair(pickerId, hexId){
+  const picker = $(pickerId), hex = $(hexId);
   picker.addEventListener("input",()=>{hex.value=picker.value.toUpperCase();});
   hex.addEventListener("input",()=>{
     const value=hex.value.trim();
     if(/^#[0-9a-fA-F]{6}$/.test(value)) picker.value=value;
   });
   hex.addEventListener("blur",()=>{
-    if(!/^#[0-9a-fA-F]{6}$/.test(hex.value.trim())){
-      hex.value=picker.value.toUpperCase();
-    }else hex.value=hex.value.trim().toUpperCase();
+    if(!/^#[0-9a-fA-F]{6}$/.test(hex.value.trim())) hex.value=picker.value.toUpperCase();
+    else hex.value=hex.value.trim().toUpperCase();
   });
-});
+}
+bindColorPair("primaryColor","primaryHex");
+bindColorPair("secondaryColor","secondaryHex");
+bindColorPair("accentColor","accentHex");
 
 $("builderForm").addEventListener("submit", async event=>{
   event.preventDefault();
@@ -511,8 +546,9 @@ $("builderForm").addEventListener("submit", async event=>{
   }
 
   for(const id of ["primaryHex","secondaryHex","accentHex"]){
-    if(!/^#[0-9a-fA-F]{6}$/.test($(id).value.trim())){
-      setStatus("Please enter valid 6-digit HEX colours, for example #8B5CF6.","error");
+    if(!/^#[0-9a-fA-F]{6}$/.test(clean($(id).value))){
+      setStatus("Please enter valid 6-digit HEX colours (example: #8B5CF6).","error");
+      $(id).focus();
       return;
     }
   }
@@ -593,9 +629,7 @@ $("builderForm").addEventListener("submit", async event=>{
 $("clearBtn").addEventListener("click",()=>{
   $("builderForm").reset();
   $("brand").value = "Purple, white and black";
-  setColour("primary", "#8B5CF6");
-  setColour("secondary", "#FFFFFF");
-  setColour("accent", "#111827");
+  [["primaryColor","primaryHex","#8B5CF6"],["secondaryColor","secondaryHex","#FFFFFF"],["accentColor","accentHex","#111827"]].forEach(([p,h,v])=>{$(p).value=v;$(h).value=v;});
   $("results").classList.remove("show");
   $("status").className = "status";
   $("status").textContent = "";
@@ -607,7 +641,8 @@ document.querySelectorAll(".tab").forEach(tab=>{
     document.querySelectorAll(".tab-panel").forEach(x=>x.classList.remove("active"));
 
     tab.classList.add("active");
-    $(tab.dataset.tab+"Panel").classList.add("active");
+    const panel = $(tab.dataset.tab+"Panel");
+    if(panel) panel.classList.add("active");
   });
 });
 
@@ -626,7 +661,7 @@ $("downloadHtml").addEventListener("click",()=>{
     return;
   }
   downloadText(
-    "captivate-website-starter.html",
+    "captivate-website.html",
     html,
     "text/html;charset=utf-8"
   );
